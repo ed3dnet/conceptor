@@ -1,0 +1,24 @@
+{
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "devDependencies": {
+    "@myapp/shared-universal": "workspace:*",
+    "@myapp/typescript-config": "workspace:*",
+    "@sinclair/typebox": "0.34.13",
+    "@temporalio/client": "^1.11.5",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0"
+  },
+  "peerDependencies": {
+    "@sinclair/typebox": "0.34.11",
+    "@temporalio/client": "^1.11.1",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2"
+  },
+  "name": "@myapp/temporal-client",
+  "type": "module",
+  "types": "src/index.ts",
+  "version": "0.0.1"
+}

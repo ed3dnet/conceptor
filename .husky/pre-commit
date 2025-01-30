@@ -1,0 +1,7 @@
+#! /bin/sh
+
+echo "- pre-commit hooks..."
+npx lint-staged
+
+# npm run build
+# npx cross-env NO_WATCH=1 npm test

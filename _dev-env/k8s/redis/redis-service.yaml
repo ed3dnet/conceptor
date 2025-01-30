@@ -1,0 +1,12 @@
+# this service exposes localdev-redis on a ClusterIP.
+apiVersion: v1
+kind: Service
+metadata:
+  name: localdev-redis
+spec:
+  type: NodePort
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: localdev-redis

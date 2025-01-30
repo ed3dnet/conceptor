@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localdev-mailpit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localdev-mailpit
+  template:
+    metadata:
+      labels:
+        app: localdev-mailpit
+    spec:
+      containers:
+      - name: localdev-mailpit
+        image: axllent/mailpit
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8025
+        - containerPort: 1025
+        env:
+        - name: MP_MAX_MESSAGES
+          value: "25000"
+        - name: MP_DATA_FILE
+          value: "/data/mailpit.db"
+        - name: MP_SMTP_AUTH_ACCEPT_ANY
+          value: "1"
+        - name: MP_SMTP_AUTH_ALLOW_INSECURE
+          value: "1"
+        volumeMounts:
+        - name: mailpit-data
+          mountPath: /data
+      volumes:
+      - name: mailpit-data
+        persistentVolumeClaim:
+          claimName: localdev-mailpit-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: localdev-mailpit
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8025
+      targetPort: 8025
+      name: http
+    - port: 1025
+      targetPort: 1025
+      name: smtp
+  selector:
+    app: mailpit
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: localdev-mailpit-pvc
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

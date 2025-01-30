@@ -1,0 +1,14 @@
+{
+  "extends": "@myapp/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./",
+
+    "esModuleInterop": true,
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext"
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}

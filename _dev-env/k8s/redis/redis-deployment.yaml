@@ -1,0 +1,28 @@
+# this deployment provides a Redis 7 instance.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localdev-redis
+  labels:
+    app: localdev-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localdev-redis
+  template:
+    metadata:
+      labels:
+        app: localdev-redis
+    spec:
+      containers:
+        - name: localdev-redis
+          image: valkey/valkey:7
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          ports:
+            - containerPort: 6379
+              name: redis

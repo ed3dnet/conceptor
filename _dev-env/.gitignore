@@ -1,0 +1,4 @@
+!kustomization.yaml
+cloudflared/*.json
+cloudflared/*.yaml
+!cloudflared/domains.json

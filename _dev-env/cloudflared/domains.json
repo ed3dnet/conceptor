@@ -1,0 +1,27 @@
+{
+  "panel": {
+    "subdomain": "panel",
+    "service": "http://localhost:42003"
+  },
+  "api": {
+    "subdomain": "api",
+    "service": "http://localhost:42001"
+  },
+  "hosted": {
+    "subdomain": "hosted",
+    "service": "http://localhost:42002"
+  },
+  "hostedplus": {
+    "subdomain": "hostedplus",
+    "service": "http://localhost:42002"
+  },
+  "labeler": {
+    "subdomain": "labeler",
+    "service": "http://localhost:42004"
+  },
+
+  "s3": {
+    "subdomain": "s3",
+    "service": "http://localhost:42040"
+  }
+}

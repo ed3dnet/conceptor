@@ -1,0 +1,17 @@
+{
+  "name": "dev-env",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {},
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.1"
+  },
+  "dependencies": {
+    "@eropple/find-up": "^0.1.0",
+    "enquirer": "^2.4.1",
+    "inquirer": "^12.2.0",
+    "js-yaml": "^4.1.0"
+  }
+}

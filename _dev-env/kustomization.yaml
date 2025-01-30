@@ -1,0 +1,9 @@
+resources:
+  # - k8s/front-door
+  - k8s/redis
+  - k8s/mailpit
+  - k8s/temporal
+  - k8s/minio
+  - k8s/postgres
+
+configMapGenerator: []

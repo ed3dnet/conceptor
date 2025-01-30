@@ -1,0 +1,1 @@
+ALTER TABLE "user_magic_links" DROP CONSTRAINT "user_magic_links_userId_unique";

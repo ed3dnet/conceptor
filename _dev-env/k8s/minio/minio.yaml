@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: localdev-minio-secret
+type: Opaque
+stringData:
+  MINIO_ROOT_USER: miniominio
+  MINIO_ROOT_PASSWORD: miniominio
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: localdev-minio-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/localdev-minio
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: localdev-minio-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: localdev-minio-service
+spec:
+  selector:
+    app: localdev-minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+    - name: console
+      port: 9001
+      targetPort: 9001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localdev-minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localdev-minio
+  template:
+    metadata:
+      labels:
+        app: localdev-minio
+    spec:
+      containers:
+        - name: localdev-minio
+          image: minio/minio:latest
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":9001"
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: localdev-minio-secret
+                  key: MINIO_ROOT_USER
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: localdev-minio-secret
+                  key: MINIO_ROOT_PASSWORD
+          volumeMounts:
+            - mountPath: /data
+              name: minio-storage
+      volumes:
+        - name: minio-storage
+          persistentVolumeClaim:
+            claimName: localdev-minio-pvc

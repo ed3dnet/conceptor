@@ -1,0 +1,37 @@
+{
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@zxcvbn-ts/core": "^3.0.4",
+    "@zxcvbn-ts/language-common": "^3.0.4",
+    "@zxcvbn-ts/language-en": "^3.0.2",
+    "@zxcvbn-ts/matcher-pwned": "^3.0.4",
+    "ajv": "^8.17.1",
+    "ajv-errors": "^3.0.0",
+    "ajv-formats": "^3.0.1",
+    "luxon": "^3.5.0",
+    "simple-git": "^3.27.0",
+    "ulidx": "^2.4.1"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "devDependencies": {
+    "@myapp/typescript-config": "workspace:*",
+    "@sinclair/typebox": "0.34.13",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0"
+  },
+  "peerDependencies": {
+    "@sinclair/typebox": "0.34.11",
+    "pino": "^9.4.0",
+    "pino-pretty": "^11.2.2"
+  },
+  "main": "src/index.ts",
+  "name": "@myapp/shared-universal",
+  "type": "module",
+  "types": "src/index.ts",
+  "version": "0.0.1"
+}

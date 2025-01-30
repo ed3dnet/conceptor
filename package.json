@@ -1,0 +1,48 @@
+{
+  "name": "@myapp/workspace",
+  "version": "1.0.0",
+  "private": true,
+  "pnpm": {
+    "workspaces": [
+      "apps/*",
+      "packages/*",
+      "_dev-env"
+    ],
+    "patchedDependencies": {
+      "redlock": "patches/redlock.patch"
+    }
+  },
+  "scripts": {
+    "run:dev": "dotenvx run -f ./.env.development --",
+    "svc:up": "pnpm run:dev tilt up",
+    "svc:down": "pnpm run:dev tilt down",
+    "prepare": "husky",
+    "test": "pnpm run --recursive test",
+    "init:tunnel": "cd _dev-env && pnpm tsx ./scripts/init-cloudflare-tunnel.ts"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^1.2.4",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.17.0",
+    "@stylistic/eslint-plugin": "^2.12.1",
+    "@types/eslint": "^9.6.1",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "nodemon": "^3.1.9",
+    "pnpm": "^9.15.2",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "vite": "^6.0.6",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.32.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "extends": "@myapp/typescript-config/base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}

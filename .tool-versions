@@ -1,0 +1,10 @@
+tilt 0.33.20
+nodejs 22.8.0
+python 3.11.9
+kustomize 5.4.3
+temporal 1.1.1
+postgres 16.3
+redis-cli 7.4.1
+cloudflared 2024.11.1
+yq 4.44.5
+mc 2024-11-17T19-35-25Z
