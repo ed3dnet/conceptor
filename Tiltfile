@@ -74,13 +74,9 @@ if tilt_runmode == 'dev-in-tilt':
     central_dir = "./apps/central"
     studio_port = tilt_port_prefix + '21'
 
-    run_labeler = (os.environ['TILT_RUN_LABELER'] == "1")
-    run_jetstreamer = (os.environ['TILT_RUN_JETSTREAMER'] == "1")
 
     worker_core_count = os.environ['TILT_WORKER_CORE_COUNT']
-    worker_identity_count = os.environ['TILT_WORKER_IDENTITY_COUNT']
     worker_media_count = os.environ['TILT_WORKER_MEDIA_COUNT']
-    worker_atproto_count = os.environ['TILT_WORKER_ATPROTO_COUNT']
 
     # local_resource("cloudflared",
     #     allow_parallel=True,
@@ -129,24 +125,6 @@ if tilt_runmode == 'dev-in-tilt':
         resource_deps=["wait-for-dependencies", "migrate-postgres"],
         labels=["00-app"])
 
-
-    if run_labeler:
-        local_resource("labeler",
-            serve_cmd="pnpm cli:dev atproto-labeler start",
-            serve_dir=central_dir,
-            allow_parallel=True,
-            deps=central_file_deps,
-            resource_deps=["api"],
-            labels=["00-app"])
-
-    if run_jetstreamer:
-        local_resource("jetstreamer",
-            serve_cmd="pnpm cli:dev jetstreamer start",
-            serve_dir=central_dir,
-            allow_parallel=True,
-            deps=central_file_deps,
-            resource_deps=["api"],
-            labels=["00-app"])
 
     for i in range(int(worker_core_count)):
         local_resource("worker-core-" + str(i),
