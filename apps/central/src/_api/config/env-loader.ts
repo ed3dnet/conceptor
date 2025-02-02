@@ -30,10 +30,7 @@ export function loadApiConfigFromEnvNode(): ApiAppConfig {
   const ret: ApiAppConfig = {
     ...loadAppConfigFromEnvNode(),
     ...loadHttpConfigFromEnv(),
-    interop: {
-      tenantPreSharedKey: requireStr("INTEROP__TENANT_PRE_SHARED_KEY"),
-      panelPreSharedKey: requireStr("INTEROP__PANEL_PRE_SHARED_KEY"),
-    },
+    interop: {},
   };
 
   const validate = AJV.compile(ApiAppConfig);

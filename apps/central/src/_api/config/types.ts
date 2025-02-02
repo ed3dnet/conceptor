@@ -5,10 +5,7 @@ import { AppConfig, LogLevel } from "../../_config/types.js";
 
 import { HttpConfig } from "./http-types.js";
 
-export const InteropConfig = Type.Object({
-  tenantPreSharedKey: Type.String(),
-  panelPreSharedKey: Type.String(),
-});
+export const InteropConfig = Type.Object({});
 export type InteropConfig = Static<typeof InteropConfig>;
 
 export const ApiAppConfig = Type.Intersect([

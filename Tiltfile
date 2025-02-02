@@ -104,7 +104,7 @@ if tilt_runmode == 'dev-in-tilt':
         allow_parallel=True,
         dir="./apps/central",
         cmd="pnpm cli:dev db migrate && pnpm cli:dev seed apply",
-        resource_deps=["wait-for-postgres"],
+        resource_deps=["wait-for-dependencies"],
         labels=["03-cmd"])
 
     central_file_deps = [
@@ -122,7 +122,7 @@ if tilt_runmode == 'dev-in-tilt':
             link(os.environ["CENTRAL_URLS__API_BASE_URL"] + "/docs", "OpenAPI Browser"),
             link("https://local.drizzle.studio?port=" + studio_port, "Drizzle Studio")
         ],
-        resource_deps=["wait-for-dependencies", "migrate-postgres"],
+        resource_deps=["migrate-postgres"],
         labels=["00-app"])
 
 

@@ -39,6 +39,13 @@ function loadUrlsConfigFromEnv(): { urls: UrlsConfig } {
   };
 }
 
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Loads configuration for email delivery.
+ *
+ * @returns an object with email delivery configuration
+ */
+/******  31c4ed59-3616-4a70-9f76-407a325bc2f6  *******/
 function loadEmailDeliveryConfigFromEnv() {
   return {
     emailDelivery: {
