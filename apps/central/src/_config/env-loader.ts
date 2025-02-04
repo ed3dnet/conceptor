@@ -3,6 +3,7 @@ import { LogLevelChecker } from "@myapp/shared-universal/config/types.js";
 import { AJV } from "@myapp/shared-universal/utils/ajv.js";
 import { EnsureTypeCheck } from "@myapp/shared-universal/utils/type-utils.js";
 
+import { loadLlmPrompterConfigFromEnv } from "../domain/llm-prompter/config.js";
 import { S3FlavorChecker } from "../domain/object-store/config.js";
 
 import {
@@ -39,13 +40,6 @@ function loadUrlsConfigFromEnv(): { urls: UrlsConfig } {
   };
 }
 
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * Loads configuration for email delivery.
- *
- * @returns an object with email delivery configuration
- */
-/******  31c4ed59-3616-4a70-9f76-407a325bc2f6  *******/
 function loadEmailDeliveryConfigFromEnv() {
   return {
     emailDelivery: {
@@ -172,6 +166,8 @@ export function normalAppConfig(): AppConfig {
     ...loadVaultConfigFromEnv(),
     ...loadS3ConfigFromEnv(),
     ...loadEmailDeliveryConfigFromEnv(),
+
+    ...loadLlmPrompterConfigFromEnv(),
   };
 }
 

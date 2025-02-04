@@ -74,13 +74,6 @@ Types coming off of these requests are independently exported types. They exist 
 - The `TemporalDispatcher` is a wrapper that only allows workflows to be invoked on the correct queue: core, identity, media, and atproto.
 - Workflows need to be registered in the correct file for its queue, for example: `apps/central/src/_worker/workflows/identity/index.ts`
 
-### Panel
-- The `Panel` app is a SvelteKit app. It is NOT a Svelte app. Use SvelteKit version 4 idioms and functions.
-- Components should follow a clear separation between:
-  - Pure presentational components that take props
-  - Layout/page files that act as "mounters", connecting data and state to the presentational components
-  - State updates through either callback props or Svelte's event dispatch system
-
 ## Parts of the system that are done
 We want to keep the list here up to date. When we've finished a feature, suggest to your user that it be added here.
 
@@ -100,3 +93,5 @@ When you ask for them, separate them by two separate lines (because you're writi
 - In your first response:
   - Do not summarize what you have learned from this file. Your operator already knows.
   - Ask your user to provide your core files if not already provided.
+- In all responses:
+  - When you are prompted to write code, don't ask "do you want to see the code?". Just do it.

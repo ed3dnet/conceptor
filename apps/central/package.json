@@ -14,6 +14,7 @@
     "pg:generate": "pnpm run:dev pnpm drizzle-kit generate --name"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.3",
     "@atcute/bluesky": "^1.0.11",
     "@atcute/cbor": "^2.0.1",
     "@atcute/client": "^2.0.6",
@@ -29,6 +30,8 @@
     "@fastify/type-provider-typebox": "^5.1.0",
     "@fastify/under-pressure": "9.0.2",
     "@fastify/websocket": "^11.0.1",
+    "@langchain/anthropic": "^0.3.12",
+    "@langchain/core": "^0.3.37",
     "@myapp/shared-universal": "workspace:*",
     "@myapp/temporal-client": "workspace:*",
     "@noble/curves": "^1.7.0",
@@ -54,6 +57,7 @@
     "handlebars": "^4.7.8",
     "ioredis": "^5.4.2",
     "js-yaml": "^4.1.0",
+    "langchain": "^0.3.15",
     "lodash": "^4.17.21",
     "mime-types": "^2.1.35",
     "minio": "^8.0.3",

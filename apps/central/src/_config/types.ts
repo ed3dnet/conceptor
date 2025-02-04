@@ -3,6 +3,7 @@ import { TemporalConfig } from "@myapp/temporal-client/config.js";
 import { type Static, Type } from "@sinclair/typebox";
 
 import { EmailDeliveryConfig } from "../domain/email-delivery/config.js";
+import { LlmPrompterConfig } from "../domain/llm-prompter/config.js";
 import { S3Config } from "../domain/object-store/config.js";
 import { VaultConfig } from "../domain/vault/config.js";
 import { MemorySWRConfig } from "../lib/datastores/memory-swr.js";
@@ -49,6 +50,8 @@ export const AppConfig = Type.Intersect([
     s3: S3Config,
     postgres: PostgresConfig,
     vault: VaultConfig,
+
+    llmPrompter: LlmPrompterConfig,
   }),
 ]);
 export type AppConfig = Static<typeof AppConfig>;
