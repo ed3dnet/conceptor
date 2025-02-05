@@ -3,13 +3,11 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { Image } from "@atproto/api/dist/client/types/app/bsky/embed/images.js";
 import {
   ResourceNotFoundError,
   ForbiddenError,
   InternalServerError,
 } from "@myapp/shared-universal/errors/index.js";
-import { type TemporalClientService } from "@myapp/temporal-client";
 import { eq, sql } from "drizzle-orm";
 import { type Logger } from "pino";
 
@@ -31,12 +29,7 @@ import { convertToAvif, optimizeAvif } from "./processing/optimize-avif.js";
 import { convertToJpeg, optimizeJpeg } from "./processing/optimize-jpeg.js";
 import { optimizePng } from "./processing/optimize-png.js";
 import { convertToWebp, optimizeWebp } from "./processing/optimize-webp.js";
-import {
-  type ImageRenditionFormat,
-  type ImageLinkSet,
-  type ImageSet,
-  type ImageUsage,
-} from "./schemas.js";
+import { type ImageLinkSet, type ImageUsage } from "./schemas.js";
 import { processImageWorkflow } from "./workflows/process-image.js";
 
 export class ImagesService {
