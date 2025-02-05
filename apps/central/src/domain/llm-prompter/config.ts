@@ -33,7 +33,7 @@ export function loadClaudeAnthropicStrategyFromEnv(prefix: string) {
   return {
     kind: "claude-anthropic" as const,
     anthropicApiKey: requireStr(`${prefix}__ANTHROPIC_API_KEY`),
-    model: getStr(`${prefix}__MODEL`, "claude-3-sonnet-20240229"),
+    model: getStr(`${prefix}__MODEL`, "claude-3-5-sonnet-20241022"),
     temperature: parseFloat(getStr(`${prefix}__TEMPERATURE`, "0.7")),
     maxTokens: parseInt(getStr(`${prefix}__MAX_TOKENS`, "2000"), 10),
   };

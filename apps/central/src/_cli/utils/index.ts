@@ -4,12 +4,14 @@ import { createVaultKeyCommand } from "./create-vault-key.js";
 import { generatePasetoAsymmetricKeysCommand } from "./generate-paseto-asymmetric-keys.js";
 import { generatePasetoSymmetricKeysCommand } from "./generate-paseto-symmetric-keys.js";
 import { printOpenapiCommand } from "./print-openapi.js";
+import { queryLlmCommand } from "./query-llm.js";
 
 const subs = [
   printOpenapiCommand,
   generatePasetoAsymmetricKeysCommand,
   generatePasetoSymmetricKeysCommand,
   createVaultKeyCommand,
+  queryLlmCommand,
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export const UTILS_CLI = subcommands({

@@ -11,6 +11,7 @@
     "cli:dev": "pnpm run:dev tsx ./src/_cli/entry-point.ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run -c ./vitest-integration.config.ts",
     "pg:generate": "pnpm run:dev pnpm drizzle-kit generate --name"
   },
   "dependencies": {

@@ -9,7 +9,7 @@ export default defineConfig({
     root: "./src",
 
     // Configure test file matching pattern
-    include: ["**/*.test.ts"],
+    include: ["**/*.integration-test.ts"],
 
     // Enable coverage reporting using v8
     coverage: {
@@ -29,6 +29,6 @@ export default defineConfig({
 
     // Helpful reporting options
     reporters: ["default"],
-    outputFile: "./test-results.json",
+    outputFile: "./test-results-integration.json",
   },
 });

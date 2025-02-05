@@ -39,6 +39,11 @@ export class LlmPrompterService {
     }
   }
 
+  async immediateQuery(connectorName: LlmModelConnectorName, prompt: string) {
+    const model = this.getModel(connectorName);
+    return model.invoke([{ role: "user", content: prompt }]);
+  }
+
   async createConversation(
     tenantId: string,
     connectorName: LlmModelConnectorName,

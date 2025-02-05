@@ -16,6 +16,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
@@ -163,6 +164,86 @@ export const LLM_CONVERSATION_MESSAGES = pgTable(
       conversationOrder: index(
         "llm_conversation_messages_conversation_order_idx",
       ).on(t.conversationId, t.orderIndex),
+    },
+  ],
+);
+
+export const AUTH_CONNECTOR_TYPE = pgEnum("auth_connector_type", [
+  "saml",
+  "openid",
+]);
+
+export const AUTH_CONNECTORS = pgTable(
+  "auth_connectors",
+  {
+    connectorId: ULIDAsUUID().primaryKey(),
+    tenantId: uuid()
+      .references(() => TENANTS.tenantId)
+      .notNull(),
+
+    type: AUTH_CONNECTOR_TYPE("type").notNull(),
+    name: text("name").notNull(),
+    config: jsonb("config")
+      .$type<Sensitive<Record<string, unknown>>>()
+      .notNull(),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      tenantIdx: index("auth_connector_tenant_idx").on(t.tenantId),
+    },
+  ],
+);
+
+export const EMPLOYEES = pgTable(
+  "employees",
+  {
+    employeeId: ULIDAsUUID().primaryKey(),
+    tenantId: uuid()
+      .references(() => TENANTS.tenantId)
+      .notNull(),
+    connectorId: uuid()
+      .references(() => AUTH_CONNECTORS.connectorId)
+      .notNull(),
+
+    email: text("email").notNull(),
+    displayName: text("display_name").notNull(),
+    avatarUrl: text("avatar_url"),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      tenantIdx: index("employee_tenant_idx").on(t.tenantId),
+      emailIdx: index("employee_email_idx").on(t.email),
+      uniqueEmail: unique("employee_tenant_email_unique").on(
+        t.tenantId,
+        t.email,
+      ),
+    },
+  ],
+);
+
+export const EMPLOYEE_EXTERNAL_IDS = pgTable(
+  "employee_external_ids",
+  {
+    employeeId: uuid()
+      .references(() => EMPLOYEES.employeeId)
+      .notNull(),
+    externalIdType: text("external_id_type").notNull(),
+    externalId: text("external_id").notNull(),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      pk: primaryKey({ columns: [t.employeeId, t.externalIdType] }),
+      employeeIdx: index("employee_external_ids_employee_idx").on(t.employeeId),
+      lookupIdx: index("employee_external_ids_lookup_idx").on(
+        t.externalIdType,
+        t.externalId,
+      ),
     },
   ],
 );

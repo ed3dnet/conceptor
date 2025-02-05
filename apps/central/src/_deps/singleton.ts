@@ -30,6 +30,7 @@ import type { DeepReadonly } from "utility-types";
 import { type AppConfig } from "../_config/types.js";
 import { createMailTransport } from "../domain/email-delivery/factory.js";
 import { ImagesService } from "../domain/images/service.js";
+import { LlmPrompterService } from "../domain/llm-prompter/service.js";
 import {
   buildMinioClient,
   ObjectStoreService,
@@ -80,6 +81,7 @@ export type AppBaseCradleItems = {
   zxcvbn: Zxcvbn;
 
   images: ImagesService;
+  llmPrompter: LlmPrompterService;
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
 
@@ -221,6 +223,11 @@ export async function configureBaseAwilixContainer(
           s3,
           vault,
         ),
+    ),
+
+    llmPrompter: asFunction(
+      ({ logger, config, db, vault }: AppSingletonCradle) =>
+        new LlmPrompterService(logger, config.llmPrompter, db, vault),
     ),
   });
 
