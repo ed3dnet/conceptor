@@ -176,7 +176,7 @@ export const AUTH_CONNECTOR_TYPE = pgEnum("auth_connector_type", [
 export const AUTH_CONNECTORS = pgTable(
   "auth_connectors",
   {
-    connectorId: ULIDAsUUID().primaryKey(),
+    authConnectorId: ULIDAsUUID().primaryKey(),
     tenantId: uuid()
       .references(() => TENANTS.tenantId)
       .notNull(),
@@ -204,10 +204,9 @@ export const EMPLOYEES = pgTable(
       .references(() => TENANTS.tenantId)
       .notNull(),
     connectorId: uuid()
-      .references(() => AUTH_CONNECTORS.connectorId)
+      .references(() => AUTH_CONNECTORS.authConnectorId)
       .notNull(),
 
-    email: text("email").notNull(),
     displayName: text("display_name").notNull(),
     avatarUrl: text("avatar_url"),
 
@@ -216,11 +215,28 @@ export const EMPLOYEES = pgTable(
   (t) => [
     {
       tenantIdx: index("employee_tenant_idx").on(t.tenantId),
-      emailIdx: index("employee_email_idx").on(t.email),
-      uniqueEmail: unique("employee_tenant_email_unique").on(
-        t.tenantId,
-        t.email,
-      ),
+    },
+  ],
+);
+
+export const EMPLOYEE_EMAILS = pgTable(
+  "employee_emails",
+  {
+    employeeId: uuid()
+      .references(() => EMPLOYEES.employeeId)
+      .notNull(),
+    email: text("email").notNull(),
+    isPrimary: boolean("is_primary").notNull().default(false),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      pk: primaryKey({ columns: [t.employeeId, t.email] }),
+      employeeIdx: index("employee_emails_employee_idx").on(t.employeeId),
+      emailIdx: index("employee_emails_lookup_idx").on(t.email),
+      // Ensure email is unique within a tenant (need to join with EMPLOYEES)
+      uniqueEmail: unique("employee_emails_tenant_email_unique").on(t.email),
     },
   ],
 );
