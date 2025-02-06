@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1735873982961,
-      "tag": "0000_initialTables",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1735875999375,
-      "tag": "0001_removeUniqueFromMagicLinks",
+      "when": 1738784762000,
+      "tag": "0000_base_tables",
       "breakpoints": true
     }
   ]
