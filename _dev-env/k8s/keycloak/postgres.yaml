@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: localdev-keycloak-postgres
+spec:
+  serviceName: localdev-keycloak-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localdev-keycloak-postgres
+  template:
+    metadata:
+      labels:
+        app: localdev-keycloak-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+            - name: POSTGRES_DB
+              value: keycloak
+            - name: POSTGRES_USER
+              value: keycloak
+            - name: POSTGRES_PASSWORD
+              value: keycloak
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: localdev-keycloak-postgres
+spec:
+  selector:
+    app: localdev-keycloak-postgres
+  ports:
+    - port: 5432

@@ -177,3 +177,7 @@ if tilt_runmode == 'dev-in-tilt':
             os.environ["FRONTEND_BASE_URL"],
         ],
         labels=["00-app"])
+
+    k8s_resource('localdev-keycloak', 
+        port_forwards=[tilt_port_prefix + '50:8080'], 
+        labels=["98-svc"])
