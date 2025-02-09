@@ -1,8 +1,8 @@
 import { command, option, string, optional, number } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
-import { type LlmModelConnectorName } from "../../domain/llm-prompter/config.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
+import { type LlmModelConnectorName } from "../../lib/functional/llm-prompter/config.js";
 
 export const queryLlmCommand = command({
   name: "query-llm",

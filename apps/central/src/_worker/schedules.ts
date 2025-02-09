@@ -1,7 +1,7 @@
 import { type TemporalQueueConfig } from "@myapp/temporal-client/config.js";
 import { type CompiledScheduleOptions } from "@temporalio/client";
 
-import { vacuumUploadsWorkflow } from "../domain/images/workflows/vacuum-uploads.js";
+import { vacuumUploadsWorkflow } from "../lib/functional/images/workflows/vacuum-uploads.js";
 
 export type WorkerSchedule = Omit<
   CompiledScheduleOptions,

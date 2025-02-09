@@ -1,1 +1,1 @@
-export * from "../../../domain/images/workflows/index.js";
+export * from "../../../lib/functional/images/workflows/index.js";

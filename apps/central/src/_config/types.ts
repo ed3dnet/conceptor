@@ -2,12 +2,12 @@ import { LogLevel } from "@myapp/shared-universal/config/types.js";
 import { TemporalConfig } from "@myapp/temporal-client/config.js";
 import { type Static, Type } from "@sinclair/typebox";
 
-import { EmailDeliveryConfig } from "../domain/email-delivery/config.js";
-import { LlmPrompterConfig } from "../domain/llm-prompter/config.js";
-import { S3Config } from "../domain/object-store/config.js";
-import { VaultConfig } from "../domain/vault/config.js";
 import { MemorySWRConfig } from "../lib/datastores/memory-swr.js";
 import { PostgresConfig } from "../lib/datastores/postgres/config.server.js";
+import { EmailDeliveryConfig } from "../lib/functional/email-delivery/config.js";
+import { LlmPrompterConfig } from "../lib/functional/llm-prompter/config.js";
+import { S3Config } from "../lib/functional/object-store/config.js";
+import { VaultConfig } from "../lib/functional/vault/config.js";
 
 export { LogLevel };
 

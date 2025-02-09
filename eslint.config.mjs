@@ -18,7 +18,7 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 });
 
-function legacyPlugin(name, alias = name) {
+export function legacyPlugin(name, alias = name) {
   const plugin = compat.plugins(name)[0]?.plugins?.[alias];
 
   if (!plugin) {

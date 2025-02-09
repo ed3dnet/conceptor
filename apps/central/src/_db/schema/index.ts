@@ -24,7 +24,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
-import { type Sensitive } from "../../domain/vault/schemas.js";
+import { type Sensitive } from "../../lib/functional/vault/schemas.js";
 
 // ---------- HELPER TYPES ---------------------- //
 export const ULIDAsUUID = (columnName?: string) =>
@@ -49,6 +49,8 @@ export const S3_LOCATOR_MIXIN = {
 // ---------------------- USERS ---------------------- //
 export const TENANTS = pgTable("tenants", {
   tenantId: ULIDAsUUID().primaryKey(),
+  slug: text("slug").notNull(),
+  displayName: text("display_name").notNull(),
 });
 
 // ------------ IMAGE UPLOADS ------------- //
@@ -196,6 +198,24 @@ export const AUTH_CONNECTORS = pgTable(
   ],
 );
 
+// export const SERVICE_ACCOUNTS = pgTable("service_accounts", {
+//   serviceAccountId: ULIDAsUUID().primaryKey(),
+//   tenantId: uuid()
+//     .references(() => TENANTS.tenantId)
+//     .notNull(),
+
+//   displayName: text("display_name").notNull(),
+
+//   // argon2 hash of the client secret
+//   apiSecret: text("api_secret").notNull(),
+
+//   lastAccessedAt: timestamp("last_accessed_at", {
+//     withTimezone: true,
+//     mode: "date",
+//   }).notNull(),
+//   ...TIMESTAMPS_MIXIN,
+// });
+
 export const EMPLOYEES = pgTable(
   "employees",
   {
@@ -210,6 +230,10 @@ export const EMPLOYEES = pgTable(
     displayName: text("display_name").notNull(),
     avatarUrl: text("avatar_url"),
 
+    lastAccessedAt: timestamp("last_accessed_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -217,6 +241,16 @@ export const EMPLOYEES = pgTable(
       tenantIdx: index("employee_tenant_idx").on(t.tenantId),
     },
   ],
+);
+
+export const EMPLOYEE_SYSTEM_PERMISSIONS = pgTable(
+  "employee_system_permissions",
+  {
+    employeeId: uuid()
+      .references(() => EMPLOYEES.employeeId)
+      .notNull(),
+    permission: text("permission").notNull(),
+  },
 );
 
 export const EMPLOYEE_EMAILS = pgTable(

@@ -1,8 +1,8 @@
 import { command, positional, string } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
-import { type ImageUsage } from "../../domain/images/schemas.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
+import { type ImageUsage } from "../../lib/functional/images/schemas.js";
 
 export const createImageUploadCommand = command({
   name: "create-image-upload",

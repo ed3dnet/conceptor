@@ -3,8 +3,8 @@ import { LogLevelChecker } from "@myapp/shared-universal/config/types.js";
 import { AJV } from "@myapp/shared-universal/utils/ajv.js";
 import { EnsureTypeCheck } from "@myapp/shared-universal/utils/type-utils.js";
 
-import { loadLlmPrompterConfigFromEnv } from "../domain/llm-prompter/config.js";
-import { S3FlavorChecker } from "../domain/object-store/config.js";
+import { loadLlmPrompterConfigFromEnv } from "../lib/functional/llm-prompter/config.js";
+import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
 
 import {
   getBool,

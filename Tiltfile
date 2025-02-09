@@ -168,12 +168,16 @@ if tilt_runmode == 'dev-in-tilt':
     #     ],
     #     labels=["00-app"])
 
-    # local_resource("panel-site",
-    #     serve_dir="./apps/site-panel",
-    #     serve_cmd="pnpm dev",
-    #     allow_parallel=True,
-    #     resource_deps=["api", "api-client"],
-    #     links=[
-    #         os.environ["PANEL_BASE_URL"],
-    #     ],
-    #     labels=["00-app"])
+    local_resource("frontend-site",
+        serve_dir="./apps/frontend",
+        serve_cmd="pnpm dev",
+        allow_parallel=True,
+        resource_deps=["api", "api-client"],
+        links=[
+            os.environ["FRONTEND_BASE_URL"],
+        ],
+        labels=["00-app"])
+
+    k8s_resource('localdev-keycloak', 
+        port_forwards=[tilt_port_prefix + '50:8080'], 
+        labels=["98-svc"])

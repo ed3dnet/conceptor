@@ -1,6 +1,6 @@
 import { command } from "cmd-ts";
 
-import { generateVaultKey } from "../../domain/vault/helpers.js";
+import { generateVaultKey } from "../../lib/functional/vault/helpers.js";
 
 export const createVaultKeyCommand = command({
   name: "create-vault-key",

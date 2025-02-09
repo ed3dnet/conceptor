@@ -28,17 +28,6 @@ import type { StaleWhileRevalidate } from "stale-while-revalidate-cache";
 import type { DeepReadonly } from "utility-types";
 
 import { type AppConfig } from "../_config/types.js";
-import { createMailTransport } from "../domain/email-delivery/factory.js";
-import { ImagesService } from "../domain/images/service.js";
-import { LlmPrompterService } from "../domain/llm-prompter/service.js";
-import {
-  buildMinioClient,
-  ObjectStoreService,
-  type MinioClient,
-} from "../domain/object-store/service.js";
-import { TemporalDispatcher } from "../domain/temporal-dispatcher/index.js";
-import { VaultKeyStore } from "../domain/vault/keystore.js";
-import { VaultService } from "../domain/vault/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
 import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.server.js";
 import { buildDrizzleLogger } from "../lib/datastores/postgres/query-logger.server.js";
@@ -47,6 +36,17 @@ import {
   type DrizzleRO,
 } from "../lib/datastores/postgres/types.server.js";
 import { buildRedisSWRCache } from "../lib/datastores/redis/swr.js";
+import { createMailTransport } from "../lib/functional/email-delivery/factory.js";
+import { ImagesService } from "../lib/functional/images/service.js";
+import { LlmPrompterService } from "../lib/functional/llm-prompter/service.js";
+import {
+  buildMinioClient,
+  ObjectStoreService,
+  type MinioClient,
+} from "../lib/functional/object-store/service.js";
+import { TemporalDispatcher } from "../lib/functional/temporal-dispatcher/index.js";
+import { VaultKeyStore } from "../lib/functional/vault/keystore.js";
+import { VaultService } from "../lib/functional/vault/service.js";
 
 // eslint-disable-next-line no-restricted-globals
 const globalFetch = fetch;

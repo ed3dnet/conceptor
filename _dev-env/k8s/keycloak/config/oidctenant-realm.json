@@ -1,0 +1,28 @@
+{
+  "realm": "oidctenant",
+  "enabled": true,
+  "displayName": "OIDC Example Tenant",
+  "users": [
+    {
+      "username": "oidcuser",
+      "email": "user@oidctenant.example.net",
+      "enabled": true,
+      "credentials": [{
+        "type": "password",
+        "value": "oidcpass",
+        "temporary": false
+      }]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "conceptor-oidc",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "redirectUris": ["https://oidctenant.example.net/*"],
+      "secret": "oidc-client-secret",
+      "standardFlowEnabled": true
+    }
+  ]
+}

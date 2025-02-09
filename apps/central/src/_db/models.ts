@@ -11,6 +11,10 @@ import {
   type IMAGE_UPLOADS,
   type LLM_CONVERSATIONS,
   type LLM_CONVERSATION_MESSAGES,
+  type EMPLOYEES,
+  type EMPLOYEE_EMAILS,
+  type EMPLOYEE_SYSTEM_PERMISSIONS,
+  type EMPLOYEE_EXTERNAL_IDS,
 } from "./schema/index.js";
 
 export type DBSeed = InferSelectModel<typeof SEEDS>;
@@ -23,4 +27,13 @@ export type DBImageUpload = InferSelectModel<typeof IMAGE_UPLOADS>;
 export type DBLLMConversation = InferSelectModel<typeof LLM_CONVERSATIONS>;
 export type DBLLMConversationMessage = InferSelectModel<
   typeof LLM_CONVERSATION_MESSAGES
+>;
+
+export type DBEmployee = InferSelectModel<typeof EMPLOYEES>;
+export type DBEmployeeSystemPermission = InferSelectModel<
+  typeof EMPLOYEE_SYSTEM_PERMISSIONS
+>;
+export type DBEmployeeEmail = InferSelectModel<typeof EMPLOYEE_EMAILS>;
+export type DBEmployeeExternalId = InferSelectModel<
+  typeof EMPLOYEE_EXTERNAL_IDS
 >;

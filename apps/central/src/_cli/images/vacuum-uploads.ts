@@ -1,8 +1,8 @@
 import { command } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
-import { vacuumUploadsWorkflow } from "../../domain/images/workflows/vacuum-uploads.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
+import { vacuumUploadsWorkflow } from "../../lib/functional/images/workflows/vacuum-uploads.js";
 
 export const vacuumUploadsCommand = command({
   name: "vacuum-uploads",
