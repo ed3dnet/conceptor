@@ -4,12 +4,12 @@
   "displayName": "OIDC Example Tenant",
   "users": [
     {
-      "username": "oidcuser",
-      "email": "user@oidctenant.example.net",
+      "username": "testbob",
+      "email": "bob@oidctenant.example.net",
       "enabled": true,
       "credentials": [{
         "type": "password",
-        "value": "oidcpass",
+        "value": "password",
         "temporary": false
       }]
     }
@@ -20,7 +20,7 @@
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
-      "redirectUris": ["https://oidctenant.example.net/*"],
+      "redirectUris": ["*"],
       "secret": "oidc-client-secret",
       "standardFlowEnabled": true
     }

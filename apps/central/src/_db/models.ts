@@ -15,6 +15,8 @@ import {
   type EMPLOYEE_EMAILS,
   type EMPLOYEE_SYSTEM_PERMISSIONS,
   type EMPLOYEE_EXTERNAL_IDS,
+  type AUTH_CONNECTORS,
+  type AUTH_CONNECTOR_DOMAINS,
 } from "./schema/index.js";
 
 export type DBSeed = InferSelectModel<typeof SEEDS>;
@@ -36,4 +38,9 @@ export type DBEmployeeSystemPermission = InferSelectModel<
 export type DBEmployeeEmail = InferSelectModel<typeof EMPLOYEE_EMAILS>;
 export type DBEmployeeExternalId = InferSelectModel<
   typeof EMPLOYEE_EXTERNAL_IDS
+>;
+
+export type DBAuthConnector = InferSelectModel<typeof AUTH_CONNECTORS>;
+export type DBAuthConnectorDomain = InferSelectModel<
+  typeof AUTH_CONNECTOR_DOMAINS
 >;

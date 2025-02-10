@@ -58,10 +58,20 @@ const response = await $apiClientStore.GET("/external-identities/oauth2/{provide
 
 Types coming off of these requests are independently exported types. They exist at  `import { schemas } from "@myapp/central-client";` and reference `schemas["MyType"]`, but they're aliased, so you can just do `import { MyType } from "@myapp/central-client";`.
 
+### Development Environment/k8s ###
+- When using k8s resources in Tilt, if you don't explicitly create a `PersistentVolume`, Tilt won't clean it up on teardown. Always use a `PersistentVolumeClaim` and a `PersistentVolume`.
 
 ### Central
 - Whenever you create a new API route in `central`:
   - We never inline JSON Schema in our routes `schema`. We always create a Typebox schema (wrapped with `schemaType`) and reference it in our Fastify route.
+- When creating an object with `@sinclair/typebox`, whether it uses `schemaType` or not, name sure to remeber to do `export type MyType = Schema<typeof MyTypeSchema>;` after it.
+- Rules about Service objects:
+  - The logger for the service should always be `this.logger = logger.child({ component: this.constructor.name });`.
+  - Don't re-alias types from the database schema to your service, e.g. if there's a `DBTenant` in `models.ts` don't re-export it in TenantService.
+  - Remember that database calls in a Service should take a `Drizzle` or `DrizzleRO` `executor`, defaulting to `this.db` / `this.dbRO` if one isn't provided, UNLESS it is a fully encapsulated set of steps. If it is fully encapsulated, omit the `executor` parameter but prefix the method with `TX_`.
+  - When making getters for a service, we should generally also include a `withObjectByField` method (e.g., `withTenantByTenantId`) that also takes a function to run when the object is found. Those should throw a `NotFoundError` if the object is not found.
+  - Services will often need to create their own DTOs. Don't append `Schema` or `DTO` to these. Instead, use a suffix that makes it clear who the audience is. `Public` contains no sensitive information. `Private` contains information that is only visible to the resource owner (e.g., the user who IS the resource). If no suffix is used, it may be shared with other employees/users in the same tenant.
+  - When creating a new resource, check for the existence of a resource with the same name before creating it. If it exists, throw a `ConflictError`.
 
 ### Temporal
 - We use Temporal to handle long-running jobs. They run from a separate instance of the same container as the API server, and in the same NPM package.

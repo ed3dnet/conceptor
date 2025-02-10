@@ -28,6 +28,8 @@ import type { StaleWhileRevalidate } from "stale-while-revalidate-cache";
 import type { DeepReadonly } from "utility-types";
 
 import { type AppConfig } from "../_config/types.js";
+import { AuthConnectorService } from "../domain/auth-connectors/service.js";
+import { TenantService } from "../domain/tenants/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
 import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.server.js";
 import { buildDrizzleLogger } from "../lib/datastores/postgres/query-logger.server.js";
@@ -56,8 +58,6 @@ export type AppBaseCradleItems = {
   logger: Logger;
   fetch: FetchFn;
 
-  testGizmo: () => void;
-
   dbROPool: pg.Pool;
   dbPool: pg.Pool;
 
@@ -68,6 +68,9 @@ export type AppBaseCradleItems = {
   redisSWR: StaleWhileRevalidate;
   memorySWR: StaleWhileRevalidate;
 
+  zxcvbn: Zxcvbn;
+
+  // lib and framework objects
   temporalClient: TemporalClient;
   temporal: TemporalClientService;
   temporalDispatch: TemporalDispatcher;
@@ -76,12 +79,12 @@ export type AppBaseCradleItems = {
   s3: ObjectStoreService;
   vaultKeyStore: VaultKeyStore;
   vault: VaultService;
-
-  // domain objects below here
-  zxcvbn: Zxcvbn;
-
   images: ImagesService;
   llmPrompter: LlmPrompterService;
+
+  // domain objects below here
+  tenants: TenantService;
+  authConnectors: AuthConnectorService;
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
 
@@ -102,10 +105,6 @@ export async function configureBaseAwilixContainer(
     fetch: asFunction(({ logger }: AppSingletonCradle) =>
       loggedFetch(logger, globalFetch),
     ),
-
-    testGizmo: asFunction(({ logger }: AppSingletonCradle) => () => {
-      logger.info("testGizmo");
-    }),
 
     dbROPool: asFunction(({ config, logger }: AppSingletonCradle) => {
       return buildDbPoolFromConfig(
@@ -228,6 +227,16 @@ export async function configureBaseAwilixContainer(
     llmPrompter: asFunction(
       ({ logger, config, db, vault }: AppSingletonCradle) =>
         new LlmPrompterService(logger, config.llmPrompter, db, vault),
+    ),
+
+    // domain objects below here
+    tenants: asFunction(
+      ({ logger, db, dbRO }: AppSingletonCradle) =>
+        new TenantService(logger, db, dbRO),
+    ),
+    authConnectors: asFunction(
+      ({ logger, db, dbRO, vault, fetch }: AppSingletonCradle) =>
+        new AuthConnectorService(logger, db, dbRO, vault, fetch),
     ),
   });
 

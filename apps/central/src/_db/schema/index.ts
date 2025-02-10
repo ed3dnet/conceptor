@@ -1,10 +1,4 @@
-import {
-  type BaseMessage,
-  type SystemMessage,
-  type HumanMessage,
-  type AIMessage,
-  type MessageContent,
-} from "@langchain/core/messages";
+import { type MessageContent } from "@langchain/core/messages";
 import cryptoRandomString from "crypto-random-string";
 import { sql, type SQL } from "drizzle-orm";
 import {
@@ -24,6 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
+import { type OIDCConnectorState } from "../../domain/auth-connectors/schemas/index.js";
 import { type Sensitive } from "../../lib/functional/vault/schemas.js";
 
 // ---------- HELPER TYPES ---------------------- //
@@ -170,11 +165,6 @@ export const LLM_CONVERSATION_MESSAGES = pgTable(
   ],
 );
 
-export const AUTH_CONNECTOR_TYPE = pgEnum("auth_connector_type", [
-  "saml",
-  "openid",
-]);
-
 export const AUTH_CONNECTORS = pgTable(
   "auth_connectors",
   {
@@ -183,17 +173,32 @@ export const AUTH_CONNECTORS = pgTable(
       .references(() => TENANTS.tenantId)
       .notNull(),
 
-    type: AUTH_CONNECTOR_TYPE("type").notNull(),
     name: text("name").notNull(),
-    config: jsonb("config")
-      .$type<Sensitive<Record<string, unknown>>>()
-      .notNull(),
+    state: jsonb("state").$type<Sensitive<OIDCConnectorState>>().notNull(),
 
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
     {
       tenantIdx: index("auth_connector_tenant_idx").on(t.tenantId),
+    },
+  ],
+);
+
+export const AUTH_CONNECTOR_DOMAINS = pgTable(
+  "auth_connector_domains",
+  {
+    authConnectorId: uuid()
+      .references(() => AUTH_CONNECTORS.authConnectorId)
+      .notNull(),
+    domain: text("domain").notNull(),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      pk: primaryKey({ columns: [t.authConnectorId, t.domain] }),
+      domainIdx: index("auth_connector_domains_domain_idx").on(t.domain),
     },
   ],
 );

@@ -5,6 +5,7 @@ import { generatePasetoAsymmetricKeysCommand } from "./generate-paseto-asymmetri
 import { generatePasetoSymmetricKeysCommand } from "./generate-paseto-symmetric-keys.js";
 import { printOpenapiCommand } from "./print-openapi.js";
 import { queryLlmCommand } from "./query-llm.js";
+import { testOpenidConfigCommand } from "./test-openid-config.js";
 
 const subs = [
   printOpenapiCommand,
@@ -12,6 +13,7 @@ const subs = [
   generatePasetoSymmetricKeysCommand,
   createVaultKeyCommand,
   queryLlmCommand,
+  testOpenidConfigCommand,
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export const UTILS_CLI = subcommands({
