@@ -1,7 +1,8 @@
 import { type MessageContent } from "@langchain/core/messages";
 import cryptoRandomString from "crypto-random-string";
-import { sql, type SQL } from "drizzle-orm";
+import { sql, eq, isNull, type SQL } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   doublePrecision,
@@ -9,6 +10,7 @@ import {
   integer,
   jsonb,
   pgEnum,
+  pgMaterializedView,
   pgTable,
   primaryKey,
   text,
@@ -301,4 +303,470 @@ export const EMPLOYEE_EXTERNAL_IDS = pgTable(
       ),
     },
   ],
+);
+
+export const UNIT_TYPE = pgEnum("unit_type", [
+  "individual",
+  "team",
+  "management",
+]);
+
+export const UNIT_PERMISSION_TYPE = pgEnum("unit_permission_type", [
+  "manage_reports",
+  "assign_work",
+  "approve_time_off",
+  "manage_unit",
+  "view_reports",
+]);
+
+export const CAPABILITY_PERMISSION_TYPE = pgEnum("capability_permission_type", [
+  "view",
+  "edit",
+  "assign",
+  "approve",
+  "delete",
+]);
+
+export const INITIATIVE_PERMISSION_TYPE = pgEnum("initiative_permission_type", [
+  "view",
+  "edit",
+  "manage_resources",
+  "approve_changes",
+  "close",
+]);
+
+export const GLOBAL_PERMISSION_TYPE = pgEnum("global_permission_type", [
+  "admin",
+  "audit",
+  "create_units",
+  "create_initiatives",
+  "create_capabilities",
+]);
+
+export const INFORMATION_TYPE = pgEnum("information_type", [
+  "boolean",
+  "gradient",
+  "text",
+]);
+
+export const UNITS = pgTable(
+  "units",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    name: text("name").notNull(),
+    type: UNIT_TYPE("type").notNull(),
+    parentUnitId: uuid("parent_unit_id").references(
+      (): AnyPgColumn => UNITS.id,
+    ),
+
+    description: text("description"),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_units_parent").on(t.parentUnitId),
+    check("valid_parent", sql`${t.id} != ${t.parentUnitId}`),
+  ],
+);
+
+export const UNIT_ASSIGNMENTS = pgTable(
+  "unit_assignments",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    employeeId: uuid("employee_id")
+      .references(() => EMPLOYEES.employeeId)
+      .notNull(),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_unit_assignments_unit").on(t.unitId),
+    index("idx_unit_assignments_employee").on(t.employeeId),
+    index("idx_unit_assignments_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const CAPABILITIES = pgTable("capabilities", {
+  id: ULIDAsUUID().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  ...TIMESTAMPS_MIXIN,
+});
+
+export const INITIATIVES = pgTable(
+  "initiatives",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const UNIT_CAPABILITIES = pgTable(
+  "unit_capabilities",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    capabilityId: uuid("capability_id")
+      .references(() => CAPABILITIES.id)
+      .notNull(),
+    isFormal: boolean("is_formal").notNull().default(false),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_unit_capabilities_unit").on(t.unitId),
+    index("idx_unit_capabilities_capability").on(t.capabilityId),
+    index("idx_unit_capabilities_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const INITIATIVE_CAPABILITIES = pgTable(
+  "initiative_capabilities",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    initiativeId: uuid("initiative_id")
+      .references(() => INITIATIVES.id)
+      .notNull(),
+    capabilityId: uuid("capability_id")
+      .references(() => CAPABILITIES.id)
+      .notNull(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_initiative_capabilities_initiative").on(t.initiativeId),
+    index("idx_initiative_capabilities_capability").on(t.capabilityId),
+    index("idx_initiative_capabilities_unit").on(t.unitId),
+    index("idx_initiative_capabilities_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const UNIT_PERMISSIONS = pgTable(
+  "unit_permissions",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    targetUnitId: uuid("target_unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    permissionType: UNIT_PERMISSION_TYPE("permission_type").notNull(),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_unit_permissions_unit").on(t.unitId),
+    index("idx_unit_permissions_target").on(t.targetUnitId),
+    index("idx_unit_permissions_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const CAPABILITY_PERMISSIONS = pgTable(
+  "capability_permissions",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    targetCapabilityId: uuid("target_capability_id")
+      .references(() => CAPABILITIES.id)
+      .notNull(),
+    permissionType: CAPABILITY_PERMISSION_TYPE("permission_type").notNull(),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_capability_permissions_unit").on(t.unitId),
+    index("idx_capability_permissions_target").on(t.targetCapabilityId),
+    index("idx_capability_permissions_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const INITIATIVE_PERMISSIONS = pgTable(
+  "initiative_permissions",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    targetInitiativeId: uuid("target_initiative_id")
+      .references(() => INITIATIVES.id)
+      .notNull(),
+    permissionType: INITIATIVE_PERMISSION_TYPE("permission_type").notNull(),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_initiative_permissions_unit").on(t.unitId),
+    index("idx_initiative_permissions_target").on(t.targetInitiativeId),
+    index("idx_initiative_permissions_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const GLOBAL_PERMISSIONS = pgTable(
+  "global_permissions",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    permissionType: GLOBAL_PERMISSION_TYPE("permission_type").notNull(),
+    startDate: timestamp("start_date", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    endDate: timestamp("end_date", { withTimezone: true }),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_global_permissions_unit").on(t.unitId),
+    index("idx_global_permissions_dates").on(t.startDate, t.endDate),
+    check(
+      "valid_dates",
+      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
+    ),
+  ],
+);
+
+export const UNIT_INFORMATION = pgTable(
+  "unit_information",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    sourceUnitId: uuid("source_unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    targetUnitId: uuid("target_unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    type: INFORMATION_TYPE("type").notNull(),
+    booleanResponse: boolean("boolean_response"),
+    gradientResponse: doublePrecision("gradient_response"),
+    textResponse: text("text_response"),
+    audioSourceBucket: text("audio_source_bucket"),
+    audioSourceKey: text("audio_source_key"),
+    transcriptionMetadata: jsonb("transcription_metadata"),
+    collectedAt: timestamp("collected_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    relevanceScore: doublePrecision("relevance_score").notNull().default(1.0),
+    manuallyInvalidated: boolean("manually_invalidated")
+      .notNull()
+      .default(false),
+    previousVersionId: uuid("previous_version_id").references(
+      (): AnyPgColumn => UNIT_INFORMATION.id,
+    ),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_unit_information_source").on(t.sourceUnitId),
+    index("idx_unit_information_target").on(t.targetUnitId),
+    index("idx_unit_information_type").on(t.type),
+    index("idx_unit_information_relevance").on(t.relevanceScore),
+    index("idx_unit_information_collected").on(t.collectedAt),
+    check(
+      "valid_response_type",
+      sql`
+    CASE ${t.type}
+      WHEN 'boolean' THEN
+        (${t.booleanResponse} IS NOT NULL AND ${t.gradientResponse} IS NULL AND ${t.textResponse} IS NULL)
+      WHEN 'gradient' THEN
+        (${t.booleanResponse} IS NULL AND ${t.gradientResponse} IS NOT NULL AND ${t.textResponse} IS NULL)
+      WHEN 'text' THEN
+        (${t.booleanResponse} IS NULL AND ${t.gradientResponse} IS NULL AND ${t.textResponse} IS NOT NULL)
+    END
+  `,
+    ),
+    check(
+      "valid_audio_source",
+      sql`
+    (${t.type} != 'text' AND ${t.audioSourceBucket} IS NULL AND ${t.audioSourceKey} IS NULL AND ${t.transcriptionMetadata} IS NULL) OR
+    (${t.type} = 'text' AND (
+      (${t.audioSourceBucket} IS NULL AND ${t.audioSourceKey} IS NULL) OR
+      (${t.audioSourceBucket} IS NOT NULL AND ${t.audioSourceKey} IS NOT NULL)
+    ))
+  `,
+    ),
+  ],
+);
+
+// Now implementing the materialized views for current state queries
+export const CURRENT_UNIT_ASSIGNMENTS = pgMaterializedView(
+  "current_unit_assignments",
+).as((qb) => {
+  return qb
+    .select({
+      unitId: UNIT_ASSIGNMENTS.unitId,
+      employeeId: UNIT_ASSIGNMENTS.employeeId,
+      unitName: UNITS.name,
+      employeeName: EMPLOYEES.displayName,
+      startDate: UNIT_ASSIGNMENTS.startDate,
+    })
+    .from(UNIT_ASSIGNMENTS)
+    .innerJoin(UNITS, eq(UNIT_ASSIGNMENTS.unitId, UNITS.id))
+    .innerJoin(EMPLOYEES, eq(UNIT_ASSIGNMENTS.employeeId, EMPLOYEES.employeeId))
+    .where(isNull(UNIT_ASSIGNMENTS.endDate));
+});
+
+export const CURRENT_UNIT_CAPABILITIES = pgMaterializedView(
+  "current_unit_capabilities",
+).as((qb) => {
+  return qb
+    .select({
+      unitId: UNIT_CAPABILITIES.unitId,
+      capabilityId: UNIT_CAPABILITIES.capabilityId,
+      unitName: UNITS.name,
+      capabilityName: CAPABILITIES.name,
+      isFormal: UNIT_CAPABILITIES.isFormal,
+      startDate: UNIT_CAPABILITIES.startDate,
+    })
+    .from(UNIT_CAPABILITIES)
+    .innerJoin(UNITS, eq(UNIT_CAPABILITIES.unitId, UNITS.id))
+    .innerJoin(
+      CAPABILITIES,
+      eq(UNIT_CAPABILITIES.capabilityId, CAPABILITIES.id),
+    )
+    .where(isNull(UNIT_CAPABILITIES.endDate));
+});
+
+export const CURRENT_INITIATIVE_CAPABILITIES = pgMaterializedView(
+  "current_initiative_capabilities",
+).as((qb) => {
+  return qb
+    .select({
+      initiativeId: INITIATIVE_CAPABILITIES.initiativeId,
+      capabilityId: INITIATIVE_CAPABILITIES.capabilityId,
+      unitId: INITIATIVE_CAPABILITIES.unitId,
+      initiativeName: INITIATIVES.name,
+      capabilityName: CAPABILITIES.name,
+      unitName: UNITS.name,
+      startDate: INITIATIVE_CAPABILITIES.startDate,
+    })
+    .from(INITIATIVE_CAPABILITIES)
+    .innerJoin(
+      INITIATIVES,
+      eq(INITIATIVE_CAPABILITIES.initiativeId, INITIATIVES.id),
+    )
+    .innerJoin(
+      CAPABILITIES,
+      eq(INITIATIVE_CAPABILITIES.capabilityId, CAPABILITIES.id),
+    )
+    .innerJoin(UNITS, eq(INITIATIVE_CAPABILITIES.unitId, UNITS.id))
+    .where(isNull(INITIATIVE_CAPABILITIES.endDate));
+});
+
+export const UNIT_TAGS = pgTable(
+  "unit_tags",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    unitId: uuid("unit_id")
+      .references(() => UNITS.id)
+      .notNull(),
+    key: text("key").notNull(),
+    value: text("value"),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [unique("unique_unit_tag").on(t.unitId, t.key)],
+);
+
+export const CAPABILITY_TAGS = pgTable(
+  "capability_tags",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    capabilityId: uuid("capability_id")
+      .references(() => CAPABILITIES.id)
+      .notNull(),
+    key: text("key").notNull(),
+    value: text("value"),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [unique("unique_capability_tag").on(t.capabilityId, t.key)],
+);
+
+export const INITIATIVE_TAGS = pgTable(
+  "initiative_tags",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    initiativeId: uuid("initiative_id")
+      .references(() => INITIATIVES.id)
+      .notNull(),
+    key: text("key").notNull(),
+    value: text("value"),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [unique("unique_initiative_tag").on(t.initiativeId, t.key)],
+);
+
+export const EMPLOYEE_TAGS = pgTable(
+  "employee_tags",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    employeeId: uuid("employee_id")
+      .references(() => EMPLOYEES.employeeId)
+      .notNull(),
+    key: text("key").notNull(),
+    value: text("value"),
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [unique("unique_employee_tag").on(t.employeeId, t.key)],
 );
