@@ -1,11 +1,11 @@
 {
-  "realm": "oidctenant",
+  "realm": "democo",
   "enabled": true,
-  "displayName": "OIDC Example Tenant",
+  "displayName": "Demo Company, Inc.",
   "users": [
     {
       "username": "testbob",
-      "email": "bob@oidctenant.example.net",
+      "email": "bob@example.net",
       "enabled": true,
       "credentials": [{
         "type": "password",

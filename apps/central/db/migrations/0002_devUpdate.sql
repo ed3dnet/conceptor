@@ -1,0 +1,1 @@
+ALTER TABLE "auth_connectors" RENAME COLUMN "config" TO "state";

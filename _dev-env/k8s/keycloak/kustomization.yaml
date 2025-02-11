@@ -5,4 +5,4 @@ resources:
 configMapGenerator:
   - name: keycloak-realm-config
     files:
-      - config/oidctenant-realm.json
+      - config/democo.json

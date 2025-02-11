@@ -15,6 +15,13 @@
       "when": 1739139349910,
       "tag": "0001_alterAuthConnectorType",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1739249582318,
+      "tag": "0002_devUpdate",
+      "breakpoints": true
     }
   ]
 }
