@@ -157,24 +157,13 @@ if tilt_runmode == 'dev-in-tilt':
         cmd="bash ./_dev-env/scripts/build-central-client.bash",
         labels=["00-app"])
 
-    # local_resource("tenant-site",
-    #     serve_dir="./apps/site-tenant",
-    #     serve_cmd="pnpm dev",
-    #     allow_parallel=True,
-    #     resource_deps=["api", "api-client"],
-    #     links=[
-    #         "http://hosted.lvh.me:" + front_door_port,
-    #         "http://localtest.me:" + front_door_port,
-    #     ],
-    #     labels=["00-app"])
-
-    local_resource("frontend-site",
-        serve_dir="./apps/frontend",
+    local_resource("panel",
+        serve_dir="./apps/panel",
         serve_cmd="pnpm dev",
         allow_parallel=True,
         resource_deps=["api", "api-client"],
         links=[
-            os.environ["FRONTEND_BASE_URL"],
+            os.environ['FRONTEND_BASE_URL']
         ],
         labels=["00-app"])
 
