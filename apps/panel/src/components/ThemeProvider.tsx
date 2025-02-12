@@ -3,10 +3,6 @@ import { useEffect, useState } from "react";
 import { ThemeProviderContext, type Theme, type ThemeProviderProps } from "../contexts/theme.tsx";
 import { THEME_STORAGE_KEY } from "../lib/constants.ts";
 
-
-
-
-
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -14,6 +10,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
 
