@@ -1,11 +1,11 @@
-import { defineConfig, type Config } from "drizzle-kit";
+import { defineConfig } from "drizzle-kit";
 
 import {
   getNodeEnv,
   getNum,
   requireBool,
   requireStr,
-} from "./src/_config/env-prefix.ts";
+} from "./src/_config/env-prefix";
 
 const envVars = {
   host: requireStr("POSTGRES__READWRITE__HOST"),
@@ -16,20 +16,13 @@ const envVars = {
   ssl: requireBool("POSTGRES__READWRITE__SSL"),
 };
 
-const buildPostgresConnectionString = (envVars: {
-  host: string;
-  port: number;
-  database: string;
-  user: string;
-  password: string;
-  ssl?: boolean;
-}) => {
+const buildPostgresConnectionString = (envVars) => {
   const escapedPassword = encodeURIComponent(envVars.password);
   const sslMode = envVars.ssl ? "require" : "disable";
   return `postgres://${envVars.user}:${escapedPassword}@${envVars.host}:${envVars.port}/${envVars.database}?sslmode=${sslMode}`;
 };
 
-const cfg: Config = {
+const cfg = {
   schema: ["./src/_db/schema/index.ts", "./src/_db/schema/app-meta.ts"],
   dialect: "postgresql",
   out: "./db/migrations",

@@ -45,6 +45,7 @@ export type UpdateAuthConnectorInput = Static<typeof UpdateAuthConnectorInput>;
 export const AuthConnectorPublic = schemaType(
   "AuthConnectorPublic",
   Type.Object({
+    __type: Type.Literal("AuthConnectorPublic"),
     authConnectorId: Type.String({ format: "uuid" }),
     tenantId: Type.String({ format: "uuid" }),
     name: Type.String(),

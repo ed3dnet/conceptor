@@ -2,10 +2,12 @@ import fp from "fastify-plugin";
 
 import { type AppFastify } from "../http/type-providers.js";
 
+import { AUTH_ROUTES } from "./auth/routes.js";
 import { META_ROUTES } from "./meta/routes.js";
 
 async function apiRoutes(fastify: AppFastify) {
   await fastify.register(META_ROUTES);
+  await fastify.register(AUTH_ROUTES);
 }
 export const API_ROUTES = fp(apiRoutes, {
   name: "API_ROUTES",

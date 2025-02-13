@@ -2,6 +2,7 @@ import { LogLevel } from "@myapp/shared-universal/config/types.js";
 import { TemporalConfig } from "@myapp/temporal-client/config.js";
 import { type Static, Type } from "@sinclair/typebox";
 
+import { AuthConfig } from "../domain/auth/config.js";
 import { MemorySWRConfig } from "../lib/datastores/memory-swr.js";
 import { PostgresConfig } from "../lib/datastores/postgres/config.server.js";
 import { EmailDeliveryConfig } from "../lib/functional/email-delivery/config.js";
@@ -52,6 +53,8 @@ export const AppConfig = Type.Intersect([
     vault: VaultConfig,
 
     llmPrompter: LlmPrompterConfig,
+
+    auth: AuthConfig,
   }),
 ]);
 export type AppConfig = Static<typeof AppConfig>;

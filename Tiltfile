@@ -27,7 +27,7 @@ k8s_yaml(kustomize('./_dev-env'))
 
 front_door_port = tilt_port_prefix + '00'
 
-# k8s_resource('localdev-frontdoor', port_forwards=[front_door_port + ":80"], labels=["svc"])
+k8s_resource('localdev-frontdoor', port_forwards=[front_door_port + ":80"], labels=["svc"])
 k8s_resource('localdev-redis', port_forwards=[tilt_port_prefix + '10:6379'], labels=["98-svc"])
 k8s_resource('localdev-temporal', port_forwards=[tilt_port_prefix + '30:7233', tilt_port_prefix + '31:8233'], labels=["98-svc"])
 k8s_resource('localdev-mailpit', port_forwards=[tilt_port_prefix + '26:8025', tilt_port_prefix + '25:1025'], labels=["98-svc"])
@@ -89,7 +89,7 @@ if tilt_runmode == 'dev-in-tilt':
         allow_parallel=True,
         auto_init=True,
         serve_dir=central_dir,
-        serve_cmd="pnpm run:dev pnpm drizzle-kit studio --port " + studio_port,
+        serve_cmd="bash ../../_dev-env/scripts/kill-pg-studio.bash && pnpm run:dev pnpm drizzle-kit studio --port " + studio_port,
         resource_deps=["wait-for-postgres"],
         labels=["04-util"])
 
@@ -163,7 +163,7 @@ if tilt_runmode == 'dev-in-tilt':
         allow_parallel=True,
         resource_deps=["api", "api-client"],
         links=[
-            os.environ['FRONTEND_BASE_URL']
+            os.environ['BASE_URL']
         ],
         labels=["00-app"])
 

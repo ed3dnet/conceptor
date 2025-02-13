@@ -3,6 +3,7 @@ import { LogLevelChecker } from "@myapp/shared-universal/config/types.js";
 import { AJV } from "@myapp/shared-universal/utils/ajv.js";
 import { EnsureTypeCheck } from "@myapp/shared-universal/utils/type-utils.js";
 
+import { type AuthConfig } from "../domain/auth/config.js";
 import { loadLlmPrompterConfigFromEnv } from "../lib/functional/llm-prompter/config.js";
 import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
 
@@ -125,6 +126,23 @@ function loadVaultConfigFromEnv() {
   };
 }
 
+function loadAuthConfigFromEnv(): { auth: AuthConfig } {
+  return {
+    auth: {
+      oauth: {
+        statePasetoSymmetricKey: {
+          type: "paseto-v3-local",
+          key: requireStr("AUTH__OAUTH__STATE_PASETO_SYMMETRIC_KEY"),
+        },
+        stateExpirationSeconds: getNum(
+          "AUTH__OAUTH__STATE_EXPIRATION_SECONDS",
+          300,
+        ),
+      },
+    },
+  };
+}
+
 function loadS3ConfigFromEnv() {
   return {
     s3: {
@@ -136,8 +154,7 @@ function loadS3ConfigFromEnv() {
       secretKey: requireStr("S3__SECRET_KEY"),
       buckets: {
         core: requireStr("S3__BUCKETS__CORE"),
-        "user-public-content": requireStr("S3__BUCKETS__USER_PUBLIC_CONTENT"),
-        "user-signed-access": requireStr("S3__BUCKETS__USER_SIGNED_ACCESS"),
+        "user-content": requireStr("S3__BUCKETS__USER_PUBLIC_CONTENT"),
         "upload-staging": requireStr("S3__BUCKETS__UPLOAD_STAGING"),
       },
     },
@@ -168,6 +185,8 @@ export function normalAppConfig(): AppConfig {
     ...loadEmailDeliveryConfigFromEnv(),
 
     ...loadLlmPrompterConfigFromEnv(),
+
+    ...loadAuthConfigFromEnv(),
   };
 }
 

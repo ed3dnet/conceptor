@@ -26,6 +26,7 @@ import {
   type CreateAuthConnectorInput,
   type UpdateAuthConnectorInput,
   type OIDCConnectorState,
+  type AuthConnectorPublic,
 } from "./schemas/index.js";
 import {
   type OidcConfiguration,
@@ -77,6 +78,29 @@ export class AuthConnectorService {
     private readonly fetch: FetchFn,
   ) {
     this.logger = logger.child({ context: AuthConnectorService.name });
+  }
+
+  async toPublic(connector: DBAuthConnector): Promise<AuthConnectorPublic>;
+  async toPublic(authConnectorId: string): Promise<AuthConnectorPublic>;
+  async toPublic(
+    input: DBAuthConnector | string,
+  ): Promise<AuthConnectorPublic> {
+    const connector =
+      typeof input === "string" ? await this.getById(input) : input;
+
+    if (!connector) {
+      throw new NotFoundError(`Auth connector not found: ${input}`);
+    }
+
+    const domains = await this.getDomains(connector.authConnectorId);
+
+    return {
+      __type: "AuthConnectorPublic",
+      authConnectorId: connector.authConnectorId,
+      tenantId: connector.tenantId,
+      name: connector.name,
+      domains: domains.map((d) => d.domain),
+    };
   }
 
   async getById(

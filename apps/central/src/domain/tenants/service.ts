@@ -51,6 +51,39 @@ export class TenantService {
     return tenant[0] ?? null;
   }
 
+  async getByIdOrSlug(
+    idOrSlug: string,
+    executor: DrizzleRO = this.dbRO,
+  ): Promise<DBTenant | null> {
+    // Try UUID format first - if invalid, treat as slug
+    const isUuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        idOrSlug,
+      );
+
+    if (isUuid) {
+      return this.getByTenantId(idOrSlug, executor);
+    }
+    const r = await this.getBySlug(idOrSlug, executor);
+    if (r) {
+      return r;
+    }
+
+    return this.getByTenantId(idOrSlug, executor);
+  }
+
+  async withTenantByIdOrSlug<T>(
+    idOrSlug: string,
+    fn: (tenant: DBTenant) => Promise<T>,
+    executor: DrizzleRO = this.dbRO,
+  ): Promise<T> {
+    const tenant = await this.getByIdOrSlug(idOrSlug, executor);
+    if (!tenant) {
+      throw new NotFoundError(`Tenant not found: ${idOrSlug}`);
+    }
+    return fn(tenant);
+  }
+
   async withTenantByTenantId<T>(
     tenantId: string,
     fn: (tenant: DBTenant) => Promise<T>,

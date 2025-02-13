@@ -214,7 +214,7 @@ export async function buildServer(
     );
   });
 
-  await fastify.register(API_ROUTES, { prefix: "/api" });
+  await fastify.register(API_ROUTES);
 
   return fastify;
 }

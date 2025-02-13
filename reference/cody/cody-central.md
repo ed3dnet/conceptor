@@ -1,18 +1,64 @@
 ### For Central
 #### Security
 - We support these separate security schemes in Central:
-  - `UserBearer` is a PASETO Bearer token that is used to authenticate users to Central.
+  - `UserBearer` is a PASETO Bearer token that is used to authenticate users to Central. This token is signed, not encrypted, and its claims can be read by the user (and by Panel).
 
 ### Central
 - Whenever you create a new API route in `central`:
+  - New routes live in `apps/central/src/_api/routes`.
+    - Create a directory (say, `foo`).
+      - Routes live in `apps/central/src/_api/routes/foo/routes.ts`.
+      - Request/response schemas live in `apps/central/src/_api/routes/foo/schemas.ts`.
+    - The basic structure looks something like:
+
+```ts
+import fp from "fastify-plugin";
+
+import { type AppFastify } from "../../http/type-providers.js";
+
+import { PingResponse } from "./schemas.js";
+
+async function metaRoutes(fastify: AppFastify) {
+  fastify.get("/meta/liveness-probe", {
+    schema: {
+      response: {
+        200: PingResponse,
+      },
+    },
+    oas: {
+      tags: ["meta"],
+      security: [],
+    },
+    handler: async () => {
+      return { pong: true } as const;
+    },
+  });
+}
+
+export const META_ROUTES = fp(metaRoutes, {
+  name: "META_ROUTES",
+  fastify: ">= 4",
+});
+```
+  - The exported Fastify plugin will be added to `apps/central/src/routes/index.ts`, similar to:
+
+```ts
+async function apiRoutes(fastify: AppFastify) {
+  // add new route plugins here
+  await fastify.register(META_ROUTES);
+}
+```
+
   - We never inline JSON Schema in our routes `schema`. We always create a Typebox schema (wrapped with `schemaType`) and reference it in our Fastify route.
 - When creating an object with `@sinclair/typebox`, whether it uses `schemaType` or not, name sure to remeber to do `export type MyType = Schema<typeof MyTypeSchema>;` after it.
+- When designing API responses, never return bare arrays. Always put them in an object with a reasonably-named key, e.g. `{ authConnectors: [] }` for `GetTenantAuthConnectorsResponse`.
 - Rules about Service objects:
   - The logger for the service should always be `this.logger = logger.child({ component: this.constructor.name });`.
   - Don't re-alias types from the database schema to your service, e.g. if there's a `DBTenant` in `models.ts` don't re-export it in TenantService.
   - Remember that database calls in a Service should take a `Drizzle` or `DrizzleRO` `executor`, defaulting to `this.db` / `this.dbRO` if one isn't provided, UNLESS it is a fully encapsulated set of steps. If it is fully encapsulated, omit the `executor` parameter but prefix the method with `TX_`.
   - When making getters for a service, we should generally also include a `withObjectByField` method (e.g., `withTenantByTenantId`) that also takes a function to run when the object is found. Those should throw a `NotFoundError` if the object is not found.
   - Services will often need to create their own DTOs. Don't append `Schema` or `DTO` to these. Instead, use a suffix that makes it clear who the audience is. `Public` contains no sensitive information. `Private` contains information that is only visible to the resource owner (e.g., the user who IS the resource). If no suffix is used, it may be shared with other employees/users in the same tenant.
+  - Any DTO that will end up in an API response needs a `__type` property that names the DTO, to help create type errors when objects not intended to be part of the API surface are returned by an API handler.
   - When creating a new resource, check for the existence of a resource with the same name before creating it. If it exists, throw a `ConflictError`.
 
 ### Temporal

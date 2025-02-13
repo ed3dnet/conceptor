@@ -53,8 +53,7 @@ export const TENANTS = pgTable("tenants", {
 // ------------ IMAGE UPLOADS ------------- //
 export const S3_BUCKET_NAME = pgEnum("s3_bucket_name", [
   "core",
-  "user-public-content",
-  "user-signed-access",
+  "user-content",
   "upload-staging",
 ]);
 
@@ -650,70 +649,70 @@ export const UNIT_INFORMATION = pgTable(
   ],
 );
 
-// Now implementing the materialized views for current state queries
-export const CURRENT_UNIT_ASSIGNMENTS = pgMaterializedView(
-  "current_unit_assignments",
-).as((qb) => {
-  return qb
-    .select({
-      unitId: UNIT_ASSIGNMENTS.unitId,
-      employeeId: UNIT_ASSIGNMENTS.employeeId,
-      unitName: UNITS.name,
-      employeeName: EMPLOYEES.displayName,
-      startDate: UNIT_ASSIGNMENTS.startDate,
-    })
-    .from(UNIT_ASSIGNMENTS)
-    .innerJoin(UNITS, eq(UNIT_ASSIGNMENTS.unitId, UNITS.id))
-    .innerJoin(EMPLOYEES, eq(UNIT_ASSIGNMENTS.employeeId, EMPLOYEES.employeeId))
-    .where(isNull(UNIT_ASSIGNMENTS.endDate));
-});
+// // Now implementing the materialized views for current state queries
+// export const CURRENT_UNIT_ASSIGNMENTS = pgMaterializedView(
+//   "current_unit_assignments",
+// ).as((qb) => {
+//   return qb
+//     .select({
+//       unitId: UNIT_ASSIGNMENTS.unitId,
+//       employeeId: UNIT_ASSIGNMENTS.employeeId,
+//       unitName: UNITS.name,
+//       employeeName: EMPLOYEES.displayName,
+//       startDate: UNIT_ASSIGNMENTS.startDate,
+//     })
+//     .from(UNIT_ASSIGNMENTS)
+//     .innerJoin(UNITS, eq(UNIT_ASSIGNMENTS.unitId, UNITS.id))
+//     .innerJoin(EMPLOYEES, eq(UNIT_ASSIGNMENTS.employeeId, EMPLOYEES.employeeId))
+//     .where(isNull(UNIT_ASSIGNMENTS.endDate));
+// });
 
-export const CURRENT_UNIT_CAPABILITIES = pgMaterializedView(
-  "current_unit_capabilities",
-).as((qb) => {
-  return qb
-    .select({
-      unitId: UNIT_CAPABILITIES.unitId,
-      capabilityId: UNIT_CAPABILITIES.capabilityId,
-      unitName: UNITS.name,
-      capabilityName: CAPABILITIES.name,
-      isFormal: UNIT_CAPABILITIES.isFormal,
-      startDate: UNIT_CAPABILITIES.startDate,
-    })
-    .from(UNIT_CAPABILITIES)
-    .innerJoin(UNITS, eq(UNIT_CAPABILITIES.unitId, UNITS.id))
-    .innerJoin(
-      CAPABILITIES,
-      eq(UNIT_CAPABILITIES.capabilityId, CAPABILITIES.id),
-    )
-    .where(isNull(UNIT_CAPABILITIES.endDate));
-});
+// export const CURRENT_UNIT_CAPABILITIES = pgMaterializedView(
+//   "current_unit_capabilities",
+// ).as((qb) => {
+//   return qb
+//     .select({
+//       unitId: UNIT_CAPABILITIES.unitId,
+//       capabilityId: UNIT_CAPABILITIES.capabilityId,
+//       unitName: UNITS.name,
+//       capabilityName: CAPABILITIES.name,
+//       isFormal: UNIT_CAPABILITIES.isFormal,
+//       startDate: UNIT_CAPABILITIES.startDate,
+//     })
+//     .from(UNIT_CAPABILITIES)
+//     .innerJoin(UNITS, eq(UNIT_CAPABILITIES.unitId, UNITS.id))
+//     .innerJoin(
+//       CAPABILITIES,
+//       eq(UNIT_CAPABILITIES.capabilityId, CAPABILITIES.id),
+//     )
+//     .where(isNull(UNIT_CAPABILITIES.endDate));
+// });
 
-export const CURRENT_INITIATIVE_CAPABILITIES = pgMaterializedView(
-  "current_initiative_capabilities",
-).as((qb) => {
-  return qb
-    .select({
-      initiativeId: INITIATIVE_CAPABILITIES.initiativeId,
-      capabilityId: INITIATIVE_CAPABILITIES.capabilityId,
-      unitId: INITIATIVE_CAPABILITIES.unitId,
-      initiativeName: INITIATIVES.name,
-      capabilityName: CAPABILITIES.name,
-      unitName: UNITS.name,
-      startDate: INITIATIVE_CAPABILITIES.startDate,
-    })
-    .from(INITIATIVE_CAPABILITIES)
-    .innerJoin(
-      INITIATIVES,
-      eq(INITIATIVE_CAPABILITIES.initiativeId, INITIATIVES.id),
-    )
-    .innerJoin(
-      CAPABILITIES,
-      eq(INITIATIVE_CAPABILITIES.capabilityId, CAPABILITIES.id),
-    )
-    .innerJoin(UNITS, eq(INITIATIVE_CAPABILITIES.unitId, UNITS.id))
-    .where(isNull(INITIATIVE_CAPABILITIES.endDate));
-});
+// export const CURRENT_INITIATIVE_CAPABILITIES = pgMaterializedView(
+//   "current_initiative_capabilities",
+// ).as((qb) => {
+//   return qb
+//     .select({
+//       initiativeId: INITIATIVE_CAPABILITIES.initiativeId,
+//       capabilityId: INITIATIVE_CAPABILITIES.capabilityId,
+//       unitId: INITIATIVE_CAPABILITIES.unitId,
+//       initiativeName: INITIATIVES.name,
+//       capabilityName: CAPABILITIES.name,
+//       unitName: UNITS.name,
+//       startDate: INITIATIVE_CAPABILITIES.startDate,
+//     })
+//     .from(INITIATIVE_CAPABILITIES)
+//     .innerJoin(
+//       INITIATIVES,
+//       eq(INITIATIVE_CAPABILITIES.initiativeId, INITIATIVES.id),
+//     )
+//     .innerJoin(
+//       CAPABILITIES,
+//       eq(INITIATIVE_CAPABILITIES.capabilityId, CAPABILITIES.id),
+//     )
+//     .innerJoin(UNITS, eq(INITIATIVE_CAPABILITIES.unitId, UNITS.id))
+//     .where(isNull(INITIATIVE_CAPABILITIES.endDate));
+// });
 
 export const UNIT_TAGS = pgTable(
   "unit_tags",

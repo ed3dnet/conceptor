@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1738784762000,
-      "tag": "0000_base_tables",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1739139349910,
-      "tag": "0001_alterAuthConnectorType",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1739249582318,
-      "tag": "0002_devUpdate",
+      "when": 1739409021185,
+      "tag": "0000_initial",
       "breakpoints": true
     }
   ]

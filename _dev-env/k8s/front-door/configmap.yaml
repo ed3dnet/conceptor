@@ -3,27 +3,16 @@ kind: ConfigMap
 metadata:
   name: caddy-configmap
 data:
-  # `panel.lvh.me` is just being used as a specific domain for the control panel
-  # that users interact with. it's functionally a reserved name, as we could put users
-  # on other subdomains of our main domain (e.g. `ed3d.lvh.me`).
-  #
-  # all other domains route instead to the tenant app. In dev, we should use `localtest.me`
-  # as a placeholder for a CUSTOM domain name (e.g., one we don't own) and subdomains of
-  # `lvh.me` as placeholders for domains we offer.
   Caddyfile: |
-    panel.lvh.me:80 {
+    conceptor.lvh.me:80 {
       handle_path /api/* {
-        reverse_proxy 192.168.5.2:42001
+        reverse_proxy http://host.docker.internal:44001
       }
       handle_path /api {
-        reverse_proxy 192.168.5.2:42001
+        reverse_proxy http://host.docker.internal:44001
       }
 
-      reverse_proxy /* http://192.168.5.2:42003
-      reverse_proxy / http://192.168.5.2:42003
-    }
-    *:80 {
-      reverse_proxy /* http://192.168.5.2:42002
-      reverse_proxy / http://192.168.5.2:42002
+      reverse_proxy /* http://host.docker.internal:44002
+      reverse_proxy / http://host.docker.internal:44002
     }
 

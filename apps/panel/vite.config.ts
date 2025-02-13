@@ -12,6 +12,7 @@ export default defineConfig({
     },
   },
   server: {
-    port: parseInt(process.env.FRONTEND_PORT ?? "5173", 10),
+    allowedHosts: true,
+    port: parseInt(process.env.PANEL_PORT ?? "44002", 10),
   },
 });

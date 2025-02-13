@@ -1,5 +1,4 @@
 resources:
 - deployment.yaml
 - service.yaml
-- traefik-ingress.yaml
 - configmap.yaml

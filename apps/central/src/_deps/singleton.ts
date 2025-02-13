@@ -28,6 +28,7 @@ import type { StaleWhileRevalidate } from "stale-while-revalidate-cache";
 import type { DeepReadonly } from "utility-types";
 
 import { type AppConfig } from "../_config/types.js";
+import { AuthService } from "../domain/auth/service.js";
 import { AuthConnectorService } from "../domain/auth-connectors/service.js";
 import { TenantService } from "../domain/tenants/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
@@ -84,6 +85,7 @@ export type AppBaseCradleItems = {
 
   // domain objects below here
   tenants: TenantService;
+  auth: AuthService;
   authConnectors: AuthConnectorService;
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
@@ -234,6 +236,28 @@ export async function configureBaseAwilixContainer(
       ({ logger, db, dbRO }: AppSingletonCradle) =>
         new TenantService(logger, db, dbRO),
     ),
+    auth: asFunction(
+      ({
+        logger,
+        db,
+        fetch,
+        config,
+        redis,
+        vault,
+        authConnectors,
+      }: AppSingletonCradle) =>
+        new AuthService(
+          logger,
+          db,
+          fetch,
+          config.auth,
+          config.urls,
+          redis,
+          vault,
+          authConnectors,
+        ),
+    ),
+
     authConnectors: asFunction(
       ({ logger, db, dbRO, vault, fetch }: AppSingletonCradle) =>
         new AuthConnectorService(logger, db, dbRO, vault, fetch),
