@@ -30,6 +30,7 @@ import type { DeepReadonly } from "utility-types";
 import { type AppConfig } from "../_config/types.js";
 import { AuthService } from "../domain/auth/service.js";
 import { AuthConnectorService } from "../domain/auth-connectors/service.js";
+import { EmployeeService } from "../domain/employees/service.js";
 import { TenantService } from "../domain/tenants/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
 import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.server.js";
@@ -87,6 +88,7 @@ export type AppBaseCradleItems = {
   tenants: TenantService;
   auth: AuthService;
   authConnectors: AuthConnectorService;
+  employees: EmployeeService;
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
 
@@ -244,6 +246,7 @@ export async function configureBaseAwilixContainer(
         config,
         redis,
         vault,
+        employees,
         authConnectors,
       }: AppSingletonCradle) =>
         new AuthService(
@@ -254,6 +257,7 @@ export async function configureBaseAwilixContainer(
           config.urls,
           redis,
           vault,
+          employees,
           authConnectors,
         ),
     ),
@@ -261,6 +265,11 @@ export async function configureBaseAwilixContainer(
     authConnectors: asFunction(
       ({ logger, db, dbRO, vault, fetch }: AppSingletonCradle) =>
         new AuthConnectorService(logger, db, dbRO, vault, fetch),
+    ),
+
+    employees: asFunction(
+      ({ logger, db, dbRO, vault }: AppSingletonCradle) =>
+        new EmployeeService(logger, db, dbRO, vault),
     ),
   });
 

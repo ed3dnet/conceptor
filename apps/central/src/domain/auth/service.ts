@@ -1,23 +1,33 @@
 import {
   BadRequestError,
+  InternalServerError,
   NotFoundError,
 } from "@myapp/shared-universal/errors/index.js";
 import { type FetchFn } from "@myapp/shared-universal/utils/fetch.js";
+import cryptoRandomString from "crypto-random-string";
+import { type FastifyRequest } from "fastify";
 import { type Redis } from "ioredis";
 import {
   type Configuration as OIDCClientConfiguration,
+  authorizationCodeGrant,
   buildAuthorizationUrl,
+  calculatePKCECodeChallenge,
   customFetch,
   discovery,
+  fetchUserInfo,
+  randomPKCECodeVerifier,
 } from "openid-client";
 import { V3 } from "paseto";
 import { type Logger } from "pino";
 
 import { type UrlsConfig } from "../../_config/types.js";
+import { EMPLOYEE_SESSIONS } from "../../_db/schema/index.js";
 import { type Drizzle } from "../../lib/datastores/postgres/types.server.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
+import { sha256 } from "../../lib/utils/cryptography.js";
 import { type OIDCConnectorState } from "../auth-connectors/schemas/index.js";
 import { type AuthConnectorService } from "../auth-connectors/service.js";
+import { type EmployeeService } from "../employees/service.js";
 
 import { type AuthConfig } from "./config.js";
 import { OAuthStateChecker, type OAuthState } from "./schemas.js";
@@ -33,20 +43,15 @@ export class AuthService {
     private readonly urlsConfig: UrlsConfig,
     private readonly redis: Redis,
     private readonly vault: VaultService,
+    private readonly employees: EmployeeService,
     private readonly authConnectors: AuthConnectorService,
   ) {
     this.logger = logger.child({ component: this.constructor.name });
   }
 
-  private async createStateToken(
-    payload: Omit<OAuthState, "nonce">,
-  ): Promise<string> {
-    const token: OAuthState = {
-      ...payload,
-      nonce: crypto.randomUUID(),
-    };
+  private async createStateToken(payload: OAuthState): Promise<string> {
     return V3.encrypt(
-      token,
+      payload,
       this.authConfig.oauth.statePasetoSymmetricKey.key,
       {
         expiresIn: `${this.authConfig.oauth.stateExpirationSeconds}s`,
@@ -71,21 +76,6 @@ export class AuthService {
       );
       throw err;
     }
-  }
-
-  async createOAuthState(
-    tenantId: string,
-    authConnectorId: string,
-    redirectUri: string,
-  ): Promise<string> {
-    const state: OAuthState = {
-      tenantId,
-      authConnectorId,
-      nonce: crypto.randomUUID(),
-      redirectUri,
-    };
-
-    return this.createStateToken(state);
   }
 
   async verifyOAuthState(stateToken: string): Promise<OAuthState> {
@@ -141,29 +131,66 @@ export class AuthService {
     const connectorState = await this.vault.decrypt(connector.state);
     const oidcConfig = await this.getClientConfig(connectorState);
 
+    const codeChallengeMethod = "S256";
+    const pkceVerifier = randomPKCECodeVerifier();
+    const codeChallenge = await calculatePKCECodeChallenge(pkceVerifier);
+    const nonce = crypto.randomUUID();
+
     const params = new URLSearchParams({
-      // TODO: redirect _for the API_, not the redirect URI we're getting for the user side. we'll redirect that.
-      redirect_uri: redirectUri,
+      redirect_uri:
+        this.urlsConfig.apiBaseUrl +
+        `/${tenantId}/auth/${authConnectorId}/callback`,
       response_type: "code",
+      code_challenge: codeChallenge,
+      code_challenge_method: codeChallengeMethod,
       scope: connectorState.settings.scopes.join(" "),
       state: await this.createStateToken({
+        nonce,
         tenantId,
         authConnectorId,
         redirectUri,
+        pkceVerifier,
       }),
     });
 
     return buildAuthorizationUrl(oidcConfig, params);
   }
 
-  async handleOAuthCallback(
+  async createSessionRow(
+    employeeId: string,
+    tenantId: string,
+    executor: Drizzle,
+  ) {
+    const token =
+      "CPTR_V1_" + cryptoRandomString({ length: 32, type: "distinguishable" });
+    const tokenHash = sha256(token);
+
+    const [session] = await executor
+      .insert(EMPLOYEE_SESSIONS)
+      .values({
+        employeeId,
+        tenantId,
+        tokenHash,
+      })
+      .returning();
+
+    if (!session) {
+      throw new InternalServerError("Failed to create session");
+    }
+
+    return { sessionId: session.sessionId, sessionToken: token };
+  }
+
+  async TX_handleOIDCCallback(
     expectedTenantId: string,
     expectedAuthConnectorId: string,
-    code: string,
     state: string,
-  ): Promise<void> {
-    const logger = this.logger.child({
-      fn: this.handleOAuthCallback.name,
+    originalUrl: URL,
+  ): Promise<{ sessionId: string; sessionToken: string }> {
+    let logger = this.logger.child({
+      fn: this.TX_handleOIDCCallback.name,
+      tenantId: expectedTenantId,
+      authConnectorId: expectedAuthConnectorId,
     });
     const verifiedState = await this.verifyOAuthState(state);
 
@@ -185,6 +212,64 @@ export class AuthService {
     const connectorState = await this.vault.decrypt(connector.state);
     const oidcConfig = await this.getClientConfig(connectorState);
 
-    // TODO:  go build an employee service. then use it here to generate a session token and return it. or use a paseto
+    // TODO:  go build an employee service. then use it here to generate a session token and return it
+
+    const tokenSet = await authorizationCodeGrant(oidcConfig, originalUrl, {
+      idTokenExpected: true,
+      expectedNonce: verifiedState.nonce,
+      pkceCodeVerifier: verifiedState.pkceVerifier,
+    });
+
+    const claims = tokenSet.claims();
+
+    if (!claims) {
+      throw new BadRequestError("Bad ID token claims");
+    }
+
+    const userInfo = await fetchUserInfo(
+      oidcConfig,
+      tokenSet.access_token,
+      claims.sub,
+    );
+
+    const email = userInfo.email;
+
+    logger.info({ email }, "OIDC returned for email.");
+
+    return this.db.transaction(async (tx) => {
+      if (!email) {
+        throw new BadRequestError(
+          "No email found in user info; cannot match to employee record.",
+        );
+      }
+
+      const employee = await this.employees.getByEmail(email);
+
+      if (!employee) {
+        throw new InternalServerError(
+          "No employee found for email; cannot match to employee record.",
+        );
+      }
+
+      logger = logger.child({ employeeId: employee.employeeId });
+      logger.info({ email }, "Found employee for OIDC callback.");
+
+      await this.employees.setEmployeeIdPUserInfo(employee.employeeId, {
+        ...userInfo,
+        email,
+      });
+
+      logger.debug("Updated employee record with latest IDP user info.");
+
+      const tokenResult = await this.createSessionRow(
+        employee.employeeId,
+        employee.tenantId,
+        tx,
+      );
+
+      logger.info({ sessionId: tokenResult.sessionId }, "Created session.");
+
+      return tokenResult;
+    });
   }
 }

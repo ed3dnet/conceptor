@@ -18,7 +18,7 @@ async function authRoutes(fastify: AppFastify) {
     Params: {
       tenantIdOrSlug: string;
     };
-  }>("/tenant/:tenantIdOrSlug/auth/connectors", {
+  }>("/:tenantIdOrSlug/auth/connectors", {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
@@ -53,7 +53,7 @@ async function authRoutes(fastify: AppFastify) {
     Querystring: {
       redirectUri: string;
     };
-  }>("/tenant/:tenantIdOrSlug/auth/:authConnectorId/login", {
+  }>("/:tenantIdOrSlug/auth/:authConnectorId/login", {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
@@ -105,7 +105,7 @@ async function authRoutes(fastify: AppFastify) {
       code: string;
       state: string;
     };
-  }>("/auth/callback", {
+  }>("/:tenantIdOrSlug/auth/:authConnectorId/callback", {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
@@ -123,11 +123,11 @@ async function authRoutes(fastify: AppFastify) {
     handler: async (request, reply) => {
       const { auth } = request.deps;
 
-      await auth.handleOAuthCallback(
+      await auth.TX_handleOIDCCallback(
         request.params.tenantIdOrSlug,
         request.params.authConnectorId,
-        request.query.code,
         request.query.state,
+        new URL(request.originalUrl),
       );
     },
   });

@@ -120,7 +120,7 @@ export class ImagesService {
         tenantId,
         usage,
         stagingObjectName,
-        targetBucket: "user-public-content",
+        targetBucket: "upload-staging",
         targetPath: `${tenantId}/${usage}/${crypto.randomUUID()}`,
       })
       .returning();

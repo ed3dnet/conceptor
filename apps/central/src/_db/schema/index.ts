@@ -21,6 +21,7 @@ import {
 import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
 import { type OIDCConnectorState } from "../../domain/auth-connectors/schemas/index.js";
+import { type IdPUserInfo } from "../../domain/employees/schemas.js";
 import { type Sensitive } from "../../lib/functional/vault/schemas.js";
 
 // ---------- HELPER TYPES ---------------------- //
@@ -236,6 +237,8 @@ export const EMPLOYEES = pgTable(
     displayName: text("display_name").notNull(),
     avatarUrl: text("avatar_url"),
 
+    idpUserInfo: jsonb("idp_user_info").$type<Sensitive<IdPUserInfo>>(),
+
     lastAccessedAt: timestamp("last_accessed_at", {
       withTimezone: true,
       mode: "date",
@@ -248,6 +251,29 @@ export const EMPLOYEES = pgTable(
     },
   ],
 );
+
+export const EMPLOYEE_SESSIONS = pgTable("employee_sessions", {
+  sessionId: ULIDAsUUID().primaryKey(),
+  employeeId: uuid()
+    .references(() => EMPLOYEES.employeeId)
+    .notNull(),
+  tenantId: uuid()
+    .references(() => TENANTS.tenantId)
+    .notNull(),
+
+  tokenHash: text("token_hash").notNull().unique(),
+  revokedAt: timestamp("revoked_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+
+  lastAccessedAt: timestamp("last_accessed_at", {
+    withTimezone: true,
+    mode: "date",
+  })
+    .defaultNow()
+    .notNull(),
+});
 
 export const EMPLOYEE_SYSTEM_PERMISSIONS = pgTable(
   "employee_system_permissions",
