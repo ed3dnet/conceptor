@@ -43,55 +43,61 @@ export const IdPUserInfo = Type.Object(
 );
 export type IdPUserInfo = Static<typeof IdPUserInfo>;
 
-export const EmployeePublic = schemaType(
-  "EmployeePublic",
+export const UserPublic = schemaType(
+  "UserPublic",
   Type.Object({
-    __type: Type.Literal("EmployeePublic"),
-    employeeId: Type.String({ format: "uuid" }),
+    __type: Type.Literal("UserPublic"),
+    userId: Type.String({ format: "uuid" }),
     tenantId: Type.String({ format: "uuid" }),
     displayName: Type.String(),
     avatarUrl: Type.Optional(Type.String()),
   }),
 );
-export type EmployeePublic = Static<typeof EmployeePublic>;
+export type UserPublic = Static<typeof UserPublic>;
 
-export const EmployeeEmail = Type.Object({
-  __type: Type.Literal("EmployeeEmail"),
-  email: Type.String(),
-  isPrimary: Type.Boolean(),
-});
-export type EmployeeEmail = Static<typeof EmployeeEmail>;
+export const UserEmail = schemaType(
+  "UserEmail",
+  Type.Object({
+    __type: Type.Literal("UserEmail"),
+    email: Type.String(),
+    isPrimary: Type.Boolean(),
+  }),
+);
+export type UserEmail = Static<typeof UserEmail>;
 
-export const EmployeeExternalId = Type.Object({
-  __type: Type.Literal("EmployeeExternalId"),
-  externalIdType: Type.String(),
-  externalId: Type.String(),
-});
-export type EmployeeExternalId = Static<typeof EmployeeExternalId>;
+export const UserExternalId = schemaType(
+  "UserExternalId",
+  Type.Object({
+    __type: Type.Literal("UserExternalId"),
+    externalIdType: Type.String(),
+    externalId: Type.String(),
+  }),
+);
+export type UserExternalId = Static<typeof UserExternalId>;
 
-export const EmployeeTag = Type.Object({
-  __type: Type.Literal("EmployeeTag"),
+export const UserTag = Type.Object({
+  __type: Type.Literal("UserTag"),
   key: Type.String(),
   value: Type.String(),
 });
-export type EmployeeTag = Static<typeof EmployeeTag>;
+export type UserTag = Static<typeof UserTag>;
 
-export const EmployeePrivate = schemaType(
-  "EmployeePrivate",
+export const UserPrivate = schemaType(
+  "UserPrivate",
   Type.Object({
-    __type: Type.Literal("EmployeePrivate"),
-    employeeId: Type.String({ format: "uuid" }),
+    __type: Type.Literal("UserPrivate"),
+    userId: Type.String({ format: "uuid" }),
     tenantId: Type.String({ format: "uuid" }),
     connectorId: Type.String({ format: "uuid" }),
     displayName: Type.String(),
     avatarUrl: Type.Optional(Type.String()),
     lastAccessedAt: Type.Optional(Type.String({ format: "date-time" })),
-    emails: Type.Array(EmployeeEmail),
-    externalIds: Type.Array(EmployeeExternalId),
-    tags: Type.Array(EmployeeTag),
+    emails: Type.Array(UserEmail),
+    externalIds: Type.Array(UserExternalId),
+    tags: Type.Array(UserTag),
     idpUserInfo: Type.Optional(IdPUserInfo),
     createdAt: Type.String({ format: "date-time" }),
     updatedAt: Type.Optional(Type.String({ format: "date-time" })),
   }),
 );
-export type EmployeePrivate = Static<typeof EmployeePrivate>;
+export type UserPrivate = Static<typeof UserPrivate>;

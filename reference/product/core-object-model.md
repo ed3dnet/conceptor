@@ -4,7 +4,7 @@
 
 ### Units
 
-Units represent organizational positions or roles that can be filled by employees. A unit can be:
+Units represent organizational positions or roles that can be filled by users. A unit can be:
 
 - An individual position (e.g., Senior Engineer, Product Manager)  
 - A team structure  
@@ -12,14 +12,14 @@ Units represent organizational positions or roles that can be filled by employee
 
 Units exist within larger organizational units and can participate in multiple organizational structures simultaneously. For example, a Senior Engineer unit and an Engineering Manager unit might exist as peer units within the same engineering team unit, with the manager unit having management responsibility for the team unit rather than direct hierarchy over other units. This team unit would then exist within an even larger organizational unit.
 
-### Employees
+### Users
 
-Employees are distinct from units \- they are the actual people who occupy unit positions. This separation is crucial because:
+Users are distinct from units \- they are the actual people who occupy unit positions. This separation is crucial because:
 
 - Units can exist independent of their current occupants  
 - Units represent organizational needs and structures  
-- Employees can move between units while maintaining their accumulated relationships and knowledge  
-- A single employee might occupy multiple units simultaneously
+- Users can move between units while maintaining their accumulated relationships and knowledge  
+- A single user might occupy multiple units simultaneously
 
 ### Initiatives
 
@@ -53,7 +53,7 @@ Unit-Level Relationships:
 - Regular meeting cadences  
 - Formal communication channels
 
-Employee-Level Relationships:
+User-Level Relationships:
 
 - Personal professional networks  
 - Historical collaboration patterns  
@@ -63,8 +63,8 @@ Employee-Level Relationships:
 
 Critically, relationships can:
 
-- Exist simultaneously at both unit and employee levels  
-- Transfer with employees as they move between units  
+- Exist simultaneously at both unit and user levels  
+- Transfer with users as they move between units  
 - Create informal capability access  
 - Form around specific individuals who become communication hubs  
 - Operate outside formal organizational structures
@@ -73,7 +73,7 @@ Critically, relationships can:
 
 ### Relationship Persistence
 
-- Employee relationships persist across unit changes  
+- User relationships persist across unit changes  
 - Historical relationships influence current operations  
 - Informal relationships can supplement or replace formal channels  
 - Relationship strength varies and evolves over time
@@ -97,7 +97,7 @@ Critically, relationships can:
 The model suggests several key areas for organizational discovery:
 
 - Formal vs informal capability implementations  
-- Unit relationships vs employee relationships  
+- Unit relationships vs user relationships  
 - Cross-hierarchical initiative impacts  
 - Informal coordination mechanisms  
 - Knowledge and relationship concentrations  

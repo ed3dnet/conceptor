@@ -22,7 +22,8 @@ import { V3 } from "paseto";
 import { type Logger } from "pino";
 
 import { type UrlsConfig } from "../../_config/types.js";
-import { EMPLOYEE_SESSIONS, EMPLOYEES } from "../../_db/schema/index.js";
+import { type DBUser } from "../../_db/models.js";
+import { USER_SESSIONS, USERS } from "../../_db/schema/index.js";
 import {
   type DrizzleRO,
   type Drizzle,
@@ -31,7 +32,7 @@ import { type VaultService } from "../../lib/functional/vault/service.js";
 import { sha256 } from "../../lib/utils/cryptography.js";
 import { type OIDCConnectorState } from "../auth-connectors/schemas/index.js";
 import { type AuthConnectorService } from "../auth-connectors/service.js";
-import { type EmployeeService } from "../employees/service.js";
+import { type UserService } from "../users/service.js";
 
 import { type AuthConfig } from "./config.js";
 import { OAuthStateChecker, type OAuthState } from "./schemas.js";
@@ -50,7 +51,7 @@ export class AuthService {
     private readonly urlsConfig: UrlsConfig,
     private readonly redis: Redis,
     private readonly vault: VaultService,
-    private readonly employees: EmployeeService,
+    private readonly users: UserService,
     private readonly authConnectors: AuthConnectorService,
   ) {
     this.logger = logger.child({ component: this.constructor.name });
@@ -163,19 +164,15 @@ export class AuthService {
     return buildAuthorizationUrl(oidcConfig, params);
   }
 
-  async createSessionRow(
-    employeeId: string,
-    tenantId: string,
-    executor: Drizzle,
-  ) {
+  async createSessionRow(userId: string, tenantId: string, executor: Drizzle) {
     const token =
       "CPTR_V1_" + cryptoRandomString({ length: 32, type: "distinguishable" });
     const tokenHash = sha256(token, TOKEN_HASH_ROUNDS);
 
     const [session] = await executor
-      .insert(EMPLOYEE_SESSIONS)
+      .insert(USER_SESSIONS)
       .values({
-        employeeId,
+        userId,
         tenantId,
         tokenHash,
       })
@@ -188,27 +185,27 @@ export class AuthService {
     return { sessionId: session.sessionId, sessionToken: token };
   }
 
-  async resolveSessionTokenToEmployee(
+  async resolveSessionTokenToUser(
     token: string,
     executor: Drizzle = this.db,
-  ) {
+  ): Promise<DBUser | null> {
     const tokenHash = sha256(token, TOKEN_HASH_ROUNDS);
     const now = new Date();
     const expiredBefore = new Date(now.getTime() - TOKEN_EXPIRES_AFTER_MS);
 
     return executor.transaction(async (tx) => {
       const logger = this.logger.child({
-        fn: this.resolveSessionTokenToEmployee.name,
+        fn: this.resolveSessionTokenToUser.name,
       });
 
       const [session] = await tx
         .select()
-        .from(EMPLOYEE_SESSIONS)
+        .from(USER_SESSIONS)
         .where(
           and(
-            eq(EMPLOYEE_SESSIONS.tokenHash, tokenHash),
-            isNull(EMPLOYEE_SESSIONS.revokedAt),
-            gt(EMPLOYEE_SESSIONS.lastAccessedAt, expiredBefore),
+            eq(USER_SESSIONS.tokenHash, tokenHash),
+            isNull(USER_SESSIONS.revokedAt),
+            gt(USER_SESSIONS.lastAccessedAt, expiredBefore),
           ),
         )
         .limit(1);
@@ -217,36 +214,36 @@ export class AuthService {
         return null;
       }
 
-      const employee = await this.employees.getByEmployeeId(session.employeeId);
+      const user = await this.users.getByUserId(session.userId);
 
-      if (!employee) {
+      if (!user) {
         logger.warn(
-          { sessionId: session.sessionId, employeeId: session.employeeId },
-          "Employee not found for valid session.",
+          { sessionId: session.sessionId, userId: session.userId },
+          "User not found for valid session.",
         );
         return null;
       }
 
-      if (employee.disabledAt) {
+      if (user.disabledAt) {
         logger.warn(
-          { sessionId: session.sessionId, employeeId: session.employeeId },
-          "Employee disabled.",
+          { sessionId: session.sessionId, userId: session.userId },
+          "User disabled.",
         );
         return null;
       }
 
-      // Update session and employee access times
+      // Update session and user access times
       await tx
-        .update(EMPLOYEE_SESSIONS)
+        .update(USER_SESSIONS)
         .set({ lastAccessedAt: now })
-        .where(eq(EMPLOYEE_SESSIONS.sessionId, session.sessionId));
+        .where(eq(USER_SESSIONS.sessionId, session.sessionId));
 
       await tx
-        .update(EMPLOYEES)
+        .update(USERS)
         .set({ lastAccessedAt: now })
-        .where(eq(EMPLOYEES.employeeId, employee.employeeId));
+        .where(eq(USERS.userId, user.userId));
 
-      return employee;
+      return user;
     });
   }
 
@@ -281,8 +278,6 @@ export class AuthService {
     const connectorState = await this.vault.decrypt(connector.state);
     const oidcConfig = await this.getClientConfig(connectorState);
 
-    // TODO:  go build an employee service. then use it here to generate a session token and return it
-
     const tokenSet = await authorizationCodeGrant(oidcConfig, originalUrl, {
       idTokenExpected: true,
       expectedNonce: verifiedState.nonce,
@@ -308,31 +303,31 @@ export class AuthService {
     return this.db.transaction(async (tx) => {
       if (!email) {
         throw new BadRequestError(
-          "No email found in user info; cannot match to employee record.",
+          "No email found in user info; cannot match to user record.",
         );
       }
 
-      const employee = await this.employees.getByEmail(email);
+      const user = await this.users.getByEmail(email);
 
-      if (!employee) {
+      if (!user) {
         throw new InternalServerError(
-          "No employee found for email; cannot match to employee record.",
+          "No user found for email; cannot match to user record.",
         );
       }
 
-      logger = logger.child({ employeeId: employee.employeeId });
-      logger.info({ email }, "Found employee for OIDC callback.");
+      logger = logger.child({ userId: user.userId });
+      logger.info({ email }, "Found user for OIDC callback.");
 
-      await this.employees.setEmployeeIdPUserInfo(employee.employeeId, {
+      await this.users.setUserIdPUserInfo(user.userId, {
         ...userInfo,
         email,
       });
 
-      logger.debug("Updated employee record with latest IDP user info.");
+      logger.debug("Updated user record with latest IDP user info.");
 
       const tokenResult = await this.createSessionRow(
-        employee.employeeId,
-        employee.tenantId,
+        user.userId,
+        user.tenantId,
         tx,
       );
 

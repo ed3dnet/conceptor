@@ -21,7 +21,7 @@ import {
 import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
 import { type OIDCConnectorState } from "../../domain/auth-connectors/schemas/index.js";
-import { type IdPUserInfo } from "../../domain/employees/schemas.js";
+import { type IdPUserInfo } from "../../domain/users/schemas.js";
 import { type Sensitive } from "../../lib/functional/vault/schemas.js";
 
 // ---------- HELPER TYPES ---------------------- //
@@ -223,10 +223,10 @@ export const AUTH_CONNECTOR_DOMAINS = pgTable(
 //   ...TIMESTAMPS_MIXIN,
 // });
 
-export const EMPLOYEES = pgTable(
-  "employees",
+export const USERS = pgTable(
+  "users",
   {
-    employeeId: ULIDAsUUID().primaryKey(),
+    userId: ULIDAsUUID().primaryKey(),
     tenantId: uuid()
       .references(() => TENANTS.tenantId)
       .notNull(),
@@ -251,15 +251,15 @@ export const EMPLOYEES = pgTable(
   },
   (t) => [
     {
-      tenantIdx: index("employee_tenant_idx").on(t.tenantId),
+      tenantIdx: index("user_tenant_idx").on(t.tenantId),
     },
   ],
 );
 
-export const EMPLOYEE_SESSIONS = pgTable("employee_sessions", {
+export const USER_SESSIONS = pgTable("user_sessions", {
   sessionId: ULIDAsUUID().primaryKey(),
-  employeeId: uuid()
-    .references(() => EMPLOYEES.employeeId)
+  userId: uuid()
+    .references(() => USERS.userId)
     .notNull(),
   tenantId: uuid()
     .references(() => TENANTS.tenantId)
@@ -279,21 +279,18 @@ export const EMPLOYEE_SESSIONS = pgTable("employee_sessions", {
     .notNull(),
 });
 
-export const EMPLOYEE_SYSTEM_PERMISSIONS = pgTable(
-  "employee_system_permissions",
-  {
-    employeeId: uuid()
-      .references(() => EMPLOYEES.employeeId)
-      .notNull(),
-    permission: text("permission").notNull(),
-  },
-);
+export const USER_SYSTEM_PERMISSIONS = pgTable("user_system_permissions", {
+  userId: uuid()
+    .references(() => USERS.userId)
+    .notNull(),
+  permission: text("permission").notNull(),
+});
 
-export const EMPLOYEE_EMAILS = pgTable(
-  "employee_emails",
+export const USER_EMAILS = pgTable(
+  "user_emails",
   {
-    employeeId: uuid()
-      .references(() => EMPLOYEES.employeeId)
+    userId: uuid()
+      .references(() => USERS.userId)
       .notNull(),
     email: text("email").notNull(),
     isPrimary: boolean("is_primary").notNull().default(false),
@@ -302,20 +299,20 @@ export const EMPLOYEE_EMAILS = pgTable(
   },
   (t) => [
     {
-      pk: primaryKey({ columns: [t.employeeId, t.email] }),
-      employeeIdx: index("employee_emails_employee_idx").on(t.employeeId),
-      emailIdx: index("employee_emails_lookup_idx").on(t.email),
-      // Ensure email is unique within a tenant (need to join with EMPLOYEES)
-      uniqueEmail: unique("employee_emails_tenant_email_unique").on(t.email),
+      pk: primaryKey({ columns: [t.userId, t.email] }),
+      userIdx: index("user_emails_user_idx").on(t.userId),
+      emailIdx: index("user_emails_lookup_idx").on(t.email),
+      // Ensure email is unique within a tenant (need to join with USERS)
+      uniqueEmail: unique("user_emails_tenant_email_unique").on(t.email),
     },
   ],
 );
 
-export const EMPLOYEE_EXTERNAL_IDS = pgTable(
-  "employee_external_ids",
+export const USER_EXTERNAL_IDS = pgTable(
+  "user_external_ids",
   {
-    employeeId: uuid()
-      .references(() => EMPLOYEES.employeeId)
+    userId: uuid()
+      .references(() => USERS.userId)
       .notNull(),
     externalIdType: text("external_id_type").notNull(),
     externalId: text("external_id").notNull(),
@@ -324,9 +321,9 @@ export const EMPLOYEE_EXTERNAL_IDS = pgTable(
   },
   (t) => [
     {
-      pk: primaryKey({ columns: [t.employeeId, t.externalIdType] }),
-      employeeIdx: index("employee_external_ids_employee_idx").on(t.employeeId),
-      lookupIdx: index("employee_external_ids_lookup_idx").on(
+      pk: primaryKey({ columns: [t.userId, t.externalIdType] }),
+      userIdx: index("user_external_ids_user_idx").on(t.userId),
+      lookupIdx: index("user_external_ids_lookup_idx").on(
         t.externalIdType,
         t.externalId,
       ),
@@ -404,8 +401,8 @@ export const UNIT_ASSIGNMENTS = pgTable(
     unitId: uuid("unit_id")
       .references(() => UNITS.id)
       .notNull(),
-    employeeId: uuid("employee_id")
-      .references(() => EMPLOYEES.employeeId)
+    userId: uuid()
+      .references(() => USERS.userId)
       .notNull(),
     startDate: timestamp("start_date", { withTimezone: true })
       .notNull()
@@ -415,7 +412,7 @@ export const UNIT_ASSIGNMENTS = pgTable(
   },
   (t) => [
     index("idx_unit_assignments_unit").on(t.unitId),
-    index("idx_unit_assignments_employee").on(t.employeeId),
+    index("idx_unit_assignments_user").on(t.userId),
     index("idx_unit_assignments_dates").on(t.startDate, t.endDate),
     check(
       "valid_dates",
@@ -679,71 +676,6 @@ export const UNIT_INFORMATION = pgTable(
   ],
 );
 
-// // Now implementing the materialized views for current state queries
-// export const CURRENT_UNIT_ASSIGNMENTS = pgMaterializedView(
-//   "current_unit_assignments",
-// ).as((qb) => {
-//   return qb
-//     .select({
-//       unitId: UNIT_ASSIGNMENTS.unitId,
-//       employeeId: UNIT_ASSIGNMENTS.employeeId,
-//       unitName: UNITS.name,
-//       employeeName: EMPLOYEES.displayName,
-//       startDate: UNIT_ASSIGNMENTS.startDate,
-//     })
-//     .from(UNIT_ASSIGNMENTS)
-//     .innerJoin(UNITS, eq(UNIT_ASSIGNMENTS.unitId, UNITS.id))
-//     .innerJoin(EMPLOYEES, eq(UNIT_ASSIGNMENTS.employeeId, EMPLOYEES.employeeId))
-//     .where(isNull(UNIT_ASSIGNMENTS.endDate));
-// });
-
-// export const CURRENT_UNIT_CAPABILITIES = pgMaterializedView(
-//   "current_unit_capabilities",
-// ).as((qb) => {
-//   return qb
-//     .select({
-//       unitId: UNIT_CAPABILITIES.unitId,
-//       capabilityId: UNIT_CAPABILITIES.capabilityId,
-//       unitName: UNITS.name,
-//       capabilityName: CAPABILITIES.name,
-//       isFormal: UNIT_CAPABILITIES.isFormal,
-//       startDate: UNIT_CAPABILITIES.startDate,
-//     })
-//     .from(UNIT_CAPABILITIES)
-//     .innerJoin(UNITS, eq(UNIT_CAPABILITIES.unitId, UNITS.id))
-//     .innerJoin(
-//       CAPABILITIES,
-//       eq(UNIT_CAPABILITIES.capabilityId, CAPABILITIES.id),
-//     )
-//     .where(isNull(UNIT_CAPABILITIES.endDate));
-// });
-
-// export const CURRENT_INITIATIVE_CAPABILITIES = pgMaterializedView(
-//   "current_initiative_capabilities",
-// ).as((qb) => {
-//   return qb
-//     .select({
-//       initiativeId: INITIATIVE_CAPABILITIES.initiativeId,
-//       capabilityId: INITIATIVE_CAPABILITIES.capabilityId,
-//       unitId: INITIATIVE_CAPABILITIES.unitId,
-//       initiativeName: INITIATIVES.name,
-//       capabilityName: CAPABILITIES.name,
-//       unitName: UNITS.name,
-//       startDate: INITIATIVE_CAPABILITIES.startDate,
-//     })
-//     .from(INITIATIVE_CAPABILITIES)
-//     .innerJoin(
-//       INITIATIVES,
-//       eq(INITIATIVE_CAPABILITIES.initiativeId, INITIATIVES.id),
-//     )
-//     .innerJoin(
-//       CAPABILITIES,
-//       eq(INITIATIVE_CAPABILITIES.capabilityId, CAPABILITIES.id),
-//     )
-//     .innerJoin(UNITS, eq(INITIATIVE_CAPABILITIES.unitId, UNITS.id))
-//     .where(isNull(INITIATIVE_CAPABILITIES.endDate));
-// });
-
 export const UNIT_TAGS = pgTable(
   "unit_tags",
   {
@@ -786,16 +718,16 @@ export const INITIATIVE_TAGS = pgTable(
   (t) => [unique("unique_initiative_tag").on(t.initiativeId, t.key)],
 );
 
-export const EMPLOYEE_TAGS = pgTable(
-  "employee_tags",
+export const USER_TAGS = pgTable(
+  "user_tags",
   {
     id: ULIDAsUUID().primaryKey(),
-    employeeId: uuid("employee_id")
-      .references(() => EMPLOYEES.employeeId)
+    userId: uuid()
+      .references(() => USERS.userId)
       .notNull(),
     key: text("key").notNull(),
     value: text("value"),
     ...TIMESTAMPS_MIXIN,
   },
-  (t) => [unique("unique_employee_tag").on(t.employeeId, t.key)],
+  (t) => [unique("unique_user_tag").on(t.userId, t.key)],
 );

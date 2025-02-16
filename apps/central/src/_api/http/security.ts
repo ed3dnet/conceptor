@@ -40,7 +40,7 @@ export function buildTenantUserCookieHandler(
       // @ts-expect-error this is where we set a readonly value
       request.tenant = tenant;
 
-      const user = await auth.resolveSessionTokenToEmployee(value);
+      const user = await auth.resolveSessionTokenToUser(value);
 
       if (!user) {
         return { ok: false, code: 401 };
@@ -49,11 +49,11 @@ export function buildTenantUserCookieHandler(
       if (user.tenantId !== tenant.tenantId) {
         request.log.error(
           {
-            userId: user.employeeId,
+            userId: user.userId,
             userTenantId: user.tenantId,
             expectedTenantId: tenant.tenantId,
           },
-          `${TENANT_USER_AUTH_SCHEME} executed but user ${user.employeeId} is not in tenant ${tenant.tenantId}`,
+          `${TENANT_USER_AUTH_SCHEME} executed but user ${user.userId} is not in tenant ${tenant.tenantId}`,
         );
         return { ok: false, code: 401 };
       }

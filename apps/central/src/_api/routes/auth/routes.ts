@@ -68,7 +68,7 @@ async function authRoutes(fastify: AppFastify) {
     },
     oas: {
       tags: ["auth"],
-      description: "Initiate OAuth flow for a tenant's employee",
+      description: "Initiate OAuth flow for a tenant's user",
       security: [],
       responses: {
         302: {
