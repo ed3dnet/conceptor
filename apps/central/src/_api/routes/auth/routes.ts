@@ -121,14 +121,25 @@ async function authRoutes(fastify: AppFastify) {
       security: [],
     },
     handler: async (request, reply) => {
-      const { auth } = request.deps;
+      const { auth, config } = request.deps;
 
-      await auth.TX_handleOIDCCallback(
+      const sessionRet = await auth.TX_handleOIDCCallback(
         request.params.tenantIdOrSlug,
         request.params.authConnectorId,
         request.query.state,
         new URL(request.originalUrl),
       );
+
+      reply.setCookie(sessionRet.sessionCookieName, sessionRet.sessionToken, {
+        httpOnly: true,
+        secure: config.auth.sessionCookie.secure,
+        maxAge: config.auth.sessionCookie.maxAgeMs / 1000,
+      });
+
+      reply.code(302);
+      reply.header("Location", sessionRet.redirectTo);
+
+      return { redirectTo: sessionRet.redirectTo };
     },
   });
 }

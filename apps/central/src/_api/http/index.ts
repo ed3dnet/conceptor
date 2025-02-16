@@ -20,6 +20,10 @@ import { API_ROUTES } from "../routes/index.js";
 import { registerDependencyInjection } from "./deps.js";
 import { requestIdPlugin } from "./request-id-plugin.js";
 import { ErrorResponse, ValidationErrorResponse } from "./schemas.js";
+import {
+  buildTenantUserCookieHandler,
+  TENANT_USER_AUTH_SCHEME,
+} from "./security.js";
 import { type RootContainer } from "./type-extensions.js";
 import type { AppFastify } from "./type-providers.js";
 
@@ -145,7 +149,9 @@ export async function buildServer(
     },
     autowiredSecurity: {
       allowEmptySecurityWithNoRoot: false,
-      securitySchemes: {},
+      securitySchemes: {
+        [TENANT_USER_AUTH_SCHEME]: buildTenantUserCookieHandler(config.auth),
+      },
       onRequestFailed: (result) => {
         if (result.code === 401) {
           throw new UnauthorizedError(

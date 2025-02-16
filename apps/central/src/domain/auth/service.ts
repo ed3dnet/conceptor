@@ -5,8 +5,9 @@ import {
 } from "@myapp/shared-universal/errors/index.js";
 import { type FetchFn } from "@myapp/shared-universal/utils/fetch.js";
 import cryptoRandomString from "crypto-random-string";
-import { type FastifyRequest } from "fastify";
+import { eq, gt, and, isNull } from "drizzle-orm";
 import { type Redis } from "ioredis";
+import ms from "ms";
 import {
   type Configuration as OIDCClientConfiguration,
   authorizationCodeGrant,
@@ -21,8 +22,11 @@ import { V3 } from "paseto";
 import { type Logger } from "pino";
 
 import { type UrlsConfig } from "../../_config/types.js";
-import { EMPLOYEE_SESSIONS } from "../../_db/schema/index.js";
-import { type Drizzle } from "../../lib/datastores/postgres/types.server.js";
+import { EMPLOYEE_SESSIONS, EMPLOYEES } from "../../_db/schema/index.js";
+import {
+  type DrizzleRO,
+  type Drizzle,
+} from "../../lib/datastores/postgres/types.server.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
 import { sha256 } from "../../lib/utils/cryptography.js";
 import { type OIDCConnectorState } from "../auth-connectors/schemas/index.js";
@@ -31,6 +35,9 @@ import { type EmployeeService } from "../employees/service.js";
 
 import { type AuthConfig } from "./config.js";
 import { OAuthStateChecker, type OAuthState } from "./schemas.js";
+
+const TOKEN_HASH_ROUNDS = 4;
+const TOKEN_EXPIRES_AFTER_MS = ms("16d");
 
 export class AuthService {
   private readonly logger: Logger;
@@ -163,7 +170,7 @@ export class AuthService {
   ) {
     const token =
       "CPTR_V1_" + cryptoRandomString({ length: 32, type: "distinguishable" });
-    const tokenHash = sha256(token);
+    const tokenHash = sha256(token, TOKEN_HASH_ROUNDS);
 
     const [session] = await executor
       .insert(EMPLOYEE_SESSIONS)
@@ -181,12 +188,74 @@ export class AuthService {
     return { sessionId: session.sessionId, sessionToken: token };
   }
 
+  async resolveSessionTokenToEmployee(
+    token: string,
+    executor: Drizzle = this.db,
+  ) {
+    const tokenHash = sha256(token, TOKEN_HASH_ROUNDS);
+    const now = new Date();
+    const expiredBefore = new Date(now.getTime() - TOKEN_EXPIRES_AFTER_MS);
+
+    return executor.transaction(async (tx) => {
+      const logger = this.logger.child({
+        fn: this.resolveSessionTokenToEmployee.name,
+      });
+
+      const [session] = await tx
+        .select()
+        .from(EMPLOYEE_SESSIONS)
+        .where(
+          and(
+            eq(EMPLOYEE_SESSIONS.tokenHash, tokenHash),
+            isNull(EMPLOYEE_SESSIONS.revokedAt),
+            gt(EMPLOYEE_SESSIONS.lastAccessedAt, expiredBefore),
+          ),
+        )
+        .limit(1);
+
+      if (!session) {
+        return null;
+      }
+
+      const employee = await this.employees.getByEmployeeId(session.employeeId);
+
+      if (!employee) {
+        logger.warn(
+          { sessionId: session.sessionId, employeeId: session.employeeId },
+          "Employee not found for valid session.",
+        );
+        return null;
+      }
+
+      if (employee.disabledAt) {
+        logger.warn(
+          { sessionId: session.sessionId, employeeId: session.employeeId },
+          "Employee disabled.",
+        );
+        return null;
+      }
+
+      // Update session and employee access times
+      await tx
+        .update(EMPLOYEE_SESSIONS)
+        .set({ lastAccessedAt: now })
+        .where(eq(EMPLOYEE_SESSIONS.sessionId, session.sessionId));
+
+      await tx
+        .update(EMPLOYEES)
+        .set({ lastAccessedAt: now })
+        .where(eq(EMPLOYEES.employeeId, employee.employeeId));
+
+      return employee;
+    });
+  }
+
   async TX_handleOIDCCallback(
     expectedTenantId: string,
     expectedAuthConnectorId: string,
     state: string,
     originalUrl: URL,
-  ): Promise<{ sessionId: string; sessionToken: string }> {
+  ) {
     let logger = this.logger.child({
       fn: this.TX_handleOIDCCallback.name,
       tenantId: expectedTenantId,
@@ -269,7 +338,13 @@ export class AuthService {
 
       logger.info({ sessionId: tokenResult.sessionId }, "Created session.");
 
-      return tokenResult;
+      // TODO: in the future we might need to support one-user-multiple-tenants
+      return {
+        sessionCookieName: this.authConfig.sessionCookie.name,
+        ...tokenResult,
+        redirectTo:
+          verifiedState.redirectUri ?? this.urlsConfig.frontendBaseUrl,
+      };
     });
   }
 }

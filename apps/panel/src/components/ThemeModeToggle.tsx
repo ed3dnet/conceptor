@@ -1,6 +1,6 @@
 import { Moon, Sun } from "lucide-react";
 
-import { useTheme } from "../hooks/use-theme.tsx";
+import { useTheme } from "../hooks/useTheme.tsx";
 
 import { Button } from "@/components/ui/button";
 import {

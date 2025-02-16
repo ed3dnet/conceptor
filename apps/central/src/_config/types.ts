@@ -13,6 +13,7 @@ import { VaultConfig } from "../lib/functional/vault/config.js";
 export { LogLevel };
 
 export const UrlsConfig = Type.Object({
+  frontendBaseUrl: Type.String({ format: "uri" }),
   apiBaseUrl: Type.String({ format: "uri" }),
   s3BaseUrl: Type.String({ format: "uri" }),
   s3ExternalUrl: Type.String({ format: "uri" }),

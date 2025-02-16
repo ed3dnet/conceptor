@@ -1,19 +1,40 @@
+import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import ReactDOM from "react-dom/client";
 
-import "./index.css";
-import App from "./App.tsx";
+// Import the generated route tree
+import { CentralAPIProvider } from "./components/CentralAPIProvider.tsx";
 import { ThemeProvider } from "./components/ThemeProvider.tsx";
+import { routeTree } from "./routeTree.gen";
 
-const root = document.getElementById("root");
-if (!root) {
-  throw new Error("Root element not found");
+if (!routeTree) {
+  throw new Error("Route tree not found");
+}
+// router pulls in `any` types for the route tree, which eslint
+// correctly complains about. however, it's safe here.
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const router = createRouter({ routeTree });
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router
+  }
 }
 
-createRoot(root).render(
-  <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
-  </StrictMode>,
-);
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("No root element found");
+}
+
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <ThemeProvider>
+        <CentralAPIProvider>
+          <RouterProvider router={router} />
+        </CentralAPIProvider>
+      </ThemeProvider>
+    </StrictMode>,
+  );
+}

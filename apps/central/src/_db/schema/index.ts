@@ -238,6 +238,10 @@ export const EMPLOYEES = pgTable(
     avatarUrl: text("avatar_url"),
 
     idpUserInfo: jsonb("idp_user_info").$type<Sensitive<IdPUserInfo>>(),
+    disabledAt: timestamp("disabled_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
 
     lastAccessedAt: timestamp("last_accessed_at", {
       withTimezone: true,

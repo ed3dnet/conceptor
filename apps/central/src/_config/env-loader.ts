@@ -9,6 +9,7 @@ import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
 
 import {
   getBool,
+  getMilliseconds,
   getNodeEnv,
   getNum,
   getStr,
@@ -34,6 +35,7 @@ export function loadBaseConfigFromEnv(): BaseConfig {
 function loadUrlsConfigFromEnv(): { urls: UrlsConfig } {
   return {
     urls: {
+      frontendBaseUrl: requireStr("URLS__FRONTEND_BASE_URL"),
       apiBaseUrl: requireStr("URLS__API_BASE_URL"),
       s3BaseUrl: requireStr("URLS__S3_BASE_URL"),
       s3ExternalUrl: requireStr("URLS__S3_EXTERNAL_URL"),
@@ -129,6 +131,12 @@ function loadVaultConfigFromEnv() {
 function loadAuthConfigFromEnv(): { auth: AuthConfig } {
   return {
     auth: {
+      sessionCookie: {
+        name: requireStr("AUTH__SESSION_COOKIE__NAME"),
+        domain: requireStr("AUTH__SESSION_COOKIE__DOMAIN"),
+        secure: getBool("AUTH__SESSION_COOKIE__SECURE", true),
+        maxAgeMs: getMilliseconds("AUTH__SESSION_COOKIE__MAX_AGE", "30d"),
+      },
       oauth: {
         statePasetoSymmetricKey: {
           type: "paseto-v3-local",

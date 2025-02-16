@@ -3,7 +3,7 @@ import "@fastify/cookie";
 
 import { type AwilixContainer } from "awilix";
 
-import { type DBTenant } from "../../_db/models.js";
+import { type DBEmployee, type DBTenant } from "../../_db/models.js";
 import {
   type AppRequestCradle,
   type AppSingletonCradle,
@@ -18,6 +18,7 @@ declare module "fastify" {
     deps: AppRequestCradle;
 
     readonly tenant: DBTenant | undefined;
+    readonly user: DBEmployee | undefined;
   }
 
   interface FastifyInstance {
