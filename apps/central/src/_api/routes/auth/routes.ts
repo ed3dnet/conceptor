@@ -8,6 +8,8 @@ import { Type } from "@sinclair/typebox";
 import cryptoRandomString from "crypto-random-string";
 import fp from "fastify-plugin";
 
+import { UserPrivate } from "../../../domain/users/schemas.js";
+import { TENANT_USER_AUTH, uH } from "../../http/security.js";
 import { type AppFastify } from "../../http/type-providers.js";
 import { RedirectResponse } from "../schemas.js";
 
@@ -141,6 +143,29 @@ async function authRoutes(fastify: AppFastify) {
 
       return { redirectTo: sessionRet.redirectTo };
     },
+  });
+
+  fastify.get<{
+    Params: {
+      tenantIdOrSlug: string;
+    };
+  }>("/:tenantIdOrSlug/me", {
+    schema: {
+      params: Type.Object({
+        tenantIdOrSlug: Type.String(),
+      }),
+      response: {
+        200: UserPrivate,
+      },
+    },
+    oas: {
+      tags: ["auth"],
+      description: "Get current authenticated user",
+      security: [TENANT_USER_AUTH],
+    },
+    handler: uH(async (user, _tenant, request, _reply) => {
+      return request.deps.users.getUserPrivate(user.userId);
+    }),
   });
 }
 

@@ -1,7 +1,8 @@
 ### For Central
 #### Security
 - We support these separate security schemes in Central:
-  - `UserBearer` is a PASETO Bearer token that is used to authenticate users to Central. This token is signed, not encrypted, and its claims can be read by the user (and by Panel).
+  - `TenantUserCookie` is an opaque cookie that is set during the login flow. API calls on behalf of the tenant user will use this.
+  - In the future we'll support API calls via service accounts, but not yet.
 
 ### Central
 - Whenever you create a new API route in `central`:
