@@ -1,25 +1,12 @@
-import { resolve } from "path";
-
+import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    TanStackRouterVite(),
-    react(),
-  ],
-  resolve: {
-    alias: {
-      "@": resolve(__dirname, "./src"),
-    },
-  },
+  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
   server: {
-    allowedHosts: true,
+    host: "0.0.0.0",
     port: parseInt(process.env.PANEL_PORT ?? "44002", 10),
   },
 });
