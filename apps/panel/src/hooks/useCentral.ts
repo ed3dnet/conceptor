@@ -1,11 +1,9 @@
 import { useContext } from "react";
 
-import { CentralContext } from "../contexts/central";
+import { CentralAPIContext } from "../contexts/central-api";
 
 export function useCentral() {
-  const context = useContext(CentralContext);
-  if (!context) {
-    throw new Error("useCentral must be used within a CentralProvider");
-  }
-  return context.client;
+  const context = useContext(CentralAPIContext);
+
+  return context;
 }
