@@ -22,6 +22,8 @@ const response = await $apiClientStore.GET("/external-identities/oauth2/{provide
 });
 ```
 
+DO NOT attempt to use string interpolation for these URLs; they should provide a URL template via `params.path`.
+
 Types coming off of these requests are independently exported types. They exist at  `import { schemas } from "@myapp/central-client";` and reference `schemas["MyType"]`, but they're aliased, so you can just do `import { MyType } from "@myapp/central-client";`.
 
 ##### When You See This File #####

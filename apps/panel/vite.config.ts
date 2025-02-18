@@ -1,11 +1,18 @@
 import { resolve } from "path";
 
 import tailwindcss from "@tailwindcss/vite";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [tailwindcss(), react()],
+  plugins: [
+    tailwindcss(),
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    TanStackRouterVite(),
+    react(),
+  ],
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),

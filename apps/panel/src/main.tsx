@@ -1,14 +1,20 @@
 import { buildCentralClient } from "@myapp/central-client";
+import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import { CentralAPIContext } from "./contexts/central-api.tsx";
+import { router } from "./router.ts";
+
+import "./index.css";
 
 
 const central = buildCentralClient({
   baseUrl: `${window.location.origin}/api`,
-  fetch: window.fetch
+  fetch: window.fetch,
+  clientOpts: {
+    credentials: "include",
+  }
 });
 
 const rootElement = document.getElementById("root");
@@ -21,11 +27,11 @@ if (!rootElement.innerHTML) {
 
   root.render(
     <StrictMode>
-      <ThemeProvider>
       <CentralAPIContext.Provider value={central}>
-          {/* router goes here */}
+          <RouterProvider router={router} context={{
+            central
+          }} />
       </CentralAPIContext.Provider>
-      </ThemeProvider>
     </StrictMode>,
   );
 }

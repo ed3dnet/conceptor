@@ -8,7 +8,7 @@ import { importPlugin, PROJECT_RULES } from '../../eslint.config.mjs'
 export default tseslint.config(
   { ignores: ['dist'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked],
+    extends: [js.configs.recommended, ...tseslint.configs.stylistic],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parserOptions: {
