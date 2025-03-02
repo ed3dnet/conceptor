@@ -44,7 +44,7 @@ export function loggedFetch(
     });
 
     // Log before the request
-    logger.info("Starting fetch request.");
+    logger.debug("Starting fetch request.");
 
     const startTime = Date.now();
 
@@ -53,7 +53,7 @@ export function loggedFetch(
 
       // Log after the request with timings
       const duration = Date.now() - startTime;
-      logger.info(
+      logger.debug(
         { duration, status: response.status },
         "Fetch request completed.",
       );

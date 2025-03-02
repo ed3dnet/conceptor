@@ -20,7 +20,12 @@ import {
   requireStr,
   requireStrList,
 } from "./env-prefix.js";
-import { AppConfig, type UrlsConfig, type BaseConfig } from "./types.js";
+import {
+  AppConfig,
+  type UrlsConfig,
+  type BaseConfig,
+  type InsecureOptionsConfig,
+} from "./types.js";
 
 export function loadBaseConfigFromEnv(): BaseConfig {
   return {
@@ -169,11 +174,17 @@ function loadS3ConfigFromEnv() {
   };
 }
 
-export function loadInsecureOptionsConfigFromEnv() {
+export function loadInsecureOptionsConfigFromEnv(): {
+  insecureOptions: InsecureOptionsConfig;
+} {
   return {
     insecureOptions: {
       insecurelyLogOAuth2Payloads: getBool(
         "INSECURE_OPTIONS__INSECURELY_LOG_OAUTH2_PAYLOADS",
+        false,
+      ),
+      allowInsecureOpenIDProviders: getBool(
+        "INSECURE_OPTIONS__ALLOW_INSECURE_OPENID_PROVIDERS",
         false,
       ),
     },

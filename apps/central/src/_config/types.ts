@@ -28,6 +28,7 @@ export type RedisConfig = Static<typeof RedisConfig>;
 
 export const InsecureOptionsConfig = Type.Object({
   insecurelyLogOAuth2Payloads: Type.Boolean(),
+  allowInsecureOpenIDProviders: Type.Boolean(),
 });
 export type InsecureOptionsConfig = Static<typeof InsecureOptionsConfig>;
 

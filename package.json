@@ -10,7 +10,10 @@
     ],
     "patchedDependencies": {
       "redlock": "patches/redlock.patch"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "scripts": {
     "run:dev": "dotenvx run -f ./.env.development --",

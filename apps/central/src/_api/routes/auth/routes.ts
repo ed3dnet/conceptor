@@ -9,6 +9,7 @@ import cryptoRandomString from "crypto-random-string";
 import fp from "fastify-plugin";
 
 import { UserPrivate } from "../../../domain/users/schemas.js";
+import { StringUUID } from "../../../lib/ext/typebox.js";
 import { TENANT_USER_AUTH, uH } from "../../http/security.js";
 import { type AppFastify } from "../../http/type-providers.js";
 import { RedirectResponse } from "../schemas.js";
@@ -35,9 +36,17 @@ async function authRoutes(fastify: AppFastify) {
       security: [],
     },
     handler: async (request, reply) => {
-      const connectors = await request.deps.authConnectors.getByTenantId(
-        request.params.tenantIdOrSlug,
-      );
+      const { tenants, authConnectors } = request.deps;
+
+      const tenant = await tenants.getByIdOrSlug(request.params.tenantIdOrSlug);
+
+      if (!tenant) {
+        throw new NotFoundError(
+          `Tenant not found with id or slug ${request.params.tenantIdOrSlug}`,
+        );
+      }
+
+      const connectors = await authConnectors.getByTenantId(tenant.tenantId);
 
       const publicConnectors = await Promise.all(
         connectors.map((c) => request.deps.authConnectors.toPublic(c)),
@@ -53,19 +62,19 @@ async function authRoutes(fastify: AppFastify) {
       authConnectorId: string;
     };
     Querystring: {
-      redirectUri: string;
+      redirectUri: string | undefined;
     };
   }>("/:tenantIdOrSlug/auth/:authConnectorId/login", {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
-        authConnectorId: Type.String({ format: "uuid" }),
+        authConnectorId: StringUUID,
       }),
       querystring: Type.Object({
-        redirectUri: Type.String({ format: "uri" }),
+        redirectUri: Type.Optional(Type.String()),
       }),
       response: {
-        302: RedirectResponse,
+        200: RedirectResponse,
       },
     },
     oas: {
@@ -73,8 +82,9 @@ async function authRoutes(fastify: AppFastify) {
       description: "Initiate OAuth flow for a tenant's user",
       security: [],
       responses: {
-        302: {
-          description: "Redirect to the OAuth provider",
+        200: {
+          description:
+            "URL for the client to navigate to in order to auth to the IdP.",
         },
       },
     },
@@ -86,12 +96,9 @@ async function authRoutes(fastify: AppFastify) {
           const url = await auth.initiateOAuthFlow(
             tenant.tenantId,
             request.params.authConnectorId,
-            request.query.redirectUri,
+            request.query.redirectUri ?? `/${tenant.slug}`,
           );
           const urlString = url.toString();
-
-          reply.code(302);
-          reply.header("Location", urlString);
 
           return { redirectTo: urlString };
         },
@@ -111,7 +118,7 @@ async function authRoutes(fastify: AppFastify) {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
-        authConnectorId: Type.String({ format: "uuid" }),
+        authConnectorId: StringUUID,
       }),
       querystring: Type.Object({
         code: Type.String(),
@@ -129,7 +136,7 @@ async function authRoutes(fastify: AppFastify) {
         request.params.tenantIdOrSlug,
         request.params.authConnectorId,
         request.query.state,
-        new URL(request.originalUrl),
+        new URL(config.urls.apiBaseUrl + request.originalUrl),
       );
 
       reply.setCookie(sessionRet.sessionCookieName, sessionRet.sessionToken, {

@@ -10,6 +10,7 @@ import { type Redis } from "ioredis";
 import ms from "ms";
 import {
   type Configuration as OIDCClientConfiguration,
+  allowInsecureRequests,
   authorizationCodeGrant,
   buildAuthorizationUrl,
   calculatePKCECodeChallenge,
@@ -21,7 +22,10 @@ import {
 import { V3 } from "paseto";
 import { type Logger } from "pino";
 
-import { type UrlsConfig } from "../../_config/types.js";
+import {
+  type InsecureOptionsConfig,
+  type UrlsConfig,
+} from "../../_config/types.js";
 import { type DBUser } from "../../_db/models.js";
 import { USER_SESSIONS, USERS } from "../../_db/schema/index.js";
 import {
@@ -49,6 +53,7 @@ export class AuthService {
     private readonly fetch: FetchFn,
     private readonly authConfig: AuthConfig,
     private readonly urlsConfig: UrlsConfig,
+    private readonly insecureOptions: InsecureOptionsConfig,
     private readonly redis: Redis,
     private readonly vault: VaultService,
     private readonly users: UserService,
@@ -70,17 +75,35 @@ export class AuthService {
   private async decryptStateToken(
     tokenCiphertext: string,
   ): Promise<OAuthState> {
+    let ret: OAuthState;
     try {
-      const ret = V3.decrypt(
+      ret = await V3.decrypt(
         tokenCiphertext,
         this.authConfig.oauth.statePasetoSymmetricKey.key,
       );
-
-      return OAuthStateChecker.Decode(ret);
     } catch (err) {
       this.logger.warn(
         { fn: this.decryptStateToken.name, err },
         "Failed to decrypt state token",
+      );
+      throw err;
+    }
+
+    try {
+      return OAuthStateChecker.Decode(ret);
+    } catch (err) {
+      this.logger.warn(
+        {
+          fn: this.decryptStateToken.name,
+          err,
+          token: this.insecureOptions.allowInsecureOpenIDProviders
+            ? ret
+            : undefined,
+          tokenCiphertext: this.insecureOptions.allowInsecureOpenIDProviders
+            ? tokenCiphertext
+            : undefined,
+        },
+        "Failed to validate state token",
       );
       throw err;
     }
@@ -116,6 +139,9 @@ export class AuthService {
       undefined,
       {
         [customFetch]: this.fetch,
+        execute: this.insecureOptions.allowInsecureOpenIDProviders
+          ? [allowInsecureRequests]
+          : [],
       },
     );
 
@@ -139,9 +165,13 @@ export class AuthService {
     const connectorState = await this.vault.decrypt(connector.state);
     const oidcConfig = await this.getClientConfig(connectorState);
 
-    const codeChallengeMethod = "S256";
-    const pkceVerifier = randomPKCECodeVerifier();
-    const codeChallenge = await calculatePKCECodeChallenge(pkceVerifier);
+    // TODO:  in the future, enable PKCE where accepted
+    //        this isn't high priority, as we are using an encrypted state token;
+    //        but we should revisit this in the future because there is the risk of
+    //        interception and replay.
+    // const codeChallengeMethod = "S256";
+    // const pkceVerifier = randomPKCECodeVerifier();
+    // const codeChallenge = await calculatePKCECodeChallenge(pkceVerifier);
     const nonce = crypto.randomUUID();
 
     const params = new URLSearchParams({
@@ -149,15 +179,15 @@ export class AuthService {
         this.urlsConfig.apiBaseUrl +
         `/${tenantId}/auth/${authConnectorId}/callback`,
       response_type: "code",
-      code_challenge: codeChallenge,
-      code_challenge_method: codeChallengeMethod,
+      // code_challenge: codeChallenge,
+      // code_challenge_method: codeChallengeMethod,
       scope: connectorState.settings.scopes.join(" "),
       state: await this.createStateToken({
         nonce,
         tenantId,
         authConnectorId,
         redirectUri,
-        pkceVerifier,
+        // pkceVerifier,
       }),
     });
 
@@ -278,10 +308,11 @@ export class AuthService {
     const connectorState = await this.vault.decrypt(connector.state);
     const oidcConfig = await this.getClientConfig(connectorState);
 
+    // NOTE: we remove `state` here because `openid-client` gets mad about it.
+    originalUrl.searchParams.delete("state");
+
     const tokenSet = await authorizationCodeGrant(oidcConfig, originalUrl, {
       idTokenExpected: true,
-      expectedNonce: verifiedState.nonce,
-      pkceCodeVerifier: verifiedState.pkceVerifier,
     });
 
     const claims = tokenSet.claims();

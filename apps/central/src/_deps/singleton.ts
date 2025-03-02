@@ -255,6 +255,7 @@ export async function configureBaseAwilixContainer(
           fetch,
           config.auth,
           config.urls,
+          config.insecureOptions,
           redis,
           vault,
           users,

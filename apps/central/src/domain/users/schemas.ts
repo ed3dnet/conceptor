@@ -1,6 +1,8 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { type Static, Type } from "@sinclair/typebox";
 
+import { StringUUID } from "../../lib/ext/typebox.js";
+
 export const IdPUserInfo = Type.Object(
   {
     sub: Type.String(),
@@ -47,8 +49,8 @@ export const UserPublic = schemaType(
   "UserPublic",
   Type.Object({
     __type: Type.Literal("UserPublic"),
-    userId: Type.String({ format: "uuid" }),
-    tenantId: Type.String({ format: "uuid" }),
+    userId: StringUUID,
+    tenantId: StringUUID,
     displayName: Type.String(),
     avatarUrl: Type.Optional(Type.String()),
   }),
@@ -86,9 +88,9 @@ export const UserPrivate = schemaType(
   "UserPrivate",
   Type.Object({
     __type: Type.Literal("UserPrivate"),
-    userId: Type.String({ format: "uuid" }),
-    tenantId: Type.String({ format: "uuid" }),
-    connectorId: Type.String({ format: "uuid" }),
+    userId: StringUUID,
+    tenantId: StringUUID,
+    connectorId: StringUUID,
     displayName: Type.String(),
     avatarUrl: Type.Optional(Type.String()),
     lastAccessedAt: Type.Optional(Type.String({ format: "date-time" })),

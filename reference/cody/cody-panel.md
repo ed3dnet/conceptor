@@ -1,6 +1,6 @@
-`panel` is our web app. It's a React app that consumes the API server, Central.
+`panel` is our web app. It's a SvelteKit app that consumes the API server, Central.
 
-This application is a React Router v7 application that uses Tailwind and DaisyUI
+This uses Svelte 5 idioms and TypeScript. Do not use Svelte 4/legacy mode.
 
 #### General application structure ####
 We expect all users of the application to hit a first-level subdirectory, which uses the name of their tenant. For example, if your tenant is called "acme", you would visit `https://conceptor.example.com/acme`. If this doesn't exist, it should return a not-found page.
@@ -10,9 +10,11 @@ At this point (in a layout), we will call the API server to get the TenantPublic
 From here, the app proceeds as usual.
 
 #### Misc Notes ####
-- we're using React Fast Refresh, so we need to be careful about how we export symbols.
-  - contexts live in `src/contexts`
-  - the hooks that use those contexts live in `src/hooks`
+Remember that we're using Svelte 5. This means stuff like:
+
+```ts
+  import { page } from '$app/state';
+```
 
 #### Making API calls ####
 openapi-fetch does calls that look like this:
@@ -28,6 +30,10 @@ const response = await centralApiClient.GET("/external-identities/oauth2/{provid
   }
 });
 ```
+
+In server contexts (loaders), generally we should be using `locals.serverUserApiClient` to make
+calls. We create this during `handle` and it encodes the user's auth token in a cookie header. In
+client contexts, we TBD.
 
 DO NOT attempt to use string interpolation for these URLs; they should provide a URL template via `params.path`.
 
