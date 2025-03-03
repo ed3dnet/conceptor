@@ -46,6 +46,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: err.friendlyName,
         message: err.message,
         reqId: request.id,
+        traceId: request.traceId,
         stack,
       };
     } else if ((err as FastifyError).validation) {
@@ -58,6 +59,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: "ValidationError",
         message: "Invalid request: " + err.message,
         reqId: request.id,
+        traceId: request.traceId,
         stack,
         details: validation!,
       } satisfies ValidationErrorResponse;
@@ -76,6 +78,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: "InternalServerError",
         message: "An internal server error occurred.",
         reqId: request.id,
+        traceId: request.traceId,
         stack,
       };
     } else {
@@ -91,6 +94,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: "InternalServerError",
         message: "An internal server error occurred.",
         reqId: request.id,
+        traceId: request.traceId,
         stack,
       };
     }
@@ -112,7 +116,7 @@ export async function buildServer(
       context: "fastify",
     }) as FastifyBaseLogger,
     ajv: {},
-    genReqId: (req) => idGenerator([req.headers["x-trace-id"]].flat()[0]),
+    genReqId: (req) => idGenerator([req.headers["x-request-id"]].flat()[0]),
   }).withTypeProvider<TypeBoxTypeProvider>();
   await registerDependencyInjection(config, fastify, rootContainer);
 

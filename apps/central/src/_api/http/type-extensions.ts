@@ -14,6 +14,7 @@ export type RequestContainer = AwilixContainer<AppRequestCradle>;
 
 declare module "fastify" {
   interface FastifyRequest {
+    readonly traceId: string;
     readonly diScope: RequestContainer;
     deps: AppRequestCradle;
 

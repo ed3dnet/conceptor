@@ -10,6 +10,8 @@ export const ErrorResponse = schemaType(
       name: Type.String(),
       message: Type.String(),
       reqId: Type.String(),
+      traceId: Type.String(),
+      spanId: Type.Optional(Type.String()),
       stack: Type.Optional(Type.String()),
     },
     {

@@ -1,5 +1,6 @@
 import { request } from "http";
 
+import { type CookieSerializeOptions } from "@fastify/cookie";
 import {
   NotFoundError,
   BadRequestError,
@@ -139,11 +140,27 @@ async function authRoutes(fastify: AppFastify) {
         new URL(config.urls.apiBaseUrl + request.originalUrl),
       );
 
-      reply.setCookie(sessionRet.sessionCookieName, sessionRet.sessionToken, {
+      const sessionCookieName = sessionRet.sessionCookieName;
+      const sessionId = sessionRet.sessionId;
+      const sessionCookieDomain = config.auth.sessionCookie.domain;
+
+      const cookieOptions: CookieSerializeOptions = {
         httpOnly: true,
         secure: config.auth.sessionCookie.secure,
+        sameSite: "strict",
+        domain: sessionCookieDomain,
         maxAge: config.auth.sessionCookie.maxAgeMs / 1000,
-      });
+      };
+
+      request.log.info(
+        { sessionCookieName, sessionId, cookieOptions },
+        "Login callback succeeded; setting login cookie.",
+      );
+      reply.setCookie(
+        sessionRet.sessionCookieName,
+        sessionRet.sessionToken,
+        cookieOptions,
+      );
 
       reply.code(302);
       reply.header("Location", sessionRet.redirectTo);
