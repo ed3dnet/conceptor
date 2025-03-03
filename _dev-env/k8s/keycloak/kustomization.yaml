@@ -5,4 +5,4 @@ resources:
 configMapGenerator:
   - name: keycloak-realm-config
     files:
-      - config/democo.json
+      - config/technova.json

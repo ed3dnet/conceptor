@@ -15,6 +15,7 @@ export function buildTenantUserCookieHandler(
     in: "cookie",
     name: authConfig.sessionCookie.name,
     fn: async (value, request) => {
+      console.log("BUTTS");
       const { auth, memorySWR } = request.deps;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

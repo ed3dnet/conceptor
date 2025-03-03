@@ -103,3 +103,25 @@ export const UserPrivate = schemaType(
   }),
 );
 export type UserPrivate = Static<typeof UserPrivate>;
+
+export const CreateUserInput = schemaType(
+  "CreateUserInput",
+  Type.Object({
+    __type: Type.Literal("CreateUserInput"),
+    tenantId: StringUUID,
+    connectorId: StringUUID,
+    idpUserInfo: IdPUserInfo,
+    displayName: Type.Optional(Type.String()),
+    userId: Type.Optional(StringUUID),
+    avatarUrl: Type.Optional(Type.String()),
+    externalIds: Type.Optional(
+      Type.Array(
+        Type.Object({
+          type: Type.String(),
+          id: Type.String(),
+        }),
+      ),
+    ),
+  }),
+);
+export type CreateUserInput = Static<typeof CreateUserInput>;

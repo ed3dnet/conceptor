@@ -2,6 +2,7 @@
 import { writeFile } from "node:fs/promises";
 
 import { type Logger } from "pino";
+import { ulid } from "ulidx";
 
 export type FetchFn = typeof fetch;
 export type FetchResponse = Awaited<ReturnType<typeof fetch>>;
@@ -25,6 +26,7 @@ export function loggedFetch(
 ): typeof fetch {
   logger = logger.child({ context: "fetch" });
   return async (url: Request | string | URL, options?: RequestInit) => {
+    const spanId = ulid();
     // Determine the URL string
     let urlObj: URL;
     if (typeof url === "string") {
@@ -37,6 +39,7 @@ export function loggedFetch(
 
     // Strip query string
     logger = logger.child({
+      spanId,
       remote: {
         method: options?.method ?? "GET",
         url: urlObj.origin + urlObj.pathname,
@@ -49,7 +52,17 @@ export function loggedFetch(
     const startTime = Date.now();
 
     try {
-      const response = await baseFetch(url, options);
+      const response = await baseFetch(url, {
+        ...extraOptions,
+        ...options,
+        ...{
+          headers: {
+            ...extraOptions.headers,
+            ...options?.headers,
+            "x-span-id": spanId,
+          },
+        },
+      });
 
       // Log after the request with timings
       const duration = Date.now() - startTime;

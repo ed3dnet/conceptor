@@ -16,11 +16,12 @@ export const seed: SeedFn = async (deps, logger) => {
   } as any);
 
   const connector = await deps.authConnectors.TX_createConnector({
+    authConnectorId: "00000000-0000-0000-0000-000000000000",
     tenantId: tenant.tenantId,
     name: "Keycloak OIDC",
     domains: ["example.net"],
     settings: {
-      configurationUrl: `${keycloakUrl}/realms/democo/.well-known/openid-configuration`,
+      configurationUrl: `${keycloakUrl}/realms/technova/.well-known/openid-configuration`,
       clientId: "conceptor-oidc",
       clientSecret: "oidc-client-secret",
       scopes: ["openid", "email", "profile"],

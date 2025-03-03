@@ -23,7 +23,11 @@ import {
 } from "../../lib/datastores/postgres/types.server.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
 
-import { type IdPUserInfo, type UserPrivate } from "./schemas.js";
+import {
+  type CreateUserInput,
+  type IdPUserInfo,
+  type UserPrivate,
+} from "./schemas.js";
 
 export class UserService {
   private readonly logger: Logger;
@@ -373,34 +377,23 @@ export class UserService {
   /**
    * Creates a new user from IdP user information
    *
-   * @param tenantIdOrObj The tenant ID or tenant object
-   * @param connectorIdOrObj The auth connector ID or connector object
-   * @param idpUserInfo The IdP user info
-   * @param displayName Optional display name (defaults to email or name from idpUserInfo)
-   * @param options Additional creation options
+   * @param input User creation parameters
    * @param executor Optional database executor
    * @returns The created user
    */
   async createUser(
-    tenantIdOrObj: string | DBTenant,
-    connectorIdOrObj: string | DBAuthConnector,
-    idpUserInfo: IdPUserInfo,
-    displayName?: string,
-    options: {
-      avatarUrl?: string;
-      externalIds?: Array<{ type: string; id: string }>;
-    } = {},
+    input: CreateUserInput,
     executor: Drizzle = this.db,
   ): Promise<DBUser> {
-    const tenantId =
-      typeof tenantIdOrObj === "string"
-        ? tenantIdOrObj
-        : tenantIdOrObj.tenantId;
-
-    const connectorId =
-      typeof connectorIdOrObj === "string"
-        ? connectorIdOrObj
-        : connectorIdOrObj.authConnectorId;
+    const {
+      tenantId,
+      connectorId,
+      idpUserInfo,
+      displayName,
+      userId,
+      avatarUrl,
+      externalIds,
+    } = input;
 
     // Determine display name if not provided
     const userDisplayName =
@@ -418,10 +411,11 @@ export class UserService {
       const [user] = await tx
         .insert(USERS)
         .values({
+          userId, // Now optional and will be auto-generated if not provided
           tenantId,
           connectorId,
           displayName: userDisplayName,
-          avatarUrl: options.avatarUrl,
+          avatarUrl,
           idpUserInfo: encryptedIdpUserInfo,
           lastAccessedAt: new Date(),
         })
@@ -444,8 +438,8 @@ export class UserService {
       }
 
       // Add external IDs
-      if (options.externalIds) {
-        for (const extId of options.externalIds) {
+      if (externalIds) {
+        for (const extId of externalIds) {
           await tx.insert(USER_EXTERNAL_IDS).values({
             userId: user.userId,
             externalIdType: extId.type,

@@ -1,4 +1,4 @@
-import { error, isRedirect, redirect } from '@sveltejs/kit';
+import { error, isHttpError, isRedirect, redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params, locals, url }) => {
@@ -15,11 +15,13 @@ export const load: LayoutServerLoad = async ({ params, locals, url }) => {
       }
     });
 
-    const tenant = tenantResponse.data;
 
-    if (!tenant) {
+    const tenant = tenantResponse.data;
+    if (!tenantResponse.response.ok || !tenant) {
       error(404, `Tenant ${tenantSlug} not found`);
     }
+
+
 
     // Check if user is authenticated by making whoami request
     let user = null;
@@ -54,19 +56,19 @@ export const load: LayoutServerLoad = async ({ params, locals, url }) => {
       throw err;
     }
 
-    const { status, message } = err as { status?: number; message?: string };
+    if (isHttpError(err)) {
+      logger.error({ err }, 'Error in tenant layout load');
 
-    logger.error({ err }, 'Error in tenant layout load:');
+      // For 401 errors, redirect to login
+      if (err.status === 401) {
+        redirect(302, `/${tenantSlug}/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+      }
 
-    // For 401 errors, redirect to login
-    if (status === 401) {
-      redirect(302, `/${tenantSlug}/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+      // Return other errors
+      throw err;
     }
 
-    // Return other errors
-    return {
-      status: status || 500,
-      error: message || 'Unknown error'
-    };
+    logger.error({ err }, 'UNHANDLED error in tenant layout load');
+    throw err;
   }
 };

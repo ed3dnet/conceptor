@@ -112,7 +112,7 @@ export async function buildServer(
       context: "fastify",
     }) as FastifyBaseLogger,
     ajv: {},
-    genReqId: (req) => idGenerator([req.headers["x-correlation-id"]].flat()[0]),
+    genReqId: (req) => idGenerator([req.headers["x-trace-id"]].flat()[0]),
   }).withTypeProvider<TypeBoxTypeProvider>();
   await registerDependencyInjection(config, fastify, rootContainer);
 
@@ -220,7 +220,7 @@ export async function buildServer(
     );
   });
 
-  await fastify.register(API_ROUTES);
+  await fastify.register(API_ROUTES, { prefix: "/api" });
 
   return fastify;
 }

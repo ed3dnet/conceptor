@@ -12,7 +12,9 @@ import { loadAppConfigFromSvelteEnv } from "./lib/config/svelte-loader.js";
 
 const appConfig = loadAppConfigFromSvelteEnv();
 
-const overrideLogLevel: LogLevel | null = "debug";
+const overrideLogLevel: LogLevel | null = null;
+const overrideFetchLogLevel: LogLevel | null = "debug";
+
 const ROOT_LOGGER = buildStandardLogger("site-panel", overrideLogLevel ?? appConfig.logLevel, {
   useStdout: false,
   prettyPrint: appConfig.prettyLogs,
@@ -27,12 +29,12 @@ const panelPSK = sha512_256(sha512_256(appConfig.interop.preSharedKey));
 
 export const handle: Handle = sequence(async ({ event, resolve }) => {
   const startTimestamp = Date.now();
-  const requestId = event.request.headers.get("x-request-id") ?? genRandomId();
+  const requestId = event.request.headers.get("x-trace-id") ?? genRandomId();
 
   const logger = ROOT_LOGGER.child({ reqId: requestId });
 
   const fetchLogger = logger.child({ component: "fetch" });
-  fetchLogger.level = appConfig.http.fetchLogLevel;
+  fetchLogger.level = overrideFetchLogLevel ?? appConfig.http.fetchLogLevel;
   const fetch = loggedFetch(fetchLogger, global.fetch);
 
   const rawHost = event.request.headers.get("host");
@@ -65,7 +67,7 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
     clientOpts: {
       headers: {
         [PANEL_SITE_PSK_HEADER]: panelPSK,
-        "x-correlation-id": requestId,
+        "x-trace-id": requestId,
       },
       duplex: "half",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,7 +82,7 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
     const userApiClientHeaders: RequestInit["headers"] = {
       Cookie: `${appConfig.interop.sessionCookieName}=${authToken}`,
       [PANEL_SITE_PSK_HEADER]: panelPSK,
-      "x-correlation-id": requestId,
+      "x-trace-id": requestId,
     };
 
     // @ts-expect-error this is where we set a readonly value

@@ -25,6 +25,7 @@ export type OIDCConnectorState = Static<typeof OIDCConnectorState>;
 export const CreateAuthConnectorInput = schemaType(
   "CreateAuthConnectorInput",
   Type.Object({
+    authConnectorId: Type.Optional(StringUUID),
     tenantId: StringUUID,
     name: Type.String({ minLength: 1, maxLength: 255 }),
     settings: OIDCConnectorSettings,

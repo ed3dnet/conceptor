@@ -241,6 +241,7 @@ export class AuthConnectorService {
       const [connector] = await tx
         .insert(AUTH_CONNECTORS)
         .values({
+          authConnectorId: input.authConnectorId,
           tenantId: input.tenantId,
           name: input.name,
           state: await this.vault.encrypt(state),
