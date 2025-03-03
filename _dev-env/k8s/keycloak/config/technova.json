@@ -1,7 +1,7 @@
 {
-  "realm": "democo",
+  "realm": "technova",
   "enabled": true,
-  "displayName": "Demo Company, Inc.",
+  "displayName": "TechNova Global",
   "users": [
     {
       "username": "testbob",

@@ -1,6 +1,6 @@
 tilt 0.33.20
 nodejs 23.9.0
-python 3.11.9
+python 3.11.11
 kustomize 5.4.3
 temporal 1.1.1
 postgres 16.3

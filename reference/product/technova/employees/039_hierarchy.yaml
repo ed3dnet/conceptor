@@ -1,0 +1,427 @@
+# MANAGERS REPORTING TO DIRECTOR
+---
+id: "EMP039.001"
+name:
+  first: "Marcus"
+  last: "Alvarez"
+title: "Solution Architecture Manager"
+level: "Manager"
+department: "Enterprise Software"
+sub_department: "Solution Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039"
+tenure:
+  hire_date: "2013-03-15"
+key_skills: ["Enterprise Architecture", "Integration Patterns", "API Design", "Technical Leadership"]
+product_association: ["NovaSuite Enterprise", "NovaSuite Financial"]
+---
+id: "EMP039.002"
+name:
+  first: "Diana"
+  last: "Chen"
+title: "Integration Architecture Manager"
+level: "Manager"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP039"
+tenure:
+  hire_date: "2015-09-10"
+  acquired_from: "CloudMatrix"
+  acquisition_date: "2015-09-01"
+key_skills: ["Integration Patterns", "Microservices", "Event-Driven Architecture", "API Gateways"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP039.003"
+name:
+  first: "Raymond"
+  last: "Jones"
+  preferred: "Ray"
+title: "Data Architecture Manager"
+level: "Manager"
+department: "Enterprise Software"
+sub_department: "Data Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039"
+  dotted_line_ids: ["EMP018"]
+tenure:
+  hire_date: "2014-05-22"
+key_skills: ["Data Modeling", "Data Integration", "ETL Design", "Database Architecture"]
+product_association: ["NovaSuite Enterprise", "NovaInsight"]
+---
+id: "EMP039.004"
+name:
+  first: "Leila"
+  last: "Takahashi"
+title: "Security Architecture Manager"
+level: "Manager"
+department: "Enterprise Software"
+sub_department: "Security Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039"
+  dotted_line_ids: ["EMP016"]
+tenure:
+  hire_date: "2019-08-05"
+  acquired_from: "SecureLogic"
+  acquisition_date: "2019-07-01"
+key_skills: ["Security Architecture", "Threat Modeling", "Zero Trust Design", "Compliance Architecture"]
+product_association: ["NovaSuite Enterprise", "NovaShield", "NovaSafe Compliance"]
+
+# TEAM LEADS UNDER MANAGERS
+---
+id: "EMP039.001.001"
+name:
+  first: "Elena"
+  last: "Vasquez"
+title: "Senior Solution Architect, Financial Services"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Solution Architecture"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.001"
+  dotted_line_ids: ["EMP040"]
+tenure:
+  hire_date: "2017-08-03"
+key_skills: ["Financial Systems Architecture", "Regulatory Compliance", "API Security", "System Integration"]
+product_association: ["NovaSuite Financial", "NovaSafe Compliance"]
+---
+id: "EMP039.001.002"
+name:
+  first: "Jamal"
+  last: "Harris"
+title: "Senior Solution Architect, Operations"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Solution Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP039.001"
+tenure:
+  hire_date: "2016-01-12"
+key_skills: ["Supply Chain Systems", "Operational Architecture", "Process Optimization", "Integration Modeling"]
+product_association: ["NovaSuite Operations", "NovaAutomate"]
+---
+id: "EMP039.002.001"
+name:
+  first: "Ryan"
+  last: "Patel"
+title: "Lead Integration Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.002"
+tenure:
+  hire_date: "2016-10-03"
+  acquired_from: "CloudMatrix"
+  acquisition_date: "2016-10-01"
+key_skills: ["API Design", "System Integration", "Microservices", "Event-Driven Architecture"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP039.002.002"
+name:
+  first: "Michelle"
+  last: "Wong"
+title: "Senior API Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "San Francisco"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP039.002"
+tenure:
+  hire_date: "2018-03-14"
+key_skills: ["API Strategy", "RESTful Design", "API Security", "Integration Patterns"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP039.003.001"
+name:
+  first: "David"
+  last: "Singh"
+  preferred: "Dave"
+title: "Lead Data Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Data Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.003"
+tenure:
+  hire_date: "2017-06-15"
+key_skills: ["Data Modeling", "Data Warehousing", "ETL Design", "Big Data Architecture"]
+product_association: ["NovaSuite Enterprise", "NovaInsight"]
+
+# INDIVIDUAL CONTRIBUTORS (UNDER ELENA VASQUEZ)
+---
+id: "EMP039.001.001.001"
+name:
+  first: "Priya"
+  last: "Sharma"
+title: "Solution Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Financial Solutions"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.001.001"
+tenure:
+  hire_date: "2019-03-05"
+key_skills: ["Banking Systems", "Financial Integration", "Payment Systems", "API Design"]
+product_association: ["NovaSuite Financial"]
+---
+id: "EMP039.001.001.002"
+name:
+  first: "Michael"
+  last: "Chen"
+title: "Associate Solution Architect"
+level: "Associate"
+department: "Enterprise Software"
+sub_department: "Financial Solutions"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.001.001"
+tenure:
+  hire_date: "2021-06-15"
+key_skills: ["Financial Data Modeling", "System Integration", "Regulatory Reporting", "Cloud Architecture"]
+product_association: ["NovaSuite Financial", "NovaCloud Platform"]
+---
+id: "EMP039.001.001.003"
+name:
+  first: "Sophia"
+  last: "Williams"
+title: "Junior Solution Architect"
+level: "Junior"
+department: "Enterprise Software"
+sub_department: "Financial Solutions"
+location:
+  city: "Chicago"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP039.001.001"
+tenure:
+  hire_date: "2023-02-10"
+key_skills: ["Financial Systems", "API Design", "System Documentation", "Integration Testing"]
+product_association: ["NovaSuite Financial"]
+---
+id: "EMP039.001.001.004"
+name:
+  first: "Benjamin"
+  last: "Lee"
+  preferred: "Ben"
+title: "Solution Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Financial Solutions"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.001.001"
+tenure:
+  hire_date: "2018-09-20"
+key_skills: ["Insurance Systems", "Compliance Architecture", "Financial Reporting", "System Integration"]
+product_association: ["NovaSuite Financial", "NovaSafe Compliance"]
+
+# INDIVIDUAL CONTRIBUTORS (UNDER JAMAL HARRIS)
+---
+id: "EMP039.001.002.001"
+name:
+  first: "Alejandro"
+  last: "Martinez"
+  preferred: "Alex"
+title: "Solution Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Operations Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.001.002"
+tenure:
+  hire_date: "2017-11-15"
+key_skills: ["Supply Chain Systems", "Logistics Architecture", "Process Integration", "System Optimization"]
+product_association: ["NovaSuite Operations"]
+---
+id: "EMP039.001.002.002"
+name:
+  first: "Samantha"
+  last: "Johnson"
+  preferred: "Sam"
+title: "Associate Solution Architect"
+level: "Associate"
+department: "Enterprise Software"
+sub_department: "Operations Architecture"
+location:
+  city: "Chicago"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.001.002"
+tenure:
+  hire_date: "2020-08-03"
+key_skills: ["Process Modeling", "System Integration", "Requirements Analysis", "Solution Design"]
+product_association: ["NovaSuite Operations", "NovaWorkflow"]
+---
+id: "EMP039.001.002.003"
+name:
+  first: "Thomas"
+  last: "Nguyen"
+  preferred: "Tom"
+title: "Solution Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Operations Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP039.001.002"
+tenure:
+  hire_date: "2016-05-17"
+  acquired_from: "Processive Systems"
+  acquisition_date: "2016-05-01"
+key_skills: ["Business Process Architecture", "Workflow Optimization", "System Integration", "Process Automation"]
+product_association: ["NovaSuite Operations", "NovaAutomate"]
+
+# INDIVIDUAL CONTRIBUTORS (UNDER RYAN PATEL)
+---
+id: "EMP039.002.001.001"
+name:
+  first: "Julia"
+  last: "Rodriguez"
+title: "Integration Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.002.001"
+tenure:
+  hire_date: "2017-04-10"
+  acquired_from: "CloudMatrix"
+  acquisition_date: "2017-04-01"
+key_skills: ["API Design", "Microservices", "Integration Patterns", "Service Mesh"]
+product_association: ["NovaConnect"]
+---
+id: "EMP039.002.001.002"
+name:
+  first: "Daniel"
+  last: "Park"
+title: "Integration Developer"
+level: "Associate"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.002.001"
+tenure:
+  hire_date: "2022-03-14"
+key_skills: ["API Development", "Integration Testing", "Message Queuing", "RESTful Services"]
+product_association: ["NovaConnect", "NovaSuite Enterprise"]
+---
+id: "EMP039.002.001.003"
+name:
+  first: "Rachel"
+  last: "Foster"
+title: "Senior Integration Architect"
+level: "Senior"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP039.002.001"
+tenure:
+  hire_date: "2019-09-23"
+key_skills: ["Enterprise Integration", "API Gateway Architecture", "Event-Driven Design", "System Interoperability"]
+product_association: ["NovaConnect", "NovaSuite Enterprise"]
+---
+id: "EMP039.002.001.004"
+name:
+  first: "Vikram"
+  last: "Patel"
+title: "Associate Integration Architect"
+level: "Associate"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.002.001"
+tenure:
+  hire_date: "2021-11-01"
+key_skills: ["API Design", "Integration Testing", "Microservices", "Documentation"]
+product_association: ["NovaConnect"]
+---
+id: "EMP039.002.001.005"
+name:
+  first: "Lisa"
+  last: "Wang"
+title: "Junior Integration Architect"
+level: "Junior"
+department: "Enterprise Software"
+sub_department: "Integration Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP039.002.001"
+tenure:
+  hire_date: "2023-07-10"
+key_skills: ["API Development", "Integration Testing", "Technical Documentation", "RESTful Services"]
+product_association: ["NovaConnect"]

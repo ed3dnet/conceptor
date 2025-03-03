@@ -8,6 +8,8 @@ import {
   type DBUserExternalId,
   type DBUser,
   type DBUserTag,
+  type DBTenant,
+  type DBAuthConnector,
 } from "../../_db/models.js";
 import {
   USERS,
@@ -366,5 +368,105 @@ export class UserService {
       .where(
         sql`${USER_EMAILS.userId} = ${userId} AND ${USER_EMAILS.email} = ${email}`,
       );
+  }
+
+  /**
+   * Creates a new user from IdP user information
+   *
+   * @param tenantIdOrObj The tenant ID or tenant object
+   * @param connectorIdOrObj The auth connector ID or connector object
+   * @param idpUserInfo The IdP user info
+   * @param displayName Optional display name (defaults to email or name from idpUserInfo)
+   * @param options Additional creation options
+   * @param executor Optional database executor
+   * @returns The created user
+   */
+  async createUser(
+    tenantIdOrObj: string | DBTenant,
+    connectorIdOrObj: string | DBAuthConnector,
+    idpUserInfo: IdPUserInfo,
+    displayName?: string,
+    options: {
+      avatarUrl?: string;
+      externalIds?: Array<{ type: string; id: string }>;
+    } = {},
+    executor: Drizzle = this.db,
+  ): Promise<DBUser> {
+    const tenantId =
+      typeof tenantIdOrObj === "string"
+        ? tenantIdOrObj
+        : tenantIdOrObj.tenantId;
+
+    const connectorId =
+      typeof connectorIdOrObj === "string"
+        ? connectorIdOrObj
+        : connectorIdOrObj.authConnectorId;
+
+    // Determine display name if not provided
+    const userDisplayName =
+      displayName ||
+      idpUserInfo.name ||
+      idpUserInfo.preferred_username ||
+      idpUserInfo.email.split("@")[0] ||
+      idpUserInfo.email;
+
+    // Encrypt IdP user info before storing
+    const encryptedIdpUserInfo = await this.vault.encrypt(idpUserInfo);
+
+    return executor.transaction(async (tx) => {
+      // Create the user record
+      const [user] = await tx
+        .insert(USERS)
+        .values({
+          tenantId,
+          connectorId,
+          displayName: userDisplayName,
+          avatarUrl: options.avatarUrl,
+          idpUserInfo: encryptedIdpUserInfo,
+          lastAccessedAt: new Date(),
+        })
+        .returning();
+
+      if (!user) {
+        throw new Error("Failed to create user");
+      }
+
+      // Add user email from IdP info
+      await tx.insert(USER_EMAILS).values({
+        userId: user.userId,
+        email: idpUserInfo.email,
+        isPrimary: true,
+      });
+
+      // Add additional emails if present in IdP info
+      if (idpUserInfo.email_verified) {
+        await this.setUserTag(user.userId, "email_verified", "true", tx);
+      }
+
+      // Add external IDs
+      if (options.externalIds) {
+        for (const extId of options.externalIds) {
+          await tx.insert(USER_EXTERNAL_IDS).values({
+            userId: user.userId,
+            externalIdType: extId.type,
+            externalId: extId.id,
+          });
+        }
+      }
+
+      // Add external ID for IdP sub
+      await tx.insert(USER_EXTERNAL_IDS).values({
+        userId: user.userId,
+        externalIdType: `${connectorId}:sub`,
+        externalId: idpUserInfo.sub,
+      });
+
+      this.logger.info(
+        { userId: user.userId, tenantId, email: idpUserInfo.email },
+        "Created new user from IdP information",
+      );
+
+      return user;
+    });
   }
 }

@@ -1,0 +1,1733 @@
+# Managers reporting to EMP042
+---
+id: "EMP042.001"
+name:
+  first: "Alejandro"
+  last: "Martinez"
+title: "Manager, Incident Response"
+level: "Manager"
+department: "Security"
+sub_department: "Incident Response"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042"
+tenure:
+  hire_date: "2020-03-15"
+  acquired_from: "SecureLogic"
+  acquisition_date: "2023-07-15"
+key_skills: ["Incident Management", "Digital Forensics", "Crisis Response", "Breach Analysis"]
+product_association: ["NovaShield", "NovaShield Intelligence"]
+
+---
+id: "EMP042.002"
+name:
+  first: "Vanessa"
+  last: "Chen"
+title: "Manager, Security Monitoring"
+level: "Manager"
+department: "Security"
+sub_department: "Monitoring"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042"
+tenure:
+  hire_date: "2021-02-10"
+key_skills: ["Security Monitoring", "SIEM Administration", "Alert Triage", "Continuous Monitoring"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.003"
+name:
+  first: "Malik"
+  last: "Johnson"
+title: "Manager, Security Analytics"
+level: "Manager"
+department: "Security"
+sub_department: "Analytics"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP042"
+  dotted_line_ids: ["EMP044"]
+tenure:
+  hire_date: "2020-09-01"
+key_skills: ["Security Analytics", "Threat Intelligence", "Behavioral Analysis", "Risk Scoring"]
+product_association: ["NovaShield Intelligence", "NovaAnalytics"]
+
+---
+id: "EMP042.004"
+name:
+  first: "Ravi"
+  last: "Patel"
+title: "Manager, SOC Engineering"
+level: "Manager"
+department: "Security"
+sub_department: "SOC Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042"
+tenure:
+  hire_date: "2019-12-15"
+key_skills: ["SOC Architecture", "Security Tooling", "Automation", "Integration Engineering"]
+product_association: ["NovaShield"]
+
+# Team Leads reporting to Managers
+---
+id: "EMP042.001.001"
+name:
+  first: "Sophie"
+  last: "Wallace"
+title: "Team Lead, Digital Forensics"
+level: "Senior"
+department: "Security"
+sub_department: "Digital Forensics"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001"
+tenure:
+  hire_date: "2020-04-01"
+  acquired_from: "SecureLogic"
+  acquisition_date: "2023-07-15"
+key_skills: ["Digital Forensics", "Malware Analysis", "Memory Analysis", "Evidence Collection"]
+product_association: ["NovaShield Intelligence"]
+
+---
+id: "EMP042.001.002"
+name:
+  first: "Derek"
+  last: "Washington"
+  preferred: "D"
+title: "Team Lead, Breach Response"
+level: "Senior"
+department: "Security"
+sub_department: "Breach Response"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001"
+tenure:
+  hire_date: "2022-01-10"
+key_skills: ["Breach Response", "Crisis Management", "Containment Strategies", "Recovery Planning"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.001"
+name:
+  first: "Priya"
+  last: "Singh"
+title: "Team Lead, 24x7 Security Operations"
+level: "Senior"
+department: "Security"
+sub_department: "24x7 Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.002"
+tenure:
+  hire_date: "2021-03-15"
+key_skills: ["SOC Operations", "Shift Management", "Alert Handling", "Escalation Procedures"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.002"
+name:
+  first: "Thomas"
+  last: "Reynolds"
+  preferred: "Tom"
+title: "Team Lead, SIEM Engineering"
+level: "Senior"
+department: "Security"
+sub_department: "SIEM Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP042.002"
+tenure:
+  hire_date: "2021-07-01"
+key_skills: ["SIEM Administration", "Log Management", "Detection Engineering", "Correlation Rules"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.004.001"
+name:
+  first: "Aisha"
+  last: "Williams"
+title: "Team Lead, Detection Engineering"
+level: "Senior"
+department: "Security"
+sub_department: "Detection Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.004"
+  dotted_line_ids: ["EMP042.003"]
+tenure:
+  hire_date: "2020-01-15"
+key_skills: ["Detection Engineering", "Threat Modeling", "MITRE ATT&CK", "Security Automation"]
+product_association: ["NovaShield", "NovaShield Intelligence"]
+
+---
+id: "EMP042.004.002"
+name:
+  first: "Jason"
+  last: "Tanaka"
+title: "Team Lead, Security Tooling"
+level: "Senior"
+department: "Security"
+sub_department: "Security Tooling"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP042.004"
+tenure:
+  hire_date: "2022-03-10"
+key_skills: ["Security Tools", "SOAR Implementation", "API Integration", "Tool Development"]
+product_association: ["NovaShield"]
+
+# Individual Contributors reporting to Team Leads
+---
+id: "EMP042.001.001.001"
+name:
+  first: "Morgan"
+  last: "Chen"
+title: "Senior Digital Forensics Analyst"
+level: "Senior"
+department: "Security"
+sub_department: "Digital Forensics"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001.001"
+tenure:
+  hire_date: "2020-06-15"
+  acquired_from: "SecureLogic"
+  acquisition_date: "2023-07-15"
+key_skills: ["Digital Forensics", "Disk Imaging", "Evidence Analysis", "Chain of Custody"]
+product_association: ["NovaShield Intelligence"]
+
+---
+id: "EMP042.001.001.002"
+name:
+  first: "Zainab"
+  last: "Al-Farsi"
+title: "Digital Forensics Analyst"
+level: "Associate"
+department: "Security"
+sub_department: "Digital Forensics"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001.001"
+tenure:
+  hire_date: "2022-08-01"
+key_skills: ["Forensic Analysis", "Memory Forensics", "Log Analysis", "Malware Detection"]
+product_association: ["NovaShield Intelligence"]
+
+---
+id: "EMP042.001.001.003"
+name:
+  first: "Tyler"
+  last: "McKenzie"
+title: "Junior Digital Forensics Analyst"
+level: "Junior"
+department: "Security"
+sub_department: "Digital Forensics"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001.001"
+tenure:
+  hire_date: "2023-11-01"
+key_skills: ["Computer Forensics", "Data Recovery", "Documentation", "Forensic Tools"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.001.002.001"
+name:
+  first: "Nicholas"
+  last: "Garcia"
+  preferred: "Nick"
+title: "Senior Breach Response Specialist"
+level: "Senior"
+department: "Security"
+sub_department: "Breach Response"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001.002"
+tenure:
+  hire_date: "2022-02-15"
+key_skills: ["Incident Containment", "Breach Assessment", "Recovery Planning", "Crisis Communication"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.001.002.002"
+name:
+  first: "Lauren"
+  last: "Jefferson"
+title: "Breach Response Specialist"
+level: "Associate"
+department: "Security"
+sub_department: "Breach Response"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP042.001.002"
+tenure:
+  hire_date: "2022-06-01"
+key_skills: ["Incident Response", "Threat Hunting", "Damage Assessment", "Remediation Planning"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.001.002.003"
+name:
+  first: "Marcus"
+  last: "Olsen"
+title: "Breach Response Specialist"
+level: "Associate"
+department: "Security"
+sub_department: "Breach Response"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001.002"
+tenure:
+  hire_date: "2023-01-15"
+key_skills: ["Incident Response", "Security Controls", "Network Forensics", "Attack Surface Analysis"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.001.002.004"
+name:
+  first: "Grace"
+  last: "Khoury"
+title: "Junior Breach Response Specialist"
+level: "Junior"
+department: "Security"
+sub_department: "Breach Response"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.001.002"
+tenure:
+  hire_date: "2024-01-10"
+key_skills: ["Incident Documentation", "Basic Forensics", "Security Tools", "Response Procedures"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.001.001"
+name:
+  first: "Jacob"
+  last: "Mendoza"
+  preferred: "Jake"
+title: "Senior SOC Analyst"
+level: "Senior"
+department: "Security"
+sub_department: "24x7 Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.002.001"
+tenure:
+  hire_date: "2021-04-01"
+key_skills: ["Security Monitoring", "Threat Detection", "Incident Triage", "Alert Analysis"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.001.002"
+name:
+  first: "Olivia"
+  last: "Chang"
+title: "SOC Analyst"
+level: "Associate"
+department: "Security"
+sub_department: "24x7 Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.002.001"
+tenure:
+  hire_date: "2022-05-15"
+key_skills: ["Security Monitoring", "Alert Analysis", "Incident Escalation", "Security Tools"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.001.003"
+name:
+  first: "Dwayne"
+  last: "Carter"
+title: "SOC Analyst"
+level: "Associate"
+department: "Security"
+sub_department: "24x7 Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.002.001"
+tenure:
+  hire_date: "2022-09-01"
+key_skills: ["Security Operations", "Alert Handling", "Initial Response", "Threat Identification"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.001.004"
+name:
+  first: "Sarah"
+  last: "Novak"
+title: "SOC Analyst"
+level: "Associate"
+department: "Security"
+sub_department: "24x7 Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.002.001"
+tenure:
+  hire_date: "2023-03-01"
+key_skills: ["Security Monitoring", "SIEM Operations", "Incident Handling", "Security Controls"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.002.001.005"
+name:
+  first: "Raj"
+  last: "Mehta"
+title: "Junior SOC Analyst"
+level: "Junior"
+department: "Security"
+sub_department: "24x7 Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.002.001"
+tenure:
+  hire_date: "2023-09-15"
+key_skills: ["Basic Security Monitoring", "Alert Triage", "Documentation", "Security Tools"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.004.001.001"
+name:
+  first: "Victoria"
+  last: "Santos"
+  preferred: "Tori"
+title: "Senior Detection Engineer"
+level: "Senior"
+department: "Security"
+sub_department: "Detection Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.004.001"
+tenure:
+  hire_date: "2020-03-01"
+key_skills: ["Detection Development", "SIEM Rule Creation", "Threat Modeling", "Security Engineering"]
+product_association: ["NovaShield", "NovaShield Intelligence"]
+
+---
+id: "EMP042.004.001.002"
+name:
+  first: "Khalid"
+  last: "Al-Mansour"
+title: "Detection Engineer"
+level: "Associate"
+department: "Security"
+sub_department: "Detection Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP042.004.001"
+tenure:
+  hire_date: "2021-08-01"
+key_skills: ["Detection Rules", "Security Content", "Attack Simulation", "Threat Research"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.004.001.003"
+name:
+  first: "Erica"
+  last: "Montgomery"
+title: "Detection Engineer"
+level: "Associate"
+department: "Security"
+sub_department: "Detection Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.004.001"
+tenure:
+  hire_date: "2022-11-01"
+key_skills: ["Rule Development", "Security Logic", "False Positive Tuning", "Detection Testing"]
+product_association: ["NovaShield"]
+
+---
+id: "EMP042.004.001.004"
+name:
+  first: "Wei"
+  last: "Zhang"
+title: "Junior Detection Engineer"
+level: "Junior"
+department: "Security"
+sub_department: "Detection Engineering"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP042.004.001"
+tenure:
+  hire_date: "2023-06-15"
+key_skills: ["Basic Rule Development", "Testing", "Documentation", "Security Content"]
+product_association: ["NovaShield"]
+
+# Managers reporting to EMP043
+---
+id: "EMP043.001"
+name:
+  first: "Hannah"
+  last: "Rodriguez"
+title: "Manager, CI/CD Systems"
+level: "Manager"
+department: "Engineering"
+sub_department: "CI/CD"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043"
+tenure:
+  hire_date: "2017-08-10"
+key_skills: ["Continuous Integration", "Continuous Delivery", "Pipeline Design", "Build Automation"]
+product_association: ["NovaCloud Platform", "NovaSuite Enterprise"]
+
+---
+id: "EMP043.002"
+name:
+  first: "Cameron"
+  last: "West"
+title: "Manager, Infrastructure Automation"
+level: "Manager"
+department: "Engineering"
+sub_department: "Infrastructure Automation"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043"
+tenure:
+  hire_date: "2016-03-22"
+key_skills: ["Infrastructure as Code", "Configuration Management", "Automation Tools", "Cloud Infrastructure"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003"
+name:
+  first: "Priya"
+  last: "Chakraborty"
+title: "Manager, Site Reliability Engineering"
+level: "Manager"
+department: "Engineering"
+sub_department: "SRE"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043"
+  dotted_line_ids: ["EMP084"]
+tenure:
+  hire_date: "2018-09-01"
+key_skills: ["Site Reliability", "Service Monitoring", "Incident Management", "Performance Optimization"]
+product_association: ["NovaCloud Platform", "NovaSuite Enterprise"]
+
+---
+id: "EMP043.004"
+name:
+  first: "Erik"
+  last: "Johansson"
+title: "Manager, DevSecOps"
+level: "Manager"
+department: "Engineering"
+sub_department: "DevSecOps"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043"
+  dotted_line_ids: ["EMP016"]
+tenure:
+  hire_date: "2019-11-01"
+key_skills: ["Security Integration", "Secure Pipelines", "Vulnerability Management", "Compliance Automation"]
+product_association: ["NovaShield", "NovaCloud Platform"]
+
+# Team Leads reporting to Managers
+---
+id: "EMP043.001.001"
+name:
+  first: "Jordan"
+  last: "Taylor"
+title: "Team Lead, Pipeline Engineering"
+level: "Senior"
+department: "Engineering"
+sub_department: "Pipeline Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001"
+tenure:
+  hire_date: "2018-02-15"
+key_skills: ["Pipeline Architecture", "Jenkins", "GitHub Actions", "Build Systems"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.001.002"
+name:
+  first: "Sophia"
+  last: "Martinez"
+title: "Team Lead, Release Engineering"
+level: "Senior"
+department: "Engineering"
+sub_department: "Release Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001"
+tenure:
+  hire_date: "2019-05-10"
+key_skills: ["Release Management", "Deployment Automation", "Version Control", "Build Systems"]
+product_association: ["NovaSuite Enterprise"]
+
+---
+id: "EMP043.002.001"
+name:
+  first: "Jamal"
+  last: "Williams"
+title: "Team Lead, Infrastructure as Code"
+level: "Senior"
+department: "Engineering"
+sub_department: "IaC"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043.002"
+tenure:
+  hire_date: "2017-01-10"
+key_skills: ["Terraform", "CloudFormation", "Pulumi", "Multi-Cloud Infrastructure"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.002.002"
+name:
+  first: "Sanjay"
+  last: "Patel"
+title: "Team Lead, Configuration Management"
+level: "Senior"
+department: "Engineering"
+sub_department: "Configuration Management"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.002"
+tenure:
+  hire_date: "2018-07-15"
+key_skills: ["Ansible", "Chef", "Puppet", "Configuration Automation"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.001"
+name:
+  first: "Rachel"
+  last: "Nguyen"
+title: "Team Lead, SRE Platform"
+level: "Senior"
+department: "Engineering"
+sub_department: "SRE Platform"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003"
+tenure:
+  hire_date: "2019-02-01"
+key_skills: ["Observability", "Monitoring Systems", "Alerting", "Reliability Engineering"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.002"
+name:
+  first: "Michael"
+  last: "Chang"
+  preferred: "Mike"
+title: "Team Lead, Incident Management"
+level: "Senior"
+department: "Engineering"
+sub_department: "Incident Management"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003"
+tenure:
+  hire_date: "2020-03-15"
+key_skills: ["Incident Response", "Incident Analysis", "Post-mortems", "Reliability Improvements"]
+product_association: ["NovaCloud Platform", "NovaSuite Enterprise"]
+
+# Individual Contributors reporting to Team Leads
+---
+id: "EMP043.001.001.001"
+name:
+  first: "Alicia"
+  last: "Gomez"
+title: "Senior Pipeline Engineer"
+level: "Senior"
+department: "Engineering"
+sub_department: "Pipeline Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001.001"
+tenure:
+  hire_date: "2018-05-01"
+key_skills: ["CI/CD Systems", "Jenkins", "Docker", "Pipeline Optimization"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.001.001.002"
+name:
+  first: "Brandon"
+  last: "Kim"
+title: "Pipeline Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "Pipeline Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043.001.001"
+tenure:
+  hire_date: "2020-02-15"
+key_skills: ["Pipeline Development", "GitHub Actions", "CircleCI", "Build Scripts"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.001.001.003"
+name:
+  first: "Leila"
+  last: "Hassan"
+title: "Pipeline Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "Pipeline Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001.001"
+tenure:
+  hire_date: "2021-09-01"
+key_skills: ["CI Systems", "Build Tools", "Pipeline Development", "Automation Scripts"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.001.001.004"
+name:
+  first: "Tyler"
+  last: "Jefferson"
+title: "Junior Pipeline Engineer"
+level: "Junior"
+department: "Engineering"
+sub_department: "Pipeline Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001.001"
+tenure:
+  hire_date: "2023-06-15"
+key_skills: ["Basic CI/CD", "Script Development", "Build Systems", "Testing Automation"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.001.002.001"
+name:
+  first: "Jessica"
+  last: "Park"
+  preferred: "Jess"
+title: "Senior Release Engineer"
+level: "Senior"
+department: "Engineering"
+sub_department: "Release Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001.002"
+tenure:
+  hire_date: "2019-07-01"
+key_skills: ["Release Management", "Deployment Automation", "Release Planning", "Change Management"]
+product_association: ["NovaSuite Enterprise"]
+
+---
+id: "EMP043.001.002.002"
+name:
+  first: "Raj"
+  last: "Sharma"
+title: "Release Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "Release Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.001.002"
+tenure:
+  hire_date: "2020-09-15"
+key_skills: ["Deployment Automation", "Release Coordination", "Version Management", "Release Testing"]
+product_association: ["NovaSuite Enterprise"]
+
+---
+id: "EMP043.001.002.003"
+name:
+  first: "David"
+  last: "Thompson"
+  preferred: "Dave"
+title: "Release Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "Release Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043.001.002"
+tenure:
+  hire_date: "2022-01-10"
+key_skills: ["Deployment Pipelines", "Release Automation", "Environment Management", "Build Verification"]
+product_association: ["NovaSuite Enterprise"]
+
+---
+id: "EMP043.002.001.001"
+name:
+  first: "Olivia"
+  last: "Johnson"
+title: "Senior Infrastructure Engineer"
+level: "Senior"
+department: "Engineering"
+sub_department: "IaC"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.002.001"
+tenure:
+  hire_date: "2017-03-15"
+key_skills: ["Terraform", "AWS", "Azure", "Infrastructure Design"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.002.001.002"
+name:
+  first: "Michael"
+  last: "Okafor"
+title: "Infrastructure Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "IaC"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043.002.001"
+tenure:
+  hire_date: "2019-08-01"
+key_skills: ["CloudFormation", "Terraform", "Infrastructure Automation", "Cloud Architecture"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.002.001.003"
+name:
+  first: "Emma"
+  last: "Wilson"
+title: "Infrastructure Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "IaC"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.002.001"
+tenure:
+  hire_date: "2021-02-01"
+key_skills: ["Pulumi", "GCP", "AWS", "Infrastructure Design"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.002.001.004"
+name:
+  first: "Carlos"
+  last: "Diaz"
+title: "Junior Infrastructure Engineer"
+level: "Junior"
+department: "Engineering"
+sub_department: "IaC"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.002.001"
+tenure:
+  hire_date: "2023-01-05"
+key_skills: ["Basic Terraform", "Cloud Infrastructure", "Scripting", "Infrastructure Testing"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.001.001"
+name:
+  first: "Samuel"
+  last: "Lee"
+title: "Senior SRE Engineer"
+level: "Senior"
+department: "Engineering"
+sub_department: "SRE Platform"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003.001"
+tenure:
+  hire_date: "2019-05-15"
+key_skills: ["Observability Systems", "Prometheus", "Grafana", "Platform Reliability"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.001.002"
+name:
+  first: "Zoe"
+  last: "Miller"
+title: "SRE Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "SRE Platform"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003.001"
+tenure:
+  hire_date: "2020-11-01"
+key_skills: ["Monitoring Systems", "Alerting", "SLO Development", "Performance Monitoring"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.001.003"
+name:
+  first: "Ahmed"
+  last: "Hassan"
+title: "SRE Engineer"
+level: "Associate"
+department: "Engineering"
+sub_department: "SRE Platform"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043.003.001"
+tenure:
+  hire_date: "2022-03-15"
+key_skills: ["Observability", "Logging Systems", "Alerting Configuration", "System Reliability"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.001.004"
+name:
+  first: "Lily"
+  last: "Zhang"
+title: "Junior SRE Engineer"
+level: "Junior"
+department: "Engineering"
+sub_department: "SRE Platform"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003.001"
+tenure:
+  hire_date: "2023-09-15"
+key_skills: ["Basic Monitoring", "Metrics Collection", "Dashboard Creation", "Reliability Principles"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.002.001"
+name:
+  first: "Nathan"
+  last: "Williams"
+  preferred: "Nate"
+title: "Senior Incident Manager"
+level: "Senior"
+department: "Engineering"
+sub_department: "Incident Management"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003.002"
+tenure:
+  hire_date: "2020-05-01"
+key_skills: ["Incident Coordination", "Major Incident Management", "Post-mortem Analysis", "Process Improvement"]
+product_association: ["NovaCloud Platform"]
+
+---
+id: "EMP043.003.002.002"
+name:
+  first: "Amara"
+  last: "Okonkwo"
+title: "Incident Manager"
+level: "Associate"
+department: "Engineering"
+sub_department: "Incident Management"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP043.003.002"
+tenure:
+  hire_date: "2021-06-15"
+key_skills: ["Incident Response", "Coordination", "Technical Communication", "Process Documentation"]
+product_association: ["NovaCloud Platform", "NovaSuite Enterprise"]
+
+---
+id: "EMP043.003.002.003"
+name:
+  first: "Gabriel"
+  last: "Reyes"
+title: "Incident Manager"
+level: "Associate"
+department: "Engineering"
+sub_department: "Incident Management"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP043.003.002"
+tenure:
+  hire_date: "2022-07-01"
+key_skills: ["Incident Analysis", "Post-mortem Facilitation", "Communication Planning", "Service Reliability"]
+product_association: ["NovaCloud Platform"]
+
+# Managers reporting to EMP044
+---
+id: "EMP044.001"
+name:
+  first: "Benjamin"
+  last: "Walker"
+  preferred: "Ben"
+title: "Manager, Predictive Analytics"
+level: "Manager"
+department: "Data Analytics"
+sub_department: "Predictive Analytics"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044"
+tenure:
+  hire_date: "2020-04-15"
+key_skills: ["Predictive Modeling", "Time Series Analysis", "Statistical Methods", "Business Forecasting"]
+product_association: ["NovaPredict", "NovaAnalytics"]
+
+---
+id: "EMP044.002"
+name:
+  first: "Aisha"
+  last: "Jenkins"
+title: "Manager, ML Engineering"
+level: "Manager"
+department: "Data Analytics"
+sub_department: "ML Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044"
+  dotted_line_ids: ["EMP055"]
+tenure:
+  hire_date: "2021-07-01"
+key_skills: ["ML Pipelines", "Production ML", "Model Deployment", "ML Systems"]
+product_association: ["NovaPredict", "NovaAI Platform"]
+
+---
+id: "EMP044.003"
+name:
+  first: "Miguel"
+  last: "Sanchez"
+title: "Manager, Statistical Analysis"
+level: "Manager"
+department: "Data Analytics"
+sub_department: "Statistical Analysis"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP044"
+tenure:
+  hire_date: "2020-09-01"
+key_skills: ["Statistical Methods", "Experimental Design", "Hypothesis Testing", "Causal Inference"]
+product_association: ["NovaAnalytics"]
+
+---
+id: "EMP044.004"
+name:
+  first: "Jennifer"
+  last: "Liu"
+  preferred: "Jen"
+title: "Manager, NLP & Text Analytics"
+level: "Manager"
+department: "Data Analytics"
+sub_department: "NLP"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044"
+  dotted_line_ids: ["EMP080"]
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Natural Language Processing", "Text Analytics", "Language Models", "Document Processing"]
+product_association: ["NovaPredict", "NovaAI Platform"]
+
+# Team Leads reporting to Managers
+---
+id: "EMP044.001.001"
+name:
+  first: "Ryan"
+  last: "Thompson"
+title: "Team Lead, Forecasting Models"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "Forecasting"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.001"
+tenure:
+  hire_date: "2020-06-01"
+key_skills: ["Time Series Forecasting", "ARIMA Models", "Prophet", "Business Forecasting"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.002"
+name:
+  first: "Samantha"
+  last: "Patel"
+  preferred: "Sam"
+title: "Team Lead, Classification Models"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "Classification"
+location:
+  city: "San Francisco"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP044.001"
+tenure:
+  hire_date: "2021-02-15"
+key_skills: ["Classification Algorithms", "Feature Engineering", "Model Evaluation", "Supervised Learning"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.002.001"
+name:
+  first: "Daniel"
+  last: "Chen"
+title: "Team Lead, ML Infrastructure"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "ML Infrastructure"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002"
+tenure:
+  hire_date: "2021-08-15"
+key_skills: ["ML Infrastructure", "Model Serving", "MLOps", "Distributed Training"]
+product_association: ["NovaPredict", "NovaAI Platform"]
+
+---
+id: "EMP044.002.002"
+name:
+  first: "Nina"
+  last: "Rodriguez"
+title: "Team Lead, ML Platforms"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "ML Platforms"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002"
+tenure:
+  hire_date: "2022-01-10"
+key_skills: ["ML Platforms", "Workflow Automation", "Feature Stores", "ML Pipeline Design"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.004.001"
+name:
+  first: "Jason"
+  last: "Wu"
+title: "Team Lead, NLP Engineering"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "NLP Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["NLP Models", "Text Processing", "Language Understanding", "Transformer Models"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.004.002"
+name:
+  first: "Sophia"
+  last: "Garcia"
+title: "Team Lead, Text Analytics Applications"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "Text Analytics"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Text Analytics", "Information Extraction", "Sentiment Analysis", "Document Processing"]
+product_association: ["NovaPredict", "NovaAI Platform"]
+
+# Individual Contributors reporting to Team Leads
+---
+id: "EMP044.001.001.001"
+name:
+  first: "Marcus"
+  last: "Johnson"
+title: "Senior Data Scientist, Forecasting"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "Forecasting"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.001.001"
+tenure:
+  hire_date: "2020-07-15"
+key_skills: ["Time Series Analysis", "Forecasting Models", "Anomaly Detection", "Business Analytics"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.001.002"
+name:
+  first: "Kimberly"
+  last: "Nelson"
+  preferred: "Kim"
+title: "Data Scientist, Forecasting"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "Forecasting"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP044.001.001"
+tenure:
+  hire_date: "2021-09-01"
+key_skills: ["Predictive Modeling", "Time Series", "Statistical Forecasting", "Data Visualization"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.001.003"
+name:
+  first: "David"
+  last: "Sharma"
+title: "Data Scientist, Forecasting"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "Forecasting"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.001.001"
+tenure:
+  hire_date: "2022-05-15"
+key_skills: ["Statistical Analysis", "Forecasting Algorithms", "Model Validation", "Python"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.001.004"
+name:
+  first: "Julia"
+  last: "Park"
+title: "Junior Data Scientist"
+level: "Junior"
+department: "Data Analytics"
+sub_department: "Forecasting"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.001.001"
+tenure:
+  hire_date: "2023-08-01"
+key_skills: ["Basic Time Series", "Statistical Analysis", "Data Visualization", "Python"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.002.001"
+name:
+  first: "Eduardo"
+  last: "Vasquez"
+title: "Senior Data Scientist, Classification"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "Classification"
+location:
+  city: "San Francisco"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.001.002"
+tenure:
+  hire_date: "2021-04-01"
+key_skills: ["Machine Learning", "Classification Models", "Feature Engineering", "Model Evaluation"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.002.002"
+name:
+  first: "Grace"
+  last: "Lee"
+title: "Data Scientist, Classification"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "Classification"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.001.002"
+tenure:
+  hire_date: "2022-03-01"
+key_skills: ["Classification Algorithms", "Data Preprocessing", "Model Training", "Scikit-learn"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.001.002.003"
+name:
+  first: "Taylor"
+  last: "Williams"
+title: "Data Scientist, Classification"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "Classification"
+location:
+  city: "San Francisco"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP044.001.002"
+tenure:
+  hire_date: "2022-09-15"
+key_skills: ["Supervised Learning", "Classification Metrics", "Feature Selection", "Model Deployment"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.002.001.001"
+name:
+  first: "Arjun"
+  last: "Patel"
+title: "Senior ML Engineer"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "ML Infrastructure"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002.001"
+tenure:
+  hire_date: "2021-10-01"
+  acquired_from: "DataSphere Systems"
+  acquisition_date: "2023-02-01"
+key_skills: ["ML Systems", "Distributed Training", "Model Serving", "Kubernetes"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.002.001.002"
+name:
+  first: "Linda"
+  last: "Kim"
+title: "ML Engineer"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "ML Infrastructure"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002.001"
+tenure:
+  hire_date: "2022-06-15"
+key_skills: ["MLOps", "Model Deployment", "CI/CD for ML", "TensorFlow Serving"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.002.001.003"
+name:
+  first: "Jamal"
+  last: "Adams"
+title: "ML Engineer"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "ML Infrastructure"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002.001"
+tenure:
+  hire_date: "2023-01-15"
+key_skills: ["Model Optimization", "GPU Utilization", "Model Deployment", "MLflow"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.002.001.004"
+name:
+  first: "Aria"
+  last: "Zhang"
+title: "Junior ML Engineer"
+level: "Junior"
+department: "Data Analytics"
+sub_department: "ML Infrastructure"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002.001"
+tenure:
+  hire_date: "2023-11-01"
+key_skills: ["Basic ML Operations", "Model Monitoring", "Python", "Docker"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.002.002.001"
+name:
+  first: "Victor"
+  last: "Olson"
+title: "Senior ML Platform Engineer"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "ML Platforms"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002.002"
+tenure:
+  hire_date: "2022-03-01"
+key_skills: ["ML Platforms", "Feature Stores", "ML Pipelines", "Workflow Orchestration"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.002.002.002"
+name:
+  first: "Nadia"
+  last: "Ahmed"
+title: "ML Platform Engineer"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "ML Platforms"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP044.002.002"
+tenure:
+  hire_date: "2022-08-15"
+key_skills: ["ML Workflow Design", "Feature Engineering", "Pipeline Automation", "Kubeflow"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.002.002.003"
+name:
+  first: "Connor"
+  last: "Murphy"
+title: "ML Platform Engineer"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "ML Platforms"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.002.002"
+tenure:
+  hire_date: "2023-04-01"
+key_skills: ["ML Infrastructure", "Experiment Tracking", "Model Registry", "Pipeline Design"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.004.001.001"
+name:
+  first: "Priya"
+  last: "Sharma"
+title: "Senior NLP Engineer"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "NLP Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004.001"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["NLP Models", "Transformers", "BERT", "Language Understanding"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.004.001.002"
+name:
+  first: "Lucas"
+  last: "Wilson"
+title: "NLP Engineer"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "NLP Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004.001"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Natural Language Processing", "Text Classification", "Word Embeddings", "Language Models"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.004.001.003"
+name:
+  first: "Harper"
+  last: "Johnson"
+title: "NLP Engineer"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "NLP Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004.001"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Text Processing", "Named Entity Recognition", "Topic Modeling", "LLM Fine-tuning"]
+product_association: ["NovaAI Platform"]
+
+---
+id: "EMP044.004.002.001"
+name:
+  first: "Diego"
+  last: "Martinez"
+title: "Senior Text Analytics Specialist"
+level: "Senior"
+department: "Data Analytics"
+sub_department: "Text Analytics"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004.002"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Text Analytics", "Sentiment Analysis", "Entity Resolution", "Information Extraction"]
+product_association: ["NovaPredict", "NovaAI Platform"]
+
+---
+id: "EMP044.004.002.002"
+name:
+  first: "Emma"
+  last: "Taylor"
+title: "Text Analytics Specialist"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "Text Analytics"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP044.004.002"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Text Mining", "Document Classification", "Semantic Analysis", "Text Visualization"]
+product_association: ["NovaPredict"]
+
+---
+id: "EMP044.004.002.003"
+name:
+  first: "Oliver"
+  last: "Chen"
+title: "Text Analytics Specialist"
+level: "Associate"
+department: "Data Analytics"
+sub_department: "Text Analytics"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP044.004.002"
+tenure:
+  hire_date: "2024-02-20"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Document Processing", "Information Retrieval", "Text Summarization", "Language Models"]
+product_association: ["NovaAI Platform"]
