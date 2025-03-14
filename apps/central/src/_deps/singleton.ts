@@ -49,6 +49,7 @@ import {
   type MinioClient,
 } from "../lib/functional/object-store/service.js";
 import { TemporalDispatcher } from "../lib/functional/temporal-dispatcher/index.js";
+import { TranscriptionService } from "../lib/functional/transcription/service.js";
 import { VaultKeyStore } from "../lib/functional/vault/keystore.js";
 import { VaultService } from "../lib/functional/vault/service.js";
 
@@ -83,6 +84,7 @@ export type AppBaseCradleItems = {
   vault: VaultService;
   images: ImagesService;
   llmPrompter: LlmPrompterService;
+  transcription: TranscriptionService;
 
   // domain objects below here
   tenants: TenantService;
@@ -231,6 +233,24 @@ export async function configureBaseAwilixContainer(
     llmPrompter: asFunction(
       ({ logger, config, db, vault }: AppSingletonCradle) =>
         new LlmPrompterService(logger, config.llmPrompter, db, vault),
+    ),
+    transcription: asFunction(
+      ({
+        logger,
+        config,
+        db,
+        dbRO,
+        temporalDispatch,
+        s3,
+      }: AppSingletonCradle) =>
+        new TranscriptionService(
+          logger,
+          config.transcription,
+          db,
+          dbRO,
+          temporalDispatch,
+          s3,
+        ),
     ),
 
     // domain objects below here

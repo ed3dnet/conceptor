@@ -6,6 +6,7 @@ import { EnsureTypeCheck } from "@myapp/shared-universal/utils/type-utils.js";
 import { type AuthConfig } from "../domain/auth/config.js";
 import { loadLlmPrompterConfigFromEnv } from "../lib/functional/llm-prompter/config.js";
 import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
+import { loadTranscriptionConfigFromEnv } from "../lib/functional/transcription/config.js";
 
 import {
   getBool,
@@ -204,6 +205,7 @@ export function normalAppConfig(): AppConfig {
     ...loadEmailDeliveryConfigFromEnv(),
 
     ...loadLlmPrompterConfigFromEnv(),
+    ...loadTranscriptionConfigFromEnv(),
 
     ...loadAuthConfigFromEnv(),
   };

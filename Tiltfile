@@ -18,7 +18,7 @@ docker_build('localdev-dev/temporal-dev',
 # Base Setup (Kustomize resources)
 
 namespace_create(tilt_namespace)
-k8s_yaml(kustomize('./_dev-env'))
+k8s_yaml(namespace_inject(kustomize('./_dev-env'), tilt_namespace))
 
 # ------------------------------
 # helm charts
