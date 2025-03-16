@@ -11,7 +11,8 @@ pushd ./apps/central || exit 1
 
 TMPFILE="$(mktemp)"
 
-pnpm run --silent cli:dev utils print-openapi > "$TMPFILE"
+# TODO: this hack sucks - we have something spitting log entries into stdout
+pnpm run --silent cli:dev utils print-openapi | grep -v "openapi-print/" | grep -v '    component: "' > "$TMPFILE"
 
 popd || exit 1
 

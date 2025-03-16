@@ -4,13 +4,33 @@ metadata:
   name: localdev-nats-config
 data:
   nats.conf: |
-    # Basic NATS configuration
     listen: 0.0.0.0:4222
-    http_port: 8222
+    http: 0.0.0.0:8222
     
-    # JetStream configuration
+    debug: true
+    trace: true
+    
     jetstream {
-      store_dir: /tmp/nats/jetstream
+      store_dir: /data/jetstream
       max_mem: 256M
       max_file: 1G
     }
+
+    accounts {
+      nats: {
+        jetstream: enabled
+        users: [
+          { user: nats, password: nats }
+        ]
+      }
+    }
+    
+    authorization {
+      default_permissions {
+        publish = ">"
+        subscribe = ">"
+      }
+    }
+    
+    http_port: 8222
+    http_base_path: /

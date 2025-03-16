@@ -20,5 +20,6 @@ export const dbMigrateCommand = command({
     await doDatabaseMigration(ROOT_CONTAINER.cradle);
     ROOT_LOGGER.info("Disposing container");
     await ROOT_CONTAINER.dispose();
+    process.exit(0);
   },
 });

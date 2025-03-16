@@ -144,6 +144,13 @@ if tilt_runmode == 'dev-in-tilt':
         resource_deps=["migrate-postgres"],
         labels=["00-app"])
 
+    local_resource("event-dispatcher",
+        serve_cmd="pnpm cli:dev event-dispatcher start",
+        serve_dir=central_dir,
+        allow_parallel=True,
+        resource_deps=["wait-for-dependencies"],
+        labels=["00-app"])
+
 
     for i in range(int(worker_core_count)):
         local_resource("worker-core-" + str(i),
