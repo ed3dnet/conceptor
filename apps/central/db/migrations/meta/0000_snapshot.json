@@ -1,5 +1,5 @@
 {
-  "id": "a80b2ba3-c918-401a-aff1-e5cee30f3101",
+  "id": "5898e5ee-d29a-4e2b-9d3a-125dc15ca9e2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2681,7 +2681,8 @@
       "name": "llm_connector_name",
       "schema": "public",
       "values": [
-        "general"
+        "general",
+        "shortSummarization"
       ]
     },
     "public.llm_message_role": {

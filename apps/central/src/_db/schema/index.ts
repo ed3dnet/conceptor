@@ -113,7 +113,10 @@ export const IMAGES = pgTable(
   ],
 );
 
-export const LLM_CONNECTOR_NAME = pgEnum("llm_connector_name", ["general"]);
+export const LLM_CONNECTOR_NAME = pgEnum("llm_connector_name", [
+  "general",
+  "shortSummarization",
+]);
 
 export const LLM_MESSAGE_ROLE = pgEnum("llm_message_role", [
   "system",

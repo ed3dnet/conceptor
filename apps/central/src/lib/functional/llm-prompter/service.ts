@@ -1,8 +1,9 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import type { Logger } from "pino";
 
-import type { Drizzle } from "../../datastores/postgres/types.server.js";
+import type { Drizzle } from "../../datastores/postgres/types.js";
 import type { VaultService } from "../vault/service.js";
 
 import type { LlmModelConnectorName, LlmPrompterConfig } from "./config.js";
@@ -34,8 +35,19 @@ export class LlmPrompterService {
           temperature: modelConfig.strategy.temperature,
           maxTokens: modelConfig.strategy.maxTokens,
         });
+      case "google-genai":
+        return new ChatGoogleGenerativeAI({
+          modelName: modelConfig.strategy.model,
+          apiKey: modelConfig.strategy.googleApiKey,
+          temperature: modelConfig.strategy.temperature,
+          maxOutputTokens: modelConfig.strategy.maxOutputTokens,
+        });
       default:
-        throw new Error(`Unknown model strategy: ${modelConfig.strategy.kind}`);
+        // eslint-disable-next-line no-case-declarations
+        const exhaustiveCheck: never = modelConfig.strategy;
+        throw new Error(
+          `Unknown model strategy for '${name}': ${modelConfig.strategy}`,
+        );
     }
   }
 

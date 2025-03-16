@@ -5,7 +5,7 @@ CREATE TYPE "public"."global_permission_type" AS ENUM('admin', 'audit', 'create_
 CREATE TYPE "public"."image_rendition_format" AS ENUM('fallback', 'image/webp', 'image/avif');--> statement-breakpoint
 CREATE TYPE "public"."information_type" AS ENUM('boolean', 'gradient', 'text');--> statement-breakpoint
 CREATE TYPE "public"."initiative_permission_type" AS ENUM('view', 'edit', 'manage_resources', 'approve_changes', 'close');--> statement-breakpoint
-CREATE TYPE "public"."llm_connector_name" AS ENUM('general');--> statement-breakpoint
+CREATE TYPE "public"."llm_connector_name" AS ENUM('general', 'shortSummarization');--> statement-breakpoint
 CREATE TYPE "public"."llm_message_role" AS ENUM('system', 'human', 'assistant');--> statement-breakpoint
 CREATE TYPE "public"."s3_bucket_name" AS ENUM('core', 'user-content', 'upload-staging');--> statement-breakpoint
 CREATE TYPE "public"."unit_permission_type" AS ENUM('manage_reports', 'assign_work', 'approve_time_off', 'manage_unit', 'view_reports');--> statement-breakpoint

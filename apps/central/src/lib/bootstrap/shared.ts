@@ -2,7 +2,7 @@ import { buildStandardLogger } from "@myapp/shared-universal/utils/logging.js";
 
 import { type AppConfig } from "../../_config/types.js";
 import { configureBaseAwilixContainer } from "../../_deps/index.js";
-import { doDatabaseMigration } from "../datastores/postgres/migrator.server.js";
+import { doDatabaseMigration } from "../datastores/postgres/migrator.js";
 
 export type BootstrapArgs = {
   skipMigrations?: boolean | "skip-in-development";

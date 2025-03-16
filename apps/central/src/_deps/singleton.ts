@@ -21,6 +21,7 @@ import {
 } from "awilix";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Redis } from "ioredis";
+import { type JetStreamClient, type NatsConnection } from "nats";
 import type Mail from "nodemailer/lib/mailer/index.js";
 import type * as pg from "pg";
 import type { Logger } from "pino";
@@ -33,12 +34,16 @@ import { AuthConnectorService } from "../domain/auth-connectors/service.js";
 import { TenantService } from "../domain/tenants/service.js";
 import { UserService } from "../domain/users/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
-import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.server.js";
-import { buildDrizzleLogger } from "../lib/datastores/postgres/query-logger.server.js";
+import {
+  buildNatsClientFromConfig,
+  createJetStreamClient,
+} from "../lib/datastores/nats/builder.js";
+import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.js";
+import { buildDrizzleLogger } from "../lib/datastores/postgres/query-logger.js";
 import {
   type Drizzle,
   type DrizzleRO,
-} from "../lib/datastores/postgres/types.server.js";
+} from "../lib/datastores/postgres/types.js";
 import { buildRedisSWRCache } from "../lib/datastores/redis/swr.js";
 import { createMailTransport } from "../lib/functional/email-delivery/factory.js";
 import { ImagesService } from "../lib/functional/images/service.js";
@@ -73,6 +78,9 @@ export type AppBaseCradleItems = {
 
   zxcvbn: Zxcvbn;
 
+  natsConnection: NatsConnection;
+  natsJetstream: JetStreamClient;
+
   // lib and framework objects
   temporalClient: TemporalClient;
   temporal: TemporalClientService;
@@ -104,6 +112,17 @@ export async function configureBaseAwilixContainer(
     address: appConfig.temporal.address,
     namespace: appConfig.temporal.namespace,
   });
+
+  const natsConnection = await buildNatsClientFromConfig(
+    rootLogger,
+    appConfig.nats,
+  );
+
+  const natsJetstream = await createJetStreamClient(
+    rootLogger,
+    natsConnection,
+    appConfig.nats.domain,
+  );
 
   container.register({
     config: asValue(appConfig),
@@ -183,6 +202,34 @@ export async function configureBaseAwilixContainer(
       ({ vaultKeyStore }: AppSingletonCradle) =>
         new VaultService(vaultKeyStore),
     ).singleton(),
+
+    natsConnection: asFunction(() => natsConnection)
+      .disposer(async () => {
+        const logger = rootLogger.child({ component: "nats_client" });
+        logger.info("Draining NATS connection");
+
+        try {
+          // Drain ensures all pending operations complete before closing
+          await natsConnection.drain();
+          logger.info("NATS connection drained");
+        } catch (error) {
+          logger.error({ error }, "Error draining NATS connection");
+
+          // Fall back to regular close if drain fails
+          try {
+            await natsConnection.close();
+            logger.info("NATS connection closed (fallback)");
+          } catch (closeError) {
+            logger.error(
+              { error: closeError },
+              "Error closing NATS connection",
+            );
+          }
+        }
+      })
+      .singleton(),
+
+    natsJetstream: asValue(natsJetstream),
 
     // --- domain objects below here
     zxcvbn: asFunction(({ fetch }: AppSingletonCradle) => {
@@ -293,6 +340,8 @@ export async function configureBaseAwilixContainer(
         new UserService(logger, db, dbRO, vault),
     ),
   });
+
+  const _throwaway = container.resolve("natsConnection");
 
   return container;
 }

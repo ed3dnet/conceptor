@@ -20,4 +20,5 @@ export async function doDatabaseMigration(
   await migrate(db, {
     migrationsFolder: migrationsDir,
   });
+  logger.info("Migrations complete");
 }

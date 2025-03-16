@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: localdev-nats-config
+data:
+  nats.conf: |
+    # Basic NATS configuration
+    listen: 0.0.0.0:4222
+    http_port: 8222
+    
+    # JetStream configuration
+    jetstream {
+      store_dir: /tmp/nats/jetstream
+      max_mem: 256M
+      max_file: 1G
+    }

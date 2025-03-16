@@ -3,7 +3,7 @@ import { type Logger } from "pino";
 import {
   type Drizzle,
   type DrizzleRO,
-} from "../../datastores/postgres/types.server.js";
+} from "../../datastores/postgres/types.js";
 import { type ObjectStoreService } from "../object-store/service.js";
 import { type TemporalDispatcher } from "../temporal-dispatcher/index.js";
 

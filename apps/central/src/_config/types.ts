@@ -4,7 +4,8 @@ import { type Static, Type } from "@sinclair/typebox";
 
 import { AuthConfig } from "../domain/auth/config.js";
 import { MemorySWRConfig } from "../lib/datastores/memory-swr.js";
-import { PostgresConfig } from "../lib/datastores/postgres/config.server.js";
+import { NatsConfig } from "../lib/datastores/nats/config.js";
+import { PostgresConfig } from "../lib/datastores/postgres/config.js";
 import { EmailDeliveryConfig } from "../lib/functional/email-delivery/config.js";
 import { LlmPrompterConfig } from "../lib/functional/llm-prompter/config.js";
 import { S3Config } from "../lib/functional/object-store/config.js";
@@ -57,6 +58,7 @@ export const AppConfig = Type.Intersect([
 
     llmPrompter: LlmPrompterConfig,
     transcription: TranscriptionConfig,
+    nats: NatsConfig,
 
     auth: AuthConfig,
   }),

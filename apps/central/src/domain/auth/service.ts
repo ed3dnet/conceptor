@@ -31,7 +31,7 @@ import { USER_SESSIONS, USERS } from "../../_db/schema/index.js";
 import {
   type DrizzleRO,
   type Drizzle,
-} from "../../lib/datastores/postgres/types.server.js";
+} from "../../lib/datastores/postgres/types.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
 import { sha256 } from "../../lib/utils/cryptography.js";
 import { type OIDCConnectorState } from "../auth-connectors/schemas/index.js";

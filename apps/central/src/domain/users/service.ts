@@ -20,7 +20,7 @@ import {
 import {
   type Drizzle,
   type DrizzleRO,
-} from "../../lib/datastores/postgres/types.server.js";
+} from "../../lib/datastores/postgres/types.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
 
 import {

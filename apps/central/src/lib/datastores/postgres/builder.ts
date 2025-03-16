@@ -1,7 +1,7 @@
 import pg from "pg";
 import type { Logger } from "pino";
 
-import type { PostgresHostConfig } from "./config.server.js";
+import type { PostgresHostConfig } from "./config.js";
 
 export function buildDbPoolFromConfig(
   name: string,

@@ -10,7 +10,7 @@ import { TENANTS } from "../../_db/schema/index.js";
 import {
   type Drizzle,
   type DrizzleRO,
-} from "../../lib/datastores/postgres/types.server.js";
+} from "../../lib/datastores/postgres/types.js";
 
 import { type CreateTenantInput } from "./schemas.js";
 

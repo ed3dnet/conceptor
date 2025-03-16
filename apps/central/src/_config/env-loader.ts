@@ -2,8 +2,11 @@
 import { LogLevelChecker } from "@myapp/shared-universal/config/types.js";
 import { AJV } from "@myapp/shared-universal/utils/ajv.js";
 import { EnsureTypeCheck } from "@myapp/shared-universal/utils/type-utils.js";
+import { type TemporalConfig } from "@myapp/temporal-client/config.js";
+import { load } from "js-yaml";
 
 import { type AuthConfig } from "../domain/auth/config.js";
+import { loadNatsConfigFromEnv } from "../lib/datastores/nats/config.js";
 import { loadLlmPrompterConfigFromEnv } from "../lib/functional/llm-prompter/config.js";
 import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
 import { loadTranscriptionConfigFromEnv } from "../lib/functional/transcription/config.js";
@@ -85,15 +88,15 @@ export function loadRedisConfigFromEnv() {
   };
 }
 
-export function loadTemporalConfigFromEnv() {
+export function loadTemporalConfigFromEnv(): {
+  temporal: TemporalConfig;
+} {
   return {
     temporal: {
       address: requireStr("TEMPORAL__ADDRESS"),
       queues: {
         core: requireStr("TEMPORAL__QUEUES__CORE"),
-        identity: requireStr("TEMPORAL__QUEUES__IDENTITY"),
         media: requireStr("TEMPORAL__QUEUES__MEDIA"),
-        atproto: requireStr("TEMPORAL__QUEUES__ATPROTO"),
       },
       namespace: getStr("TEMPORAL__NAMESPACE", "default"),
     },
@@ -203,6 +206,7 @@ export function normalAppConfig(): AppConfig {
     ...loadVaultConfigFromEnv(),
     ...loadS3ConfigFromEnv(),
     ...loadEmailDeliveryConfigFromEnv(),
+    ...loadNatsConfigFromEnv(),
 
     ...loadLlmPrompterConfigFromEnv(),
     ...loadTranscriptionConfigFromEnv(),

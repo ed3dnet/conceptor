@@ -25,14 +25,19 @@ k8s_yaml(namespace_inject(kustomize('./_dev-env'), tilt_namespace))
 
 # ------------------------------
 
-front_door_port = tilt_port_prefix + '00'
+k8s_resource('localdev-frontdoor', port_forwards=[os.environ['FRONTDOOR_PORT'] + ":80"], labels=["svc"])
+k8s_resource('localdev-redis', port_forwards=[os.environ['REDIS_PORT'] + ":6379"], labels=["98-svc"])
+k8s_resource('localdev-temporal', port_forwards=[os.environ['TEMPORAL_PORT'] + ":7233", 
+                                                os.environ['TEMPORAL_UI_PORT'] + ":8233"], labels=["98-svc"])
+k8s_resource('localdev-mailpit', port_forwards=[tilt_port_prefix + '26:8025', 
+                                               os.environ['CENTRAL_EMAIL_DELIVERY__SMTP__PORT'] + ":1025"], labels=["98-svc"])
+k8s_resource('localdev-postgres', port_forwards=[os.environ['CENTRAL_POSTGRES__READWRITE__PORT'] + ":5432"], labels=["98-svc"])
+k8s_resource('localdev-minio', port_forwards=[os.environ['CENTRAL_S3__PORT'] + ":9000", 
+                                             os.environ['MINIO_UI_PORT'] + ":9001"], labels=["98-svc"])
+k8s_resource('localdev-nats', port_forwards=[os.environ['CENTRAL_NATS__PORT'] + ":4222", 
+                                            os.environ['CENTRAL_NATS__MONITOR_PORT'] + ":8222"], labels=["98-svc"])
+k8s_resource('localdev-keycloak', port_forwards=[os.environ['KEYCLOAK_PORT'] + ":8080"], labels=["98-svc"])
 
-k8s_resource('localdev-frontdoor', port_forwards=[front_door_port + ":80"], labels=["svc"])
-k8s_resource('localdev-redis', port_forwards=[tilt_port_prefix + '10:6379'], labels=["98-svc"])
-k8s_resource('localdev-temporal', port_forwards=[tilt_port_prefix + '30:7233', tilt_port_prefix + '31:8233'], labels=["98-svc"])
-k8s_resource('localdev-mailpit', port_forwards=[tilt_port_prefix + '26:8025', tilt_port_prefix + '25:1025'], labels=["98-svc"])
-k8s_resource('localdev-postgres', port_forwards=[tilt_port_prefix + '20:5432'], labels=["98-svc"])
-k8s_resource('localdev-minio', port_forwards=[tilt_port_prefix + '40:9000', tilt_port_prefix + '41:9001'], labels=["98-svc"])
 
 # ------------------------------
 
@@ -54,6 +59,18 @@ local_resource("wait-for-redis",
     resource_deps=["localdev-redis"],
     labels=["99-meta"])
 
+local_resource("wait-for-nats",
+    allow_parallel=True,
+    cmd="bash ./_dev-env/scripts/wait-for-nats.bash",
+    resource_deps=["localdev-nats"],
+    labels=["99-meta"])
+
+local_resource("wait-for-keycloak",
+    allow_parallel=True,
+    cmd="bash ./_dev-env/scripts/wait-for-keycloak.bash",
+    resource_deps=["localdev-keycloak"],
+    labels=["99-meta"])
+
 local_resource("ensure-minio",
     allow_parallel=True,
     cmd="bash ./_dev-env/scripts/ensure-minio.bash",
@@ -66,6 +83,8 @@ local_resource("wait-for-dependencies",
         "wait-for-postgres",
         "wait-for-temporal",
         "wait-for-redis",
+        "wait-for-nats",
+        "wait-for-keycloak",
         "ensure-minio",
     ],
     labels=["99-meta"])
@@ -166,7 +185,3 @@ if tilt_runmode == 'dev-in-tilt':
             os.environ['BASE_URL']
         ],
         labels=["00-app"])
-
-    k8s_resource('localdev-keycloak', 
-        port_forwards=[tilt_port_prefix + '50:8080'], 
-        labels=["98-svc"])
