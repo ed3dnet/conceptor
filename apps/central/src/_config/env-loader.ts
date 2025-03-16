@@ -6,8 +6,6 @@ import { type TemporalConfig } from "@myapp/temporal-client/config.js";
 import { load } from "js-yaml";
 
 import { type AuthConfig } from "../domain/auth/config.js";
-import { loadNatsConfigFromEnv } from "../lib/datastores/nats/config.js";
-import { loadEventDispatchConfigFromEnv } from "../lib/functional/event-dispatch/config.js";
 import { loadLlmPrompterConfigFromEnv } from "../lib/functional/llm-prompter/config.js";
 import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
 import { loadTranscriptionConfigFromEnv } from "../lib/functional/transcription/config.js";
@@ -207,13 +205,11 @@ export function normalAppConfig(): AppConfig {
     ...loadVaultConfigFromEnv(),
     ...loadS3ConfigFromEnv(),
     ...loadEmailDeliveryConfigFromEnv(),
-    ...loadNatsConfigFromEnv(),
 
     ...loadLlmPrompterConfigFromEnv(),
     ...loadTranscriptionConfigFromEnv(),
 
     ...loadAuthConfigFromEnv(),
-    ...loadEventDispatchConfigFromEnv(),
   };
 }
 

@@ -34,10 +34,6 @@ import { AuthConnectorService } from "../domain/auth-connectors/service.js";
 import { TenantService } from "../domain/tenants/service.js";
 import { UserService } from "../domain/users/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
-import {
-  buildNatsClientFromConfig,
-  createJetStreamClient,
-} from "../lib/datastores/nats/builder.js";
 import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.js";
 import { buildDrizzleLogger } from "../lib/datastores/postgres/query-logger.js";
 import {
@@ -46,7 +42,6 @@ import {
 } from "../lib/datastores/postgres/types.js";
 import { buildRedisSWRCache } from "../lib/datastores/redis/swr.js";
 import { createMailTransport } from "../lib/functional/email-delivery/factory.js";
-import { EventDispatchService } from "../lib/functional/event-dispatch/service.js";
 import { ImagesService } from "../lib/functional/images/service.js";
 import { LlmPrompterService } from "../lib/functional/llm-prompter/service.js";
 import {
@@ -79,9 +74,6 @@ export type AppBaseCradleItems = {
 
   zxcvbn: Zxcvbn;
 
-  natsConnection: NatsConnection;
-  natsJetstream: JetStreamClient;
-
   // lib and framework objects
   temporalClient: TemporalClient;
   temporal: TemporalClientService;
@@ -94,7 +86,6 @@ export type AppBaseCradleItems = {
   images: ImagesService;
   llmPrompter: LlmPrompterService;
   transcription: TranscriptionService;
-  eventDispatch: EventDispatchService;
 
   // domain objects below here
   tenants: TenantService;
@@ -114,17 +105,6 @@ export async function configureBaseAwilixContainer(
     address: appConfig.temporal.address,
     namespace: appConfig.temporal.namespace,
   });
-
-  const natsConnection = await buildNatsClientFromConfig(
-    rootLogger,
-    appConfig.nats,
-  );
-
-  const natsJetstream = await createJetStreamClient(
-    rootLogger,
-    natsConnection,
-    appConfig.nats.domain,
-  );
 
   container.register({
     config: asValue(appConfig),
@@ -205,34 +185,6 @@ export async function configureBaseAwilixContainer(
         new VaultService(vaultKeyStore),
     ).singleton(),
 
-    natsConnection: asFunction(() => natsConnection)
-      .disposer(async () => {
-        const logger = rootLogger.child({ component: "nats_client" });
-        logger.info("Draining NATS connection");
-
-        try {
-          // Drain ensures all pending operations complete before closing
-          await natsConnection.drain();
-          logger.info("NATS connection drained");
-        } catch (error) {
-          logger.error({ error }, "Error draining NATS connection");
-
-          // Fall back to regular close if drain fails
-          try {
-            await natsConnection.close();
-            logger.info("NATS connection closed (fallback)");
-          } catch (closeError) {
-            logger.error(
-              { error: closeError },
-              "Error closing NATS connection",
-            );
-          }
-        }
-      })
-      .singleton(),
-
-    natsJetstream: asValue(natsJetstream),
-
     // --- domain objects below here
     zxcvbn: asFunction(({ fetch }: AppSingletonCradle) => {
       initializeZxcvbn(fetch);
@@ -300,10 +252,6 @@ export async function configureBaseAwilixContainer(
           temporalDispatch,
           s3,
         ),
-    ),
-    eventDispatch: asFunction(
-      ({ logger, config, natsJetstream }: AppSingletonCradle) =>
-        new EventDispatchService(logger, config.dispatch, natsJetstream),
     ),
 
     // domain objects below here
