@@ -46,6 +46,7 @@ import {
 } from "../lib/datastores/postgres/types.js";
 import { buildRedisSWRCache } from "../lib/datastores/redis/swr.js";
 import { createMailTransport } from "../lib/functional/email-delivery/factory.js";
+import { EventDispatchService } from "../lib/functional/event-dispatch/service.js";
 import { ImagesService } from "../lib/functional/images/service.js";
 import { LlmPrompterService } from "../lib/functional/llm-prompter/service.js";
 import {
@@ -93,6 +94,7 @@ export type AppBaseCradleItems = {
   images: ImagesService;
   llmPrompter: LlmPrompterService;
   transcription: TranscriptionService;
+  eventDispatch: EventDispatchService;
 
   // domain objects below here
   tenants: TenantService;
@@ -298,6 +300,10 @@ export async function configureBaseAwilixContainer(
           temporalDispatch,
           s3,
         ),
+    ),
+    eventDispatch: asFunction(
+      ({ logger, config, natsJetstream }: AppSingletonCradle) =>
+        new EventDispatchService(logger, config.dispatch, natsJetstream),
     ),
 
     // domain objects below here

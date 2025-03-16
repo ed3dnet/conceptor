@@ -15,7 +15,7 @@ import {
 import { loadNatsConfigFromEnv } from "../lib/datastores/nats/config.js";
 import { TemporalDispatcher } from "../lib/functional/temporal-dispatcher/index.js";
 
-import { type EventDispatcherRunnerConfig } from "./config.js";
+import { type EventDispatcherRunnerConfig } from "./config/index.js";
 import { dispatchLoop } from "./main.js";
 
 function loadEventDispatchConfigFromEnv(): EventDispatcherRunnerConfig {

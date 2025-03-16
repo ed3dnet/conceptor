@@ -7,13 +7,14 @@ import {
   type JetStreamClient,
   type NatsConnection,
 } from "nats";
+import { JsMsgImpl } from "nats/lib/jetstream/jsmsg.js";
 import { type Logger } from "pino";
 
 import { type TemporalDispatcher } from "../lib/functional/temporal-dispatcher/index.js";
 
-import { type EventDispatcherConfig } from "./config.js";
+import { type EventDispatcherConfig } from "./config/index.js";
 
-async function prepareJetstream(
+export async function prepareJetstream(
   logger: Logger,
   natsConnection: NatsConnection,
   natsJetstream: JetStreamClient,
