@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type TemporalClientService } from "@myapp/temporal-client";
 import { type Client as TemporalClient } from "@temporalio/client";
 import {
@@ -63,15 +64,13 @@ async function prepareJetstream(
     logger.info("Consumer acquired; good to go.");
     return consumer;
   } catch (err) {
-    let cause: Error | undefined;
     let extras: Record<string, unknown> | undefined = undefined;
-    if (err instanceof NatsError) {
-      cause = err.chainedError;
-      extras = {
-        apiError: err.api_error,
-        permissionContext: err.permissionContext,
-      };
-    }
+    const cause = (err as any).chainedError;
+    extras = {
+      message: (err as any).message,
+      apiError: (err as any).api_error,
+      permissionContext: (err as any).permissionContext,
+    };
 
     logger.error({ err, cause, extras }, "Error preparing jetstream");
     throw err;
@@ -136,15 +135,13 @@ export async function dispatchLoop(
 
     logger.info("Event dispatch loop initialized");
   } catch (err) {
-    let cause: Error | undefined;
     let extras: Record<string, unknown> | undefined = undefined;
-    if (err instanceof NatsError) {
-      cause = err.chainedError;
-      extras = {
-        apiError: err.api_error,
-        permissionContext: err.permissionContext,
-      };
-    }
+    const cause = (err as any).chainedError;
+    extras = {
+      message: (err as any).message,
+      apiError: (err as any).api_error,
+      permissionContext: (err as any).permissionContext,
+    };
 
     logger.error({ err, cause, extras }, "Error in the NATS event loop.");
     throw err;

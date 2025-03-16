@@ -12,7 +12,7 @@ export const NatsConfig = Type.Object({
   port: Type.Number(),
   monitorPort: Type.Number(),
 
-  domain: Type.Optional(Type.String()),
+  domain: Type.String(),
 
   user: Type.Optional(Type.String()),
   password: Type.Optional(Type.String()),
@@ -29,7 +29,7 @@ export function loadNatsConfigFromEnv(): {
       host: requireStr("NATS__HOST"),
       port: getNum("NATS__PORT", 4222),
       monitorPort: getNum("NATS__MONITOR_PORT", 8222),
-      domain: getStr("NATS__DOMAIN", "default"),
+      domain: requireStr("NATS__DOMAIN"),
       user: getStr("NATS__USER"),
       password: getStr("NATS__PASSWORD"),
       logLevel: EnsureTypeCheck(

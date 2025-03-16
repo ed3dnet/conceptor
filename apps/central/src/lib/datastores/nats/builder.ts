@@ -14,13 +14,18 @@ export async function buildNatsClientFromConfig(
     debug: config.logLevel === "debug",
   };
 
-  // Add authentication if provided
-  if (config.user && config.password) {
-    options.user = config.user;
-    options.pass = config.password;
+  if (!!config.user !== !!config.password) {
+    throw new Error(
+      "Both user and password must be provided for authentication",
+    );
   }
 
-  logger.info(`Connecting to NATS server at ${config.host}:${config.port}`);
+  options.user = config.user;
+  options.pass = config.password;
+
+  logger.info(
+    `Connecting to NATS server at ${config.host}:${config.port} with user ${options.user ?? "NONE"}`,
+  );
 
   try {
     const nc = await connect(options);
@@ -54,12 +59,14 @@ export async function buildNatsClientFromConfig(
 export async function createJetStreamClient(
   logger: Logger,
   natsConnection: NatsConnection,
-  domain?: string,
+  domain: string,
 ) {
   const loggerWithComponent = logger.child({ component: "nats_jetstream" });
 
   try {
-    const jsOptions = domain ? { domain } : undefined;
+    const jsOptions = {
+      domain,
+    };
     const js = natsConnection.jetstream(jsOptions);
 
     loggerWithComponent.info(

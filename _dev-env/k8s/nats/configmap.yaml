@@ -12,8 +12,9 @@ data:
     
     jetstream {
       store_dir: /data/jetstream
-      max_mem: 256M
-      max_file: 1G
+      max_mem: 512M
+      max_file: 2G
+      domain: default
     }
 
     accounts {
