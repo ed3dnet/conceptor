@@ -3,7 +3,7 @@ import "@fastify/cookie";
 
 import { type AwilixContainer } from "awilix";
 
-import { type DBTenant } from "../../_db/models.js";
+import { type DBUser, type DBTenant } from "../../_db/models.js";
 import {
   type AppRequestCradle,
   type AppSingletonCradle,
@@ -14,10 +14,12 @@ export type RequestContainer = AwilixContainer<AppRequestCradle>;
 
 declare module "fastify" {
   interface FastifyRequest {
+    readonly traceId: string;
     readonly diScope: RequestContainer;
     deps: AppRequestCradle;
 
     readonly tenant: DBTenant | undefined;
+    readonly user: DBUser | undefined;
   }
 
   interface FastifyInstance {

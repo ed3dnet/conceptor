@@ -31,6 +31,8 @@ spec:
               value: keycloak
             - name: KC_DB_PASSWORD
               value: keycloak
+            - name: KC_HEALTH_ENABLED
+              value: "true"
           ports:
             - containerPort: 8080
           volumeMounts:

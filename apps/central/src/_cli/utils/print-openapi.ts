@@ -30,8 +30,7 @@ export const printOpenapiCommand = command({
 
     const json = JSON.stringify(document, null, 2);
 
-    // eslint-disable-next-line no-restricted-globals
-    console.log(json);
+    process.stdout.write(json + "\n");
     process.exit(0);
   },
 });

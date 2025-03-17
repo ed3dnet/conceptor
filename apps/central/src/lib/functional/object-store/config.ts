@@ -5,9 +5,8 @@ import { S3_BUCKET_NAME } from "../../../_db/schema/index.js";
 import { StringEnum } from "../../ext/typebox.js";
 
 export const S3_BUCKET_NAMES = S3_BUCKET_NAME.enumValues;
-export const S3_PUBLIC_BUCKET_NAMES: Array<(typeof S3_BUCKET_NAMES)[number]> = [
-  "user-public-content",
-] as const;
+export const S3_PUBLIC_BUCKET_NAMES: Array<(typeof S3_BUCKET_NAMES)[number]> =
+  [] as const;
 
 export const S3BucketName = StringEnum(S3_BUCKET_NAME.enumValues);
 export type S3BucketName = Static<typeof S3BucketName>;
@@ -16,7 +15,6 @@ export const S3BucketConfig = Type.Object({
   [S3_BUCKET_NAMES[0]]: Type.String(),
   [S3_BUCKET_NAMES[1]]: Type.String(),
   [S3_BUCKET_NAMES[2]]: Type.String(),
-  [S3_BUCKET_NAMES[3]]: Type.String(),
 });
 export type S3BucketConfig = Static<typeof S3BucketConfig>;
 

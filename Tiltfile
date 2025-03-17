@@ -18,21 +18,24 @@ docker_build('localdev-dev/temporal-dev',
 # Base Setup (Kustomize resources)
 
 namespace_create(tilt_namespace)
-k8s_yaml(kustomize('./_dev-env'))
+k8s_yaml(namespace_inject(kustomize('./_dev-env'), tilt_namespace))
 
 # ------------------------------
 # helm charts
 
 # ------------------------------
 
-front_door_port = tilt_port_prefix + '00'
+k8s_resource('localdev-frontdoor', port_forwards=[os.environ['FRONTDOOR_PORT'] + ":80"], labels=["svc"])
+k8s_resource('localdev-redis', port_forwards=[os.environ['REDIS_PORT'] + ":6379"], labels=["98-svc"])
+k8s_resource('localdev-temporal', port_forwards=[os.environ['TEMPORAL_PORT'] + ":7233", 
+                                                os.environ['TEMPORAL_UI_PORT'] + ":8233"], labels=["98-svc"])
+k8s_resource('localdev-mailpit', port_forwards=[tilt_port_prefix + '26:8025', 
+                                               os.environ['CENTRAL_EMAIL_DELIVERY__SMTP__PORT'] + ":1025"], labels=["98-svc"])
+k8s_resource('localdev-postgres', port_forwards=[os.environ['CENTRAL_POSTGRES__READWRITE__PORT'] + ":5432"], labels=["98-svc"])
+k8s_resource('localdev-minio', port_forwards=[os.environ['CENTRAL_S3__PORT'] + ":9000", 
+                                             os.environ['MINIO_UI_PORT'] + ":9001"], labels=["98-svc"])
+k8s_resource('localdev-keycloak', port_forwards=[os.environ['KEYCLOAK_PORT'] + ":8080"], labels=["98-svc"])
 
-# k8s_resource('localdev-frontdoor', port_forwards=[front_door_port + ":80"], labels=["svc"])
-k8s_resource('localdev-redis', port_forwards=[tilt_port_prefix + '10:6379'], labels=["98-svc"])
-k8s_resource('localdev-temporal', port_forwards=[tilt_port_prefix + '30:7233', tilt_port_prefix + '31:8233'], labels=["98-svc"])
-k8s_resource('localdev-mailpit', port_forwards=[tilt_port_prefix + '26:8025', tilt_port_prefix + '25:1025'], labels=["98-svc"])
-k8s_resource('localdev-postgres', port_forwards=[tilt_port_prefix + '20:5432'], labels=["98-svc"])
-k8s_resource('localdev-minio', port_forwards=[tilt_port_prefix + '40:9000', tilt_port_prefix + '41:9001'], labels=["98-svc"])
 
 # ------------------------------
 
@@ -54,6 +57,12 @@ local_resource("wait-for-redis",
     resource_deps=["localdev-redis"],
     labels=["99-meta"])
 
+local_resource("wait-for-keycloak",
+    allow_parallel=True,
+    cmd="bash ./_dev-env/scripts/wait-for-keycloak.bash",
+    resource_deps=["localdev-keycloak"],
+    labels=["99-meta"])
+
 local_resource("ensure-minio",
     allow_parallel=True,
     cmd="bash ./_dev-env/scripts/ensure-minio.bash",
@@ -66,6 +75,7 @@ local_resource("wait-for-dependencies",
         "wait-for-postgres",
         "wait-for-temporal",
         "wait-for-redis",
+        "wait-for-keycloak",
         "ensure-minio",
     ],
     labels=["99-meta"])
@@ -89,7 +99,7 @@ if tilt_runmode == 'dev-in-tilt':
         allow_parallel=True,
         auto_init=True,
         serve_dir=central_dir,
-        serve_cmd="pnpm run:dev pnpm drizzle-kit studio --port " + studio_port,
+        serve_cmd="bash ../../_dev-env/scripts/kill-pg-studio.bash && pnpm run:dev pnpm drizzle-kit studio --port " + studio_port,
         resource_deps=["wait-for-postgres"],
         labels=["04-util"])
 
@@ -125,7 +135,6 @@ if tilt_runmode == 'dev-in-tilt':
         resource_deps=["migrate-postgres"],
         labels=["00-app"])
 
-
     for i in range(int(worker_core_count)):
         local_resource("worker-core-" + str(i),
             serve_cmd="pnpm cli:dev worker start core",
@@ -157,27 +166,12 @@ if tilt_runmode == 'dev-in-tilt':
         cmd="bash ./_dev-env/scripts/build-central-client.bash",
         labels=["00-app"])
 
-    # local_resource("tenant-site",
-    #     serve_dir="./apps/site-tenant",
-    #     serve_cmd="pnpm dev",
-    #     allow_parallel=True,
-    #     resource_deps=["api", "api-client"],
-    #     links=[
-    #         "http://hosted.lvh.me:" + front_door_port,
-    #         "http://localtest.me:" + front_door_port,
-    #     ],
-    #     labels=["00-app"])
-
-    local_resource("frontend-site",
-        serve_dir="./apps/frontend",
+    local_resource("panel",
+        serve_dir="./apps/panel",
         serve_cmd="pnpm dev",
         allow_parallel=True,
         resource_deps=["api", "api-client"],
         links=[
-            os.environ["FRONTEND_BASE_URL"],
+            os.environ['BASE_URL']
         ],
         labels=["00-app"])
-
-    k8s_resource('localdev-keycloak', 
-        port_forwards=[tilt_port_prefix + '50:8080'], 
-        labels=["98-svc"])

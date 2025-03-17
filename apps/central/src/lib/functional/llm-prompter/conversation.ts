@@ -7,7 +7,7 @@ import {
   LLM_CONVERSATIONS,
   LLM_CONVERSATION_MESSAGES,
 } from "../../../_db/schema/index.js";
-import type { Drizzle } from "../../datastores/postgres/types.server.js";
+import type { Drizzle } from "../../datastores/postgres/types.js";
 import type { VaultService } from "../vault/service.js";
 
 import { type LlmModelConnectorName } from "./config.js";

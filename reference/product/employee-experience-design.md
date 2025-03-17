@@ -1,14 +1,14 @@
-# Conceptor Employee Experience Design
+# Conceptor User Experience Design
 
 Date: January 27, 2025
 
 ## Document Summary
 
-This document outlines the employee interaction design for the Conceptor system, which aims to discover organizational capabilities through structured employee engagement. Key aspects include the use of both voice-based deep dive sessions and quick structured check-ins, methods for question sourcing and data validation, and principles for managing employee effort and data quality. The design emphasizes organic discovery through natural interaction patterns while maintaining robust verification processes. This document is particularly relevant for understanding how Conceptor interfaces with employees to gather high-quality organizational intelligence while minimizing burden and maintaining trust.
+This document outlines the user interaction design for the Conceptor system, which aims to discover organizational capabilities through structured user engagement. Key aspects include the use of both voice-based deep dive sessions and quick structured check-ins, methods for question sourcing and data validation, and principles for managing user effort and data quality. The design emphasizes organic discovery through natural interaction patterns while maintaining robust verification processes. This document is particularly relevant for understanding how Conceptor interfaces with users to gather high-quality organizational intelligence while minimizing burden and maintaining trust.
 
 ## Core Intent
 
-Conceptor's employee interaction system is designed to organically discover organizational capabilities and relationships through structured data collection while minimizing employee burden and maximizing data quality. The system emphasizes natural interaction patterns while maintaining rigorous data validation and verification processes.
+Conceptor's user interaction system is designed to organically discover organizational capabilities and relationships through structured data collection while minimizing user burden and maximizing data quality. The system emphasizes natural interaction patterns while maintaining rigorous data validation and verification processes.
 
 ## Information Collection Strategy
 

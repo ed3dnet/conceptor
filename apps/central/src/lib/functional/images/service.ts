@@ -17,7 +17,7 @@ import { IMAGE_UPLOADS, IMAGES } from "../../../_db/schema/index.js";
 import {
   type DrizzleRO,
   type Drizzle,
-} from "../../datastores/postgres/types.server.js";
+} from "../../datastores/postgres/types.js";
 import { type S3BucketName } from "../object-store/config.js";
 import { type ObjectStoreService } from "../object-store/service.js";
 import { type TemporalDispatcher } from "../temporal-dispatcher/index.js";
@@ -120,7 +120,7 @@ export class ImagesService {
         tenantId,
         usage,
         stagingObjectName,
-        targetBucket: "user-public-content",
+        targetBucket: "upload-staging",
         targetPath: `${tenantId}/${usage}/${crypto.randomUUID()}`,
       })
       .returning();

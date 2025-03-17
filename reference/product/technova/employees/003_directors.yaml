@@ -1,0 +1,1248 @@
+---
+id: "EMP039"
+name:
+  first: "Natalie"
+  last: "Rodriguez"
+title: "Director, NovaSuite Enterprise Architecture"
+level: "Director"
+department: "Enterprise Software"
+sub_department: "Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP014"
+  dotted_line_ids: ["EMP027"]
+tenure:
+  hire_date: "2011-06-15"
+key_skills: ["Enterprise Architecture", "Software Design", "Integration Patterns", "API Strategy"]
+product_association: ["NovaSuite Enterprise"]
+---
+id: "EMP040"
+name:
+  first: "Steven"
+  last: "Williams"
+  preferred: "Steve"
+title: "Director, Financial Services Sales"
+level: "Director"
+department: "Sales"
+sub_department: "Financial Services"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP019"
+  dotted_line_ids: ["EMP030"]
+tenure:
+  hire_date: "2017-08-10"
+key_skills: ["Financial Services Industry", "Enterprise Sales", "Solutions Selling", "Client Relationships"]
+product_association: ["NovaSuite Financial", "NovaSafe Compliance"]
+---
+id: "EMP041"
+name:
+  first: "Kenji"
+  last: "Yamamoto"
+title: "Director, APAC Cloud Operations"
+level: "Director"
+department: "Cloud Infrastructure"
+sub_department: "Regional Operations"
+location:
+  city: "Tokyo"
+  country: "Japan"
+  remote: false
+reporting:
+  manager_id: "EMP015"
+  dotted_line_ids: ["EMP034"]
+tenure:
+  hire_date: "2016-03-22"
+key_skills: ["Cloud Operations", "Data Center Management", "Regional Compliance", "Service Reliability"]
+product_association: ["NovaCloud Platform"]
+---
+id: "EMP042"
+name:
+  first: "Michelle"
+  last: "Ortega"
+title: "Director, Security Operations Center"
+level: "Director"
+department: "Security"
+sub_department: "Operations"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP016"
+tenure:
+  hire_date: "2019-11-01"
+key_skills: ["Security Operations", "Incident Response", "Threat Monitoring", "Security Analytics"]
+product_association: ["NovaShield"]
+---
+id: "EMP043"
+name:
+  first: "Anthony"
+  last: "Jackson"
+  preferred: "Tony"
+title: "Director, DevOps"
+level: "Director"
+department: "Engineering"
+sub_department: "Infrastructure"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP027"
+tenure:
+  hire_date: "2015-05-15"
+key_skills: ["DevOps", "CI/CD Pipelines", "Infrastructure as Code", "Site Reliability"]
+product_association: ["NovaCloud Platform", "NovaSuite Enterprise"]
+---
+id: "EMP044"
+name:
+  first: "Helen"
+  last: "Zhao"
+title: "Director, Data Science"
+level: "Director"
+department: "Data Analytics"
+sub_department: "Data Science"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP018"
+  dotted_line_ids: ["EMP023"]
+tenure:
+  hire_date: "2020-02-03"
+key_skills: ["Machine Learning", "Predictive Analytics", "Statistical Modeling", "Data Science Leadership"]
+product_association: ["NovaAnalytics", "NovaPredict"]
+---
+id: "EMP045"
+name:
+  first: "Robert"
+  last: "Chen"
+  preferred: "Rob"
+title: "Director, Strategic Accounts"
+level: "Director"
+department: "Sales"
+sub_department: "Strategic Accounts"
+location:
+  city: "Chicago"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP019"
+tenure:
+  hire_date: "2016-10-12"
+key_skills: ["Key Account Management", "Enterprise Relationships", "Solutions Selling", "Contract Negotiation"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP046"
+name:
+  first: "Jennifer"
+  last: "Patel"
+  preferred: "Jen"
+title: "Director, User Experience"
+level: "Director"
+department: "Product"
+sub_department: "User Experience"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP024"
+tenure:
+  hire_date: "2018-07-16"
+key_skills: ["UX Design", "Design Systems", "User Research", "Information Architecture"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP047"
+name:
+  first: "Miguel"
+  last: "Fernandez"
+title: "Director, Latin America"
+level: "Director"
+department: "Regional Operations"
+sub_department: "Latin America"
+location:
+  city: "São Paulo"
+  country: "Brazil"
+  remote: false
+reporting:
+  manager_id: "EMP026"
+  dotted_line_ids: ["EMP004"]
+tenure:
+  hire_date: "2019-03-05"
+key_skills: ["Regional Management", "Sales Leadership", "Latin American Markets", "Channel Development"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP048"
+name:
+  first: "Camille"
+  last: "Durand"
+title: "Director, EMEA Security Services"
+level: "Director"
+department: "Security"
+sub_department: "EMEA"
+location:
+  city: "London"
+  country: "UK"
+  remote: false
+reporting:
+  manager_id: "EMP016"
+  dotted_line_ids: ["EMP026"]
+tenure:
+  hire_date: "2021-04-12"
+  acquired_from: "SecureLogic"
+  acquisition_date: "2021-04-01"
+key_skills: ["Security Consulting", "GDPR Compliance", "Security Architecture", "European Security Standards"]
+product_association: ["NovaShield", "NovaSafe Compliance"]
+---
+id: "EMP049"
+name:
+  first: "Anand"
+  last: "Sharma"
+title: "Director, Customer Engineering"
+level: "Director"
+department: "Customer Success"
+sub_department: "Engineering"
+location:
+  city: "Bangalore"
+  country: "India"
+  remote: false
+reporting:
+  manager_id: "EMP021"
+tenure:
+  hire_date: "2018-01-22"
+key_skills: ["Technical Customer Support", "Solution Architecture", "Customer Implementation", "Technical Escalations"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP050"
+name:
+  first: "Rachel"
+  last: "Goldman"
+title: "Director, Healthcare Analytics"
+level: "Director"
+department: "Industry Solutions"
+sub_department: "Healthcare"
+location:
+  city: "Boston"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP028"
+tenure:
+  hire_date: "2021-11-15"
+  acquired_from: "MedTech Analytics"
+  acquisition_date: "2021-11-01"
+key_skills: ["Healthcare Analytics", "Clinical Workflows", "Healthcare Compliance", "Medical Data"]
+product_association: ["MedAnalytics"]
+---
+id: "EMP051"
+name:
+  first: "David"
+  last: "Wilson"
+  preferred: "Dave"
+title: "Director, Enterprise Integration"
+level: "Director"
+department: "Professional Services"
+sub_department: "Integration"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP020"
+tenure:
+  hire_date: "2016-09-15"
+key_skills: ["System Integration", "Enterprise Architecture", "Migration Strategy", "Legacy Modernization"]
+product_association: ["NovaSuite Enterprise"]
+---
+id: "EMP052"
+name:
+  first: "Sarah"
+  last: "Nakamura"
+title: "Director, Quantum Research"
+level: "Director"
+department: "R&D"
+sub_department: "Quantum Computing"
+location:
+  city: "Boston"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP022"
+tenure:
+  hire_date: "2022-07-15"
+  acquired_from: "QuantumWave Technologies"
+  acquisition_date: "2022-07-01"
+key_skills: ["Quantum Computing", "Physics", "Quantum Algorithms", "Research Management"]
+product_association: ["QuantumWave Research"]
+---
+id: "EMP053"
+name:
+  first: "Thomas"
+  last: "Schmidt"
+  preferred: "Tom"
+title: "Director, Cloud Security"
+level: "Director"
+department: "Security"
+sub_department: "Cloud Security"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP016"
+  dotted_line_ids: ["EMP015"]
+tenure:
+  hire_date: "2017-08-01"
+key_skills: ["Cloud Security", "Security Architecture", "Compliance Frameworks", "Zero Trust"]
+product_association: ["NovaShield", "NovaCloud Platform"]
+---
+id: "EMP054"
+name:
+  first: "Jessica"
+  last: "Kim"
+  preferred: "Jess"
+title: "Director, Marketing Operations"
+level: "Director"
+department: "Marketing"
+sub_department: "Operations"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP035"
+tenure:
+  hire_date: "2019-05-20"
+key_skills: ["Marketing Operations", "Campaign Management", "Marketing Analytics", "Marketing Automation"]
+product_association: []
+---
+id: "EMP055"
+name:
+  first: "Omar"
+  last: "Hassan"
+title: "Director, ML Engineering"
+level: "Director"
+department: "AI"
+sub_department: "ML Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP023"
+tenure:
+  hire_date: "2023-03-01"
+  acquired_from: "DataSphere Systems"
+  acquisition_date: "2023-02-15"
+key_skills: ["Machine Learning", "AI Systems", "MLOps", "Deep Learning"]
+product_association: ["NovaAI Platform", "DataSphere ML Suite"]
+---
+id: "EMP056"
+name:
+  first: "Patricia"
+  last: "Garcia"
+  preferred: "Patty"
+title: "Director, Financial Planning & Analysis"
+level: "Director"
+department: "Finance"
+sub_department: "FP&A"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP002"
+tenure:
+  hire_date: "2017-01-10"
+key_skills: ["Financial Analysis", "Budgeting", "Forecasting", "Business Analytics"]
+product_association: []
+---
+id: "EMP057"
+name:
+  first: "Sanjay"
+  last: "Gupta"
+title: "Director, Infrastructure Engineering"
+level: "Director"
+department: "Cloud Infrastructure"
+sub_department: "Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP015"
+  dotted_line_ids: ["EMP029"]
+tenure:
+  hire_date: "2014-08-22"
+  acquired_from: "CloudMatrix"
+  acquisition_date: "2014-08-15"
+key_skills: ["Cloud Architecture", "Distributed Systems", "Scalability", "Infrastructure Design"]
+product_association: ["NovaCloud Platform"]
+---
+id: "EMP058"
+name:
+  first: "Emily"
+  last: "Thompson"
+  preferred: "Em"
+title: "Director, Product Design"
+level: "Director"
+department: "Product"
+sub_department: "Design"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP046"
+tenure:
+  hire_date: "2019-02-11"
+key_skills: ["Product Design", "UI/UX", "Design Systems", "User Research"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP059"
+name:
+  first: "Marcus"
+  last: "Lee"
+title: "Director, Solution Architecture"
+level: "Director"
+department: "Sales"
+sub_department: "Solution Architecture"
+location:
+  city: "San Francisco"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP019"
+  dotted_line_ids: ["EMP014"]
+tenure:
+  hire_date: "2015-07-08"
+key_skills: ["Solution Architecture", "Technical Sales", "Enterprise Integration", "Presales"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform", "NovaShield"]
+---
+id: "EMP060"
+name:
+  first: "Nina"
+  last: "Petrova"
+title: "Director, Data Engineering"
+level: "Director"
+department: "Data Analytics"
+sub_department: "Data Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP018"
+tenure:
+  hire_date: "2017-06-01"
+key_skills: ["Data Engineering", "ETL Pipelines", "Data Warehousing", "Big Data Architecture"]
+product_association: ["NovaAnalytics"]
+---
+id: "EMP061"
+name:
+  first: "James"
+  last: "Fitzgerald"
+  preferred: "Jimmy"
+title: "Director, Business Development"
+level: "Director"
+department: "Sales"
+sub_department: "Business Development"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP008"
+tenure:
+  hire_date: "2019-09-15"
+key_skills: ["Partnership Development", "Channel Strategy", "Alliance Management", "Go-to-Market Strategy"]
+product_association: []
+---
+id: "EMP062"
+name:
+  first: "Priya"
+  last: "Malhotra"
+title: "Director, HR Technology"
+level: "Director"
+department: "Human Resources"
+sub_department: "Technology"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP037"
+  dotted_line_ids: ["EMP006"]
+tenure:
+  hire_date: "2018-05-07"
+key_skills: ["HR Systems", "HRIS", "HR Analytics", "Digital HR Transformation"]
+product_association: ["NovaSuite HR"]
+---
+id: "EMP063"
+name:
+  first: "Samuel"
+  last: "Washington"
+  preferred: "Sam"
+title: "Director, Public Sector"
+level: "Director"
+department: "Industry Solutions"
+sub_department: "Public Sector"
+location:
+  city: "Washington DC"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP014"
+tenure:
+  hire_date: "2018-02-15"
+key_skills: ["Government Contracting", "Public Sector Compliance", "FedRAMP", "Government Sales"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform", "NovaSafe Compliance"]
+---
+id: "EMP064"
+name:
+  first: "Amara"
+  last: "Johnson"
+title: "Director, AI Ethics"
+level: "Director"
+department: "AI"
+sub_department: "Ethics & Governance"
+location:
+  city: "Boston"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP023"
+  dotted_line_ids: ["EMP012"]
+tenure:
+  hire_date: "2022-01-15"
+key_skills: ["AI Ethics", "Responsible AI", "Algorithmic Fairness", "AI Governance"]
+product_association: ["NovaAI Platform"]
+---
+id: "EMP065"
+name:
+  first: "Diego"
+  last: "Morales"
+title: "Director, Automation Solutions"
+level: "Director"
+department: "Business Process Automation"
+sub_department: "Solutions"
+location:
+  city: "Chicago"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP017"
+tenure:
+  hire_date: "2016-05-12"
+  acquired_from: "Processive Systems"
+  acquisition_date: "2016-05-01"
+key_skills: ["Process Automation", "Workflow Design", "Business Analysis", "Digital Transformation"]
+product_association: ["NovaAutomate", "NovaWorkflow"]
+---
+id: "EMP066"
+name:
+  first: "Sophia"
+  last: "Miller"
+title: "Director, Corporate Strategy"
+level: "Director"
+department: "Corporate Development"
+sub_department: "Strategy"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP025"
+  dotted_line_ids: ["EMP001"]
+tenure:
+  hire_date: "2018-06-01"
+key_skills: ["Strategic Planning", "Competitive Analysis", "Market Research", "Business Development"]
+product_association: []
+---
+id: "EMP067"
+name:
+  first: "Liam"
+  last: "O'Connor"
+title: "Director, EMEA Sales"
+level: "Director"
+department: "Sales"
+sub_department: "EMEA"
+location:
+  city: "London"
+  country: "UK"
+  remote: false
+reporting:
+  manager_id: "EMP026"
+tenure:
+  hire_date: "2017-11-03"
+key_skills: ["European Markets", "Sales Leadership", "International Business", "Channel Development"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP068"
+name:
+  first: "Grace"
+  last: "Liu"
+title: "Director, Internal Audit"
+level: "Director"
+department: "Finance"
+sub_department: "Audit"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP002"
+  dotted_line_ids: ["EMP012"]
+tenure:
+  hire_date: "2016-08-15"
+key_skills: ["Internal Audit", "SOX Compliance", "Risk Assessment", "Corporate Governance"]
+product_association: []
+---
+id: "EMP069"
+name:
+  first: "Victor"
+  last: "Kovalev"
+title: "Director, Engineering Productivity"
+level: "Director"
+department: "Engineering"
+sub_department: "Productivity"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP027"
+tenure:
+  hire_date: "2015-03-15"
+key_skills: ["Developer Experience", "Engineering Processes", "Agile Transformation", "Productivity Tools"]
+product_association: []
+---
+id: "EMP070"
+name:
+  first: "Imani"
+  last: "Williams"
+title: "Director, Talent Acquisition"
+level: "Director"
+department: "Human Resources"
+sub_department: "Talent Acquisition"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP037"
+tenure:
+  hire_date: "2019-11-04"
+key_skills: ["Recruiting", "Talent Strategy", "Employer Branding", "Diversity Hiring"]
+product_association: []
+---
+id: "EMP071"
+name:
+  first: "Lucas"
+  last: "Mendez"
+title: "Director, RPA Development"
+level: "Director"
+department: "Business Process Automation"
+sub_department: "RPA"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP017"
+tenure:
+  hire_date: "2022-06-01"
+  acquired_from: "Automation Dynamics"
+  acquisition_date: "2022-05-15"
+key_skills: ["Robotic Process Automation", "RPA Development", "Process Engineering", "Automation Architecture"]
+product_association: ["NovaRPA"]
+---
+id: "EMP072"
+name:
+  first: "Naomi"
+  last: "Tanaka"
+title: "Director, Product Management"
+level: "Director"
+department: "Product"
+sub_department: "Core Platform"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP024"
+  dotted_line_ids: ["EMP029"]
+tenure:
+  hire_date: "2016-11-07"
+key_skills: ["Product Management", "Platform Strategy", "Product Roadmap", "Market Requirements"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP073"
+name:
+  first: "Raj"
+  last: "Patel"
+title: "Director, Database Technologies"
+level: "Director"
+department: "Cloud Infrastructure"
+sub_department: "Database"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP015"
+tenure:
+  hire_date: "2013-09-15"
+key_skills: ["Database Architecture", "Cloud Databases", "Performance Tuning", "Data Migration"]
+product_association: ["NovaDB"]
+---
+id: "EMP074"
+name:
+  first: "Charlotte"
+  last: "Dubois"
+title: "Director, Partner Programs"
+level: "Director"
+department: "Sales"
+sub_department: "Partnerships"
+location:
+  city: "Paris"
+  country: "France"
+  remote: false
+reporting:
+  manager_id: "EMP061"
+  dotted_line_ids: ["EMP026"]
+tenure:
+  hire_date: "2018-03-01"
+key_skills: ["Partner Management", "Channel Development", "Alliance Strategy", "Partner Enablement"]
+product_association: []
+---
+id: "EMP075"
+name:
+  first: "Benjamin"
+  last: "Rosenberg"
+  preferred: "Ben"
+title: "Director, Risk & Compliance"
+level: "Director"
+department: "Security"
+sub_department: "Risk & Compliance"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP036"
+  dotted_line_ids: ["EMP007"]
+tenure:
+  hire_date: "2017-10-11"
+key_skills: ["Risk Management", "Security Compliance", "Regulatory Requirements", "Audit Management"]
+product_association: ["NovaSafe Compliance"]
+---
+id: "EMP076"
+name:
+  first: "Aaliyah"
+  last: "Johnson"
+title: "Director, Diversity & Inclusion"
+level: "Director"
+department: "Human Resources"
+sub_department: "D&I"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP009"
+tenure:
+  hire_date: "2021-05-17"
+key_skills: ["Diversity Programs", "Inclusion Strategy", "Cultural Change", "Employee Resource Groups"]
+product_association: []
+---
+id: "EMP077"
+name:
+  first: "Hiroshi"
+  last: "Suzuki"
+title: "Director, APAC Professional Services"
+level: "Director"
+department: "Professional Services"
+sub_department: "APAC"
+location:
+  city: "Singapore"
+  country: "Singapore"
+  remote: false
+reporting:
+  manager_id: "EMP020"
+  dotted_line_ids: ["EMP034"]
+tenure:
+  hire_date: "2017-07-05"
+key_skills: ["Services Delivery", "Project Management", "Client Management", "Solution Implementation"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP078"
+name:
+  first: "Katherine"
+  last: "Donovan"
+  preferred: "Kate"
+title: "Director, Content Marketing"
+level: "Director"
+department: "Marketing"
+sub_department: "Content"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP035"
+tenure:
+  hire_date: "2020-01-15"
+key_skills: ["Content Strategy", "Thought Leadership", "Brand Storytelling", "Digital Content"]
+product_association: []
+---
+id: "EMP079"
+name:
+  first: "Ethan"
+  last: "Barrett"
+title: "Director, IoT Platform Engineering"
+level: "Director"
+department: "IoT"
+sub_department: "Platform"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP031"
+  dotted_line_ids: ["EMP029"]
+tenure:
+  hire_date: "2018-09-15"
+  acquired_from: "ConnectSystems"
+  acquisition_date: "2018-09-01"
+key_skills: ["IoT Architecture", "Edge Computing", "Embedded Systems", "Sensor Networks"]
+product_association: ["NovaBridge", "NovaEdge"]
+---
+id: "EMP080"
+name:
+  first: "Maya"
+  last: "Srinivasan"
+title: "Director, NLP Research"
+level: "Director"
+department: "AI"
+sub_department: "NLP"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP023"
+tenure:
+  hire_date: "2024-02-15"
+  acquired_from: "CogniSoft"
+  acquisition_date: "2024-02-01"
+key_skills: ["Natural Language Processing", "Computational Linguistics", "AI Research", "Language Models"]
+product_association: ["NovaAI Platform"]
+---
+id: "EMP081"
+name:
+  first: "Alexander"
+  last: "Petrov"
+  preferred: "Alex"
+title: "Director, Threat Intelligence"
+level: "Director"
+department: "Security"
+sub_department: "Threat Intelligence"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP016"
+tenure:
+  hire_date: "2023-08-01"
+  acquired_from: "SecureLogic"
+  acquisition_date: "2023-07-15"
+key_skills: ["Threat Intelligence", "Cyber Security", "Vulnerability Management", "Security Analytics"]
+product_association: ["NovaShield Intelligence"]
+---
+id: "EMP082"
+name:
+  first: "Gabriella"
+  last: "Romano"
+  preferred: "Gabby"
+title: "Director, Technical Program Management"
+level: "Director"
+department: "Engineering"
+sub_department: "Program Management"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP027"
+  dotted_line_ids: ["EMP004"]
+tenure:
+  hire_date: "2016-02-01"
+key_skills: ["Technical Program Management", "Cross-functional Leadership", "Product Delivery", "Engineering Operations"]
+product_association: []
+---
+id: "EMP083"
+name:
+  first: "Zhen"
+  last: "Wu"
+title: "Director, Data Analytics Solutions"
+level: "Director"
+department: "Data Analytics"
+sub_department: "Solutions"
+location:
+  city: "San Francisco"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP018"
+tenure:
+  hire_date: "2017-01-17"
+key_skills: ["Analytics Solutions", "Data Visualization", "Business Intelligence", "Customer Analytics"]
+product_association: ["NovaAnalytics", "NovaVisual"]
+---
+id: "EMP084"
+name:
+  first: "Nikita"
+  last: "Volkov"
+title: "Director, Cloud Engineering"
+level: "Director"
+department: "Cloud Infrastructure"
+sub_department: "Engineering"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP015"
+  dotted_line_ids: ["EMP027"]
+tenure:
+  hire_date: "2015-06-01"
+key_skills: ["Cloud Architecture", "Distributed Systems", "Containerization", "Kubernetes"]
+product_association: ["NovaCloud Platform", "NovaCompute"]
+---
+id: "EMP085"
+name:
+  first: "Rebecca"
+  last: "Winters"
+  preferred: "Becca"
+title: "Director, Manufacturing Analytics"
+level: "Director"
+department: "Industry Solutions"
+sub_department: "Manufacturing"
+location:
+  city: "Detroit"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP038"
+  dotted_line_ids: ["EMP018"]
+tenure:
+  hire_date: "2024-02-15"
+  acquired_from: "IndustrialAI"
+  acquisition_date: "2024-02-01"
+key_skills: ["Manufacturing Analytics", "Industrial IoT", "Predictive Maintenance", "Supply Chain Optimization"]
+product_association: ["NovaAnalytics", "NovaBridge"]
+---
+id: "EMP086"
+name:
+  first: "Jamal"
+  last: "Washington"
+title: "Director, Customer Success"
+level: "Director"
+department: "Customer Success"
+sub_department: "Enterprise"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP021"
+tenure:
+  hire_date: "2018-10-15"
+key_skills: ["Customer Success", "Account Management", "Customer Retention", "Growth Strategy"]
+product_association: ["NovaSuite Enterprise"]
+---
+id: "EMP087"
+name:
+  first: "Angela"
+  last: "Cohen"
+  preferred: "Angie"
+title: "Director, Legal Affairs"
+level: "Director"
+department: "Legal"
+sub_department: "Corporate"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP012"
+tenure:
+  hire_date: "2017-03-20"
+key_skills: ["Corporate Law", "Contract Management", "Intellectual Property", "Regulatory Compliance"]
+product_association: []
+---
+id: "EMP088"
+name:
+  first: "Martin"
+  last: "Søndergaard"
+title: "Director, European Cloud Operations"
+level: "Director"
+department: "Cloud Infrastructure"
+sub_department: "EMEA"
+location:
+  city: "Amsterdam"
+  country: "Netherlands"
+  remote: false
+reporting:
+  manager_id: "EMP015"
+  dotted_line_ids: ["EMP026"]
+tenure:
+  hire_date: "2016-05-15"
+key_skills: ["Cloud Operations", "GDPR Compliance", "Data Center Management", "European Cloud Regulations"]
+product_association: ["NovaCloud Platform"]
+---
+id: "EMP089"
+name:
+  first: "Julia"
+  last: "Kang"
+title: "Director, Enterprise Architecture"
+level: "Director"
+department: "IT"
+sub_department: "Architecture"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP006"
+  dotted_line_ids: ["EMP003"]
+tenure:
+  hire_date: "2018-08-01"
+key_skills: ["Enterprise Architecture", "IT Strategy", "Technology Roadmap", "Digital Transformation"]
+product_association: []
+---
+id: "EMP090"
+name:
+  first: "Carlos"
+  last: "Menendez"
+  preferred: "Charlie"
+title: "Director, Business Intelligence"
+level: "Director"
+department: "Data Analytics"
+sub_department: "Business Intelligence"
+location:
+  city: "Chicago"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP032"
+tenure:
+  hire_date: "2016-11-02"
+key_skills: ["Business Intelligence", "Data Visualization", "Executive Dashboards", "KPI Management"]
+product_association: ["NovaInsight", "NovaVisual"]
+---
+id: "EMP091"
+name:
+  first: "Nora"
+  last: "Abadi"
+title: "Director, Digital Marketing"
+level: "Director"
+department: "Marketing"
+sub_department: "Digital"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP035"
+tenure:
+  hire_date: "2020-08-03"
+key_skills: ["Digital Marketing", "Marketing Analytics", "Demand Generation", "SEO/SEM"]
+product_association: []
+---
+id: "EMP092"
+name:
+  first: "Richard"
+  last: "Blackstone"
+  preferred: "Rich"
+title: "Director, Identity & Access Management"
+level: "Director"
+department: "Security"
+sub_department: "IAM"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP016"
+tenure:
+  hire_date: "2018-02-15"
+key_skills: ["Identity Management", "Access Control", "Authentication Systems", "Zero Trust"]
+product_association: ["NovaSafe Identity"]
+---
+id: "EMP093"
+name:
+  first: "Leila"
+  last: "Patel"
+title: "Director, Product Analytics"
+level: "Director"
+department: "Product"
+sub_department: "Analytics"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP024"
+  dotted_line_ids: ["EMP018"]
+tenure:
+  hire_date: "2019-04-08"
+key_skills: ["Product Analytics", "User Behavior Analysis", "A/B Testing", "Data-Driven Product Development"]
+product_association: ["NovaSuite Enterprise", "NovaConnect"]
+---
+id: "EMP094"
+name:
+  first: "Daniel"
+  last: "Okafor"
+  preferred: "Dan"
+title: "Director, Financial Services Solutions"
+level: "Director"
+department: "Industry Solutions"
+sub_department: "Financial Services"
+location:
+  city: "New York"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP030"
+tenure:
+  hire_date: "2020-03-02"
+key_skills: ["Financial Services Technology", "Banking Solutions", "Fintech Integration", "Regulatory Compliance"]
+product_association: ["NovaSuite Financial", "NovaSafe Compliance"]
+---
+id: "EMP095"
+name:
+  first: "Teresa"
+  last: "Vasquez"
+title: "Director, Compensation & Benefits"
+level: "Director"
+department: "Human Resources"
+sub_department: "Comp & Benefits"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP037"
+tenure:
+  hire_date: "2018-06-15"
+key_skills: ["Compensation Strategy", "Benefits Administration", "Equity Programs", "Global Compensation"]
+product_association: ["NovaSuite HR"]
+---
+id: "EMP096"
+name:
+  first: "Jason"
+  last: "Lee"
+  preferred: "Jay"
+title: "Director, Technical Documentation"
+level: "Director"
+department: "Product"
+sub_department: "Documentation"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: true
+reporting:
+  manager_id: "EMP024"
+tenure:
+  hire_date: "2017-10-12"
+key_skills: ["Technical Writing", "Documentation Systems", "Information Architecture", "Developer Experience"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP097"
+name:
+  first: "Akira"
+  last: "Watanabe"
+title: "Director, APAC Sales"
+level: "Director"
+department: "Sales"
+sub_department: "APAC"
+location:
+  city: "Tokyo"
+  country: "Japan"
+  remote: false
+reporting:
+  manager_id: "EMP034"
+  dotted_line_ids: ["EMP019"]
+tenure:
+  hire_date: "2017-01-10"
+key_skills: ["Asian Markets", "Enterprise Sales", "Channel Management", "International Business"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP098"
+name:
+  first: "Sharon"
+  last: "Williams"
+title: "Director, Security Research"
+level: "Director"
+department: "Security"
+sub_department: "Research"
+location:
+  city: "Austin"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP016"
+tenure:
+  hire_date: "2020-02-01"
+key_skills: ["Security Research", "Vulnerability Assessment", "Penetration Testing", "Exploit Analysis"]
+product_association: ["NovaShield"]
+---
+id: "EMP099"
+name:
+  first: "Rafael"
+  last: "Hernandez"
+  preferred: "Rafa"
+title: "Director, Quality Assurance"
+level: "Director"
+department: "Engineering"
+sub_department: "QA"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP027"
+tenure:
+  hire_date: "2016-01-18"
+key_skills: ["Quality Assurance", "Test Automation", "Performance Testing", "Quality Processes"]
+product_association: ["NovaSuite Enterprise", "NovaCloud Platform"]
+---
+id: "EMP100"
+name:
+  first: "Christine"
+  last: "Montgomery"
+  preferred: "Chris"
+title: "Director, Investor Relations"
+level: "Director"
+department: "Finance"
+sub_department: "Investor Relations"
+location:
+  city: "Seattle"
+  country: "USA"
+  remote: false
+reporting:
+  manager_id: "EMP002"
+tenure:
+  hire_date: "2019-06-03"
+key_skills: ["Investor Communications", "Financial Reporting", "Shareholder Management", "Capital Markets"]
+product_association: []

@@ -16,6 +16,12 @@ MAX_TRIES=30
 RETRY_INTERVAL=3
 count=0
 
+# if no 'mc' binary, bail
+if ! command -v mc &> /dev/null; then
+    echo "mc command not found. Please install mc and try again."
+    exit 1
+fi
+
 echo "Configuring MinIO client..."
 
 # Configure mc with our MinIO instance

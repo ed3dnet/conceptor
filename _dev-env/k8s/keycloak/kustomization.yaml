@@ -5,5 +5,4 @@ resources:
 configMapGenerator:
   - name: keycloak-realm-config
     files:
-      - config/samltenant-realm.json
-      - config/oidctenant-realm.json
+      - config/technova.json

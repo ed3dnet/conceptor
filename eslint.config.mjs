@@ -28,6 +28,8 @@ export function legacyPlugin(name, alias = name) {
   return fixupPluginRules(plugin);
 }
 
+export const importPlugin = legacyPlugin("eslint-plugin-import", "import");
+
 export const PROJECT_RULES = {
   quotes: [
     2,
@@ -60,13 +62,15 @@ export const PROJECT_RULES = {
     "error",
     {
       name: "fetch",
-      message: "Use fetch from the DI container instead.",
+      message: "Use fetch from the context provider instead.",
     },
     {
       name: "console",
-      message: "Use the logger from the DI container instead.",
+      message: "Use the logger from the context provider instead.",
     },
   ],
+
+  semi: ["error", "always"],
 };
 
 export default [
@@ -87,7 +91,7 @@ export default [
   {
     plugins: {
       "@typescript-eslint": typescriptEslint,
-      import: legacyPlugin("eslint-plugin-import", "import"),
+      import: importPlugin,
       "@stylistic": stylistic,
     },
 

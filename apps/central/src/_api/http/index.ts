@@ -20,6 +20,10 @@ import { API_ROUTES } from "../routes/index.js";
 import { registerDependencyInjection } from "./deps.js";
 import { requestIdPlugin } from "./request-id-plugin.js";
 import { ErrorResponse, ValidationErrorResponse } from "./schemas.js";
+import {
+  buildTenantUserCookieHandler,
+  TENANT_USER_AUTH_SCHEME,
+} from "./security.js";
 import { type RootContainer } from "./type-extensions.js";
 import type { AppFastify } from "./type-providers.js";
 
@@ -42,6 +46,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: err.friendlyName,
         message: err.message,
         reqId: request.id,
+        traceId: request.traceId,
         stack,
       };
     } else if ((err as FastifyError).validation) {
@@ -54,6 +59,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: "ValidationError",
         message: "Invalid request: " + err.message,
         reqId: request.id,
+        traceId: request.traceId,
         stack,
         details: validation!,
       } satisfies ValidationErrorResponse;
@@ -72,6 +78,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: "InternalServerError",
         message: "An internal server error occurred.",
         reqId: request.id,
+        traceId: request.traceId,
         stack,
       };
     } else {
@@ -87,6 +94,7 @@ function registerErrorHandler(config: ApiAppConfig, fastify: AppFastify) {
         name: "InternalServerError",
         message: "An internal server error occurred.",
         reqId: request.id,
+        traceId: request.traceId,
         stack,
       };
     }
@@ -108,7 +116,7 @@ export async function buildServer(
       context: "fastify",
     }) as FastifyBaseLogger,
     ajv: {},
-    genReqId: (req) => idGenerator([req.headers["x-correlation-id"]].flat()[0]),
+    genReqId: (req) => idGenerator([req.headers["x-request-id"]].flat()[0]),
   }).withTypeProvider<TypeBoxTypeProvider>();
   await registerDependencyInjection(config, fastify, rootContainer);
 
@@ -145,7 +153,9 @@ export async function buildServer(
     },
     autowiredSecurity: {
       allowEmptySecurityWithNoRoot: false,
-      securitySchemes: {},
+      securitySchemes: {
+        [TENANT_USER_AUTH_SCHEME]: buildTenantUserCookieHandler(config.auth),
+      },
       onRequestFailed: (result) => {
         if (result.code === 401) {
           throw new UnauthorizedError(

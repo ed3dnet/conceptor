@@ -19,7 +19,12 @@ export function requireJson<T>(varName: string): T {
   return JSON.parse(requireStr(varName));
 }
 
-export function getStr(varName: string, defaultValue: string): string {
+export function getStr(varName: string): string | undefined;
+export function getStr(varName: string, defaultValue: string): string;
+export function getStr(
+  varName: string,
+  defaultValue?: string,
+): string | undefined {
   return GetEnv.getStr(prefixEnvVar(varName), defaultValue);
 }
 

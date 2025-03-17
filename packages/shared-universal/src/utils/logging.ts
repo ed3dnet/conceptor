@@ -12,8 +12,8 @@ export function buildStandardLogger(
   } = {},
 ): PinoLogger {
   const destination = opts.useStdout
-    ? pino.destination(1)
-    : pino.destination(2);
+    ? pino.destination(process.stdout)
+    : pino.destination(process.stderr);
   const transport = opts.prettyPrint ? { target: "pino-pretty" } : undefined;
 
   return pino(

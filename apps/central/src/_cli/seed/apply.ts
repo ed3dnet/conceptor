@@ -27,5 +27,8 @@ export const seedApplyCommand = command({
 
     ROOT_LOGGER.info({ environment }, "Running seed.");
     await seed(environment, ROOT_CONTAINER.cradle);
+
+    await ROOT_CONTAINER.dispose();
+    process.exit(0);
   },
 });

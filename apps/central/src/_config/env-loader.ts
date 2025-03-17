@@ -2,12 +2,17 @@
 import { LogLevelChecker } from "@myapp/shared-universal/config/types.js";
 import { AJV } from "@myapp/shared-universal/utils/ajv.js";
 import { EnsureTypeCheck } from "@myapp/shared-universal/utils/type-utils.js";
+import { type TemporalConfig } from "@myapp/temporal-client/config.js";
+import { load } from "js-yaml";
 
+import { type AuthConfig } from "../domain/auth/config.js";
 import { loadLlmPrompterConfigFromEnv } from "../lib/functional/llm-prompter/config.js";
 import { S3FlavorChecker } from "../lib/functional/object-store/config.js";
+import { loadTranscriptionConfigFromEnv } from "../lib/functional/transcription/config.js";
 
 import {
   getBool,
+  getMilliseconds,
   getNodeEnv,
   getNum,
   getStr,
@@ -18,7 +23,12 @@ import {
   requireStr,
   requireStrList,
 } from "./env-prefix.js";
-import { AppConfig, type UrlsConfig, type BaseConfig } from "./types.js";
+import {
+  AppConfig,
+  type UrlsConfig,
+  type BaseConfig,
+  type InsecureOptionsConfig,
+} from "./types.js";
 
 export function loadBaseConfigFromEnv(): BaseConfig {
   return {
@@ -33,6 +43,7 @@ export function loadBaseConfigFromEnv(): BaseConfig {
 function loadUrlsConfigFromEnv(): { urls: UrlsConfig } {
   return {
     urls: {
+      frontendBaseUrl: requireStr("URLS__FRONTEND_BASE_URL"),
       apiBaseUrl: requireStr("URLS__API_BASE_URL"),
       s3BaseUrl: requireStr("URLS__S3_BASE_URL"),
       s3ExternalUrl: requireStr("URLS__S3_EXTERNAL_URL"),
@@ -76,15 +87,15 @@ export function loadRedisConfigFromEnv() {
   };
 }
 
-export function loadTemporalConfigFromEnv() {
+export function loadTemporalConfigFromEnv(): {
+  temporal: TemporalConfig;
+} {
   return {
     temporal: {
       address: requireStr("TEMPORAL__ADDRESS"),
       queues: {
         core: requireStr("TEMPORAL__QUEUES__CORE"),
-        identity: requireStr("TEMPORAL__QUEUES__IDENTITY"),
         media: requireStr("TEMPORAL__QUEUES__MEDIA"),
-        atproto: requireStr("TEMPORAL__QUEUES__ATPROTO"),
       },
       namespace: getStr("TEMPORAL__NAMESPACE", "default"),
     },
@@ -125,6 +136,29 @@ function loadVaultConfigFromEnv() {
   };
 }
 
+function loadAuthConfigFromEnv(): { auth: AuthConfig } {
+  return {
+    auth: {
+      sessionCookie: {
+        name: requireStr("AUTH__SESSION_COOKIE__NAME"),
+        domain: requireStr("AUTH__SESSION_COOKIE__DOMAIN"),
+        secure: getBool("AUTH__SESSION_COOKIE__SECURE", true),
+        maxAgeMs: getMilliseconds("AUTH__SESSION_COOKIE__MAX_AGE", "30d"),
+      },
+      oauth: {
+        statePasetoSymmetricKey: {
+          type: "paseto-v3-local",
+          key: requireStr("AUTH__OAUTH__STATE_PASETO_SYMMETRIC_KEY"),
+        },
+        stateExpirationSeconds: getNum(
+          "AUTH__OAUTH__STATE_EXPIRATION_SECONDS",
+          300,
+        ),
+      },
+    },
+  };
+}
+
 function loadS3ConfigFromEnv() {
   return {
     s3: {
@@ -136,19 +170,24 @@ function loadS3ConfigFromEnv() {
       secretKey: requireStr("S3__SECRET_KEY"),
       buckets: {
         core: requireStr("S3__BUCKETS__CORE"),
-        "user-public-content": requireStr("S3__BUCKETS__USER_PUBLIC_CONTENT"),
-        "user-signed-access": requireStr("S3__BUCKETS__USER_SIGNED_ACCESS"),
+        "user-content": requireStr("S3__BUCKETS__USER_PUBLIC_CONTENT"),
         "upload-staging": requireStr("S3__BUCKETS__UPLOAD_STAGING"),
       },
     },
   };
 }
 
-export function loadInsecureOptionsConfigFromEnv() {
+export function loadInsecureOptionsConfigFromEnv(): {
+  insecureOptions: InsecureOptionsConfig;
+} {
   return {
     insecureOptions: {
       insecurelyLogOAuth2Payloads: getBool(
         "INSECURE_OPTIONS__INSECURELY_LOG_OAUTH2_PAYLOADS",
+        false,
+      ),
+      allowInsecureOpenIDProviders: getBool(
+        "INSECURE_OPTIONS__ALLOW_INSECURE_OPENID_PROVIDERS",
         false,
       ),
     },
@@ -168,6 +207,9 @@ export function normalAppConfig(): AppConfig {
     ...loadEmailDeliveryConfigFromEnv(),
 
     ...loadLlmPrompterConfigFromEnv(),
+    ...loadTranscriptionConfigFromEnv(),
+
+    ...loadAuthConfigFromEnv(),
   };
 }
 
