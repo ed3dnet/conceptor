@@ -34,8 +34,6 @@ k8s_resource('localdev-mailpit', port_forwards=[tilt_port_prefix + '26:8025',
 k8s_resource('localdev-postgres', port_forwards=[os.environ['CENTRAL_POSTGRES__READWRITE__PORT'] + ":5432"], labels=["98-svc"])
 k8s_resource('localdev-minio', port_forwards=[os.environ['CENTRAL_S3__PORT'] + ":9000", 
                                              os.environ['MINIO_UI_PORT'] + ":9001"], labels=["98-svc"])
-k8s_resource('localdev-nats', port_forwards=[os.environ['CENTRAL_NATS__PORT'] + ":4222", 
-                                            os.environ['CENTRAL_NATS__MONITOR_PORT'] + ":8222"], labels=["98-svc"])
 k8s_resource('localdev-keycloak', port_forwards=[os.environ['KEYCLOAK_PORT'] + ":8080"], labels=["98-svc"])
 
 
@@ -59,12 +57,6 @@ local_resource("wait-for-redis",
     resource_deps=["localdev-redis"],
     labels=["99-meta"])
 
-local_resource("wait-for-nats",
-    allow_parallel=True,
-    cmd="bash ./_dev-env/scripts/wait-for-nats.bash",
-    resource_deps=["localdev-nats"],
-    labels=["99-meta"])
-
 local_resource("wait-for-keycloak",
     allow_parallel=True,
     cmd="bash ./_dev-env/scripts/wait-for-keycloak.bash",
@@ -83,7 +75,6 @@ local_resource("wait-for-dependencies",
         "wait-for-postgres",
         "wait-for-temporal",
         "wait-for-redis",
-        "wait-for-nats",
         "wait-for-keycloak",
         "ensure-minio",
     ],
@@ -143,14 +134,6 @@ if tilt_runmode == 'dev-in-tilt':
         ],
         resource_deps=["migrate-postgres"],
         labels=["00-app"])
-
-    local_resource("event-dispatcher",
-        serve_cmd="pnpm cli:dev event-dispatcher start",
-        serve_dir=central_dir,
-        allow_parallel=True,
-        resource_deps=["wait-for-dependencies"],
-        labels=["00-app"])
-
 
     for i in range(int(worker_core_count)):
         local_resource("worker-core-" + str(i),

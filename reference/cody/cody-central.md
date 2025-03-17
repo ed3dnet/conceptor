@@ -61,6 +61,7 @@ async function apiRoutes(fastify: AppFastify) {
   - Services will often need to create their own DTOs. Don't append `Schema` or `DTO` to these. Instead, use a suffix that makes it clear who the audience is. `Public` contains no sensitive information. `Private` contains information that is only visible to the resource owner (e.g., the user who IS the resource). If no suffix is used, it may be shared with other users in the same tenant.
   - Any DTO that will end up in an API response needs a `__type` property that names the DTO, to help create type errors when objects not intended to be part of the API surface are returned by an API handler.
   - When creating a new resource, check for the existence of a resource with the same name before creating it. If it exists, throw a `ConflictError`.
+  - Remember that our standard discriminated union key is `kind`, not `type`.
 
 ### Temporal
 - We use Temporal to handle long-running jobs. They run from a separate instance of the same container as the API server, and in the same NPM package.
@@ -70,7 +71,7 @@ async function apiRoutes(fastify: AppFastify) {
 - Workflows generally live in a domain directory, under `workflows`.
 - Activities generally live in a domain directory, under `activities`.
 - Activities need to be registered in `apps/central/src/_worker/activities/index.ts` so the worker can find it and invoke it.
-- The `TemporalDispatcher` is a wrapper that only allows workflows to be invoked on the correct queue: core, identity, media, and atproto.
+- The `TemporalDispatcher` is a wrapper that only allows workflows to be invoked on the correct queue: core and media.
 - Workflows need to be registered in the correct file for its queue, for example: `apps/central/src/_worker/workflows/identity/index.ts`
 
 ## Initial instructions to Cody
@@ -83,3 +84,5 @@ Your core set of files you need to know about to get started are:
 You may need to ask for additional files depending on the project, which might include the following:
 - `apps/central/src/_api/http/security/index.ts`
 - `packages/central-client/src/generated/paths.ts`
+
+DO NOT ATTEMPT TO DO ENTIRE REQUESTED PROBLEMS IN A SINGLE SHOT. We'll work in steps small enough for me to think through. Wait for me to confirm after a logical part of the system (for example, after we have finished defining our object types) before continuing to the next logical part.

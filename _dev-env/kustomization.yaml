@@ -6,6 +6,5 @@ resources:
   - k8s/minio
   - k8s/postgres
   - k8s/keycloak
-  - k8s/nats
 
 configMapGenerator: []

@@ -17,6 +17,8 @@ Conceptor is intended to be a "junior MBA in a box". It is a tool for our custom
 ## Important notes for Cody
 While we're working together, we want you to help us augment the bootstrap notes so future iterations of Cody can be more helpful. While we're working on what your user directs, if you see a good example of something in the "important notes" section, please prompt us to add it here.
 
+DO NOT ATTEMPT TO DO ENTIRE REQUESTED PROBLEMS IN A SINGLE SHOT. We'll work in steps small enough for me to think through. Wait for me to confirm after a logical part of the system (for example, after we have finished defining our object types) before continuing to the next logical part.
+
 ### General stuff
 - We use Vitest for all tests.
 - ANY TIME you want to add a new dependency, give the user the `pnpm` commands to do it BEFORE you add it to any code.
