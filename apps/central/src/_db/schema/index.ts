@@ -22,6 +22,7 @@ import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
 import { type OIDCConnectorState } from "../../domain/auth-connectors/schemas/index.js";
 import { type IdPUserInfo } from "../../domain/users/schemas.js";
+import { type TranscriptionOptions } from "../../lib/functional/transcription/schemas.js";
 import { type Sensitive } from "../../lib/functional/vault/schemas.js";
 
 // ---------- HELPER TYPES ---------------------- //
@@ -169,6 +170,33 @@ export const LLM_CONVERSATION_MESSAGES = pgTable(
     },
   ],
 );
+
+export const TRANSCRIPTION_JOB_STATUS = pgEnum("transcription_job_status", [
+  "pending",
+  "processing",
+  "completed",
+  "failed",
+]);
+
+export const TRANSCRIPTION_JOBS = pgTable("transcription_jobs", {
+  transcriptionJobId: ULIDAsUUID().primaryKey(),
+  tenantId: uuid()
+    .references(() => TENANTS.tenantId)
+    .notNull(),
+
+  sourceBucket: S3_BUCKET_NAME("source_bucket").notNull(),
+  sourceObjectName: text("source_object_name").notNull(),
+
+  options: jsonb("options").$type<TranscriptionOptions>().notNull(),
+
+  status: TRANSCRIPTION_JOB_STATUS("status").notNull().default("pending"),
+  errorMessage: text("error_message"),
+
+  transcriptionText: text("transcription_text"),
+  transcriptionMetadata: jsonb("transcription_metadata"),
+
+  ...TIMESTAMPS_MIXIN,
+});
 
 export const AUTH_CONNECTORS = pgTable(
   "auth_connectors",
@@ -618,66 +646,67 @@ export const GLOBAL_PERMISSIONS = pgTable(
   ],
 );
 
-export const UNIT_INFORMATION = pgTable(
-  "unit_information",
-  {
-    id: ULIDAsUUID().primaryKey(),
-    sourceUnitId: uuid("source_unit_id")
-      .references(() => UNITS.id)
-      .notNull(),
-    targetUnitId: uuid("target_unit_id")
-      .references(() => UNITS.id)
-      .notNull(),
-    type: INFORMATION_TYPE("type").notNull(),
-    booleanResponse: boolean("boolean_response"),
-    gradientResponse: doublePrecision("gradient_response"),
-    textResponse: text("text_response"),
-    audioSourceBucket: text("audio_source_bucket"),
-    audioSourceKey: text("audio_source_key"),
-    transcriptionMetadata: jsonb("transcription_metadata"),
-    collectedAt: timestamp("collected_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    relevanceScore: doublePrecision("relevance_score").notNull().default(1.0),
-    manuallyInvalidated: boolean("manually_invalidated")
-      .notNull()
-      .default(false),
-    previousVersionId: uuid("previous_version_id").references(
-      (): AnyPgColumn => UNIT_INFORMATION.id,
-    ),
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [
-    index("idx_unit_information_source").on(t.sourceUnitId),
-    index("idx_unit_information_target").on(t.targetUnitId),
-    index("idx_unit_information_type").on(t.type),
-    index("idx_unit_information_relevance").on(t.relevanceScore),
-    index("idx_unit_information_collected").on(t.collectedAt),
-    check(
-      "valid_response_type",
-      sql`
-    CASE ${t.type}
-      WHEN 'boolean' THEN
-        (${t.booleanResponse} IS NOT NULL AND ${t.gradientResponse} IS NULL AND ${t.textResponse} IS NULL)
-      WHEN 'gradient' THEN
-        (${t.booleanResponse} IS NULL AND ${t.gradientResponse} IS NOT NULL AND ${t.textResponse} IS NULL)
-      WHEN 'text' THEN
-        (${t.booleanResponse} IS NULL AND ${t.gradientResponse} IS NULL AND ${t.textResponse} IS NOT NULL)
-    END
-  `,
-    ),
-    check(
-      "valid_audio_source",
-      sql`
-    (${t.type} != 'text' AND ${t.audioSourceBucket} IS NULL AND ${t.audioSourceKey} IS NULL AND ${t.transcriptionMetadata} IS NULL) OR
-    (${t.type} = 'text' AND (
-      (${t.audioSourceBucket} IS NULL AND ${t.audioSourceKey} IS NULL) OR
-      (${t.audioSourceBucket} IS NOT NULL AND ${t.audioSourceKey} IS NOT NULL)
-    ))
-  `,
-    ),
-  ],
-);
+// TODO: figure out a better way to represent information so that it can target different things
+// export const UNIT_INFORMATION = pgTable(
+//   "unit_information",
+//   {
+//     id: ULIDAsUUID().primaryKey(),
+//     sourceUnitId: uuid("source_unit_id")
+//       .references(() => UNITS.id)
+//       .notNull(),
+//     targetUnitId: uuid("target_unit_id")
+//       .references(() => UNITS.id)
+//       .notNull(),
+//     type: INFORMATION_TYPE("type").notNull(),
+//     booleanResponse: boolean("boolean_response"),
+//     gradientResponse: doublePrecision("gradient_response"),
+//     textResponse: text("text_response"),
+//     audioSourceBucket: text("audio_source_bucket"),
+//     audioSourceKey: text("audio_source_key"),
+//     transcriptionMetadata: jsonb("transcription_metadata"),
+//     collectedAt: timestamp("collected_at", { withTimezone: true })
+//       .notNull()
+//       .defaultNow(),
+//     relevanceScore: doublePrecision("relevance_score").notNull().default(1.0),
+//     manuallyInvalidated: boolean("manually_invalidated")
+//       .notNull()
+//       .default(false),
+//     previousVersionId: uuid("previous_version_id").references(
+//       (): AnyPgColumn => UNIT_INFORMATION.id,
+//     ),
+//     ...TIMESTAMPS_MIXIN,
+//   },
+//   (t) => [
+//     index("idx_unit_information_source").on(t.sourceUnitId),
+//     index("idx_unit_information_target").on(t.targetUnitId),
+//     index("idx_unit_information_type").on(t.type),
+//     index("idx_unit_information_relevance").on(t.relevanceScore),
+//     index("idx_unit_information_collected").on(t.collectedAt),
+//     check(
+//       "valid_response_type",
+//       sql`
+//     CASE ${t.type}
+//       WHEN 'boolean' THEN
+//         (${t.booleanResponse} IS NOT NULL AND ${t.gradientResponse} IS NULL AND ${t.textResponse} IS NULL)
+//       WHEN 'gradient' THEN
+//         (${t.booleanResponse} IS NULL AND ${t.gradientResponse} IS NOT NULL AND ${t.textResponse} IS NULL)
+//       WHEN 'text' THEN
+//         (${t.booleanResponse} IS NULL AND ${t.gradientResponse} IS NULL AND ${t.textResponse} IS NOT NULL)
+//     END
+//   `,
+//     ),
+//     check(
+//       "valid_audio_source",
+//       sql`
+//     (${t.type} != 'text' AND ${t.audioSourceBucket} IS NULL AND ${t.audioSourceKey} IS NULL AND ${t.transcriptionMetadata} IS NULL) OR
+//     (${t.type} = 'text' AND (
+//       (${t.audioSourceBucket} IS NULL AND ${t.audioSourceKey} IS NULL) OR
+//       (${t.audioSourceBucket} IS NOT NULL AND ${t.audioSourceKey} IS NOT NULL)
+//     ))
+//   `,
+//     ),
+//   ],
+// );
 
 export const UNIT_TAGS = pgTable(
   "unit_tags",

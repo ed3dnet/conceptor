@@ -1,5 +1,5 @@
 {
-  "id": "5898e5ee-d29a-4e2b-9d3a-125dc15ca9e2",
+  "id": "a43d9df9-a308-4b2b-93b1-4deadbb4ff8f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1321,6 +1321,103 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.transcription_jobs": {
+      "name": "transcription_jobs",
+      "schema": "",
+      "columns": {
+        "transcription_job_id": {
+          "name": "transcription_job_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_bucket": {
+          "name": "source_bucket",
+          "type": "s3_bucket_name",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_object_name": {
+          "name": "source_object_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "options": {
+          "name": "options",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "transcription_job_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transcription_text": {
+          "name": "transcription_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transcription_metadata": {
+          "name": "transcription_metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transcription_jobs_tenant_id_tenants_tenant_id_fk": {
+          "name": "transcription_jobs_tenant_id_tenants_tenant_id_fk",
+          "tableFrom": "transcription_jobs",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "tenant_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.units": {
       "name": "units",
       "schema": "",
@@ -1698,245 +1795,6 @@
         "valid_dates": {
           "name": "valid_dates",
           "value": "\"unit_capabilities\".\"end_date\" IS NULL OR \"unit_capabilities\".\"end_date\" > \"unit_capabilities\".\"start_date\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.unit_information": {
-      "name": "unit_information",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "source_unit_id": {
-          "name": "source_unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "target_unit_id": {
-          "name": "target_unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "information_type",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "boolean_response": {
-          "name": "boolean_response",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "gradient_response": {
-          "name": "gradient_response",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "text_response": {
-          "name": "text_response",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "audio_source_bucket": {
-          "name": "audio_source_bucket",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "audio_source_key": {
-          "name": "audio_source_key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "transcription_metadata": {
-          "name": "transcription_metadata",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "collected_at": {
-          "name": "collected_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "relevance_score": {
-          "name": "relevance_score",
-          "type": "double precision",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "manually_invalidated": {
-          "name": "manually_invalidated",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "previous_version_id": {
-          "name": "previous_version_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_unit_information_source": {
-          "name": "idx_unit_information_source",
-          "columns": [
-            {
-              "expression": "source_unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_unit_information_target": {
-          "name": "idx_unit_information_target",
-          "columns": [
-            {
-              "expression": "target_unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_unit_information_type": {
-          "name": "idx_unit_information_type",
-          "columns": [
-            {
-              "expression": "type",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_unit_information_relevance": {
-          "name": "idx_unit_information_relevance",
-          "columns": [
-            {
-              "expression": "relevance_score",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_unit_information_collected": {
-          "name": "idx_unit_information_collected",
-          "columns": [
-            {
-              "expression": "collected_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "unit_information_source_unit_id_units_id_fk": {
-          "name": "unit_information_source_unit_id_units_id_fk",
-          "tableFrom": "unit_information",
-          "tableTo": "units",
-          "columnsFrom": [
-            "source_unit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "unit_information_target_unit_id_units_id_fk": {
-          "name": "unit_information_target_unit_id_units_id_fk",
-          "tableFrom": "unit_information",
-          "tableTo": "units",
-          "columnsFrom": [
-            "target_unit_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "unit_information_previous_version_id_unit_information_id_fk": {
-          "name": "unit_information_previous_version_id_unit_information_id_fk",
-          "tableFrom": "unit_information",
-          "tableTo": "unit_information",
-          "columnsFrom": [
-            "previous_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "valid_response_type": {
-          "name": "valid_response_type",
-          "value": "\n    CASE \"unit_information\".\"type\"\n      WHEN 'boolean' THEN\n        (\"unit_information\".\"boolean_response\" IS NOT NULL AND \"unit_information\".\"gradient_response\" IS NULL AND \"unit_information\".\"text_response\" IS NULL)\n      WHEN 'gradient' THEN\n        (\"unit_information\".\"boolean_response\" IS NULL AND \"unit_information\".\"gradient_response\" IS NOT NULL AND \"unit_information\".\"text_response\" IS NULL)\n      WHEN 'text' THEN\n        (\"unit_information\".\"boolean_response\" IS NULL AND \"unit_information\".\"gradient_response\" IS NULL AND \"unit_information\".\"text_response\" IS NOT NULL)\n    END\n  "
-        },
-        "valid_audio_source": {
-          "name": "valid_audio_source",
-          "value": "\n    (\"unit_information\".\"type\" != 'text' AND \"unit_information\".\"audio_source_bucket\" IS NULL AND \"unit_information\".\"audio_source_key\" IS NULL AND \"unit_information\".\"transcription_metadata\" IS NULL) OR\n    (\"unit_information\".\"type\" = 'text' AND (\n      (\"unit_information\".\"audio_source_bucket\" IS NULL AND \"unit_information\".\"audio_source_key\" IS NULL) OR\n      (\"unit_information\".\"audio_source_bucket\" IS NOT NULL AND \"unit_information\".\"audio_source_key\" IS NOT NULL)\n    ))\n  "
         }
       },
       "isRLSEnabled": false
@@ -2701,6 +2559,16 @@
         "core",
         "user-content",
         "upload-staging"
+      ]
+    },
+    "public.transcription_job_status": {
+      "name": "transcription_job_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
       ]
     },
     "public.unit_permission_type": {

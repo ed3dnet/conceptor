@@ -15,6 +15,7 @@
     "pg:generate": "pnpm run:dev pnpm drizzle-kit generate --name"
   },
   "dependencies": {
+    "@deepgram/sdk": "^3.11.2",
     "@eropple/fastify-openapi3": "0.10.0",
     "@eropple/find-up": "^0.1.0",
     "@fastify/cookie": "^11.0.1",

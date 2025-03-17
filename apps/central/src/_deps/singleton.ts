@@ -295,7 +295,5 @@ export async function configureBaseAwilixContainer(
     ),
   });
 
-  const _throwaway = container.resolve("natsConnection");
-
   return container;
 }

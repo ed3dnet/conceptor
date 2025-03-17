@@ -8,6 +8,7 @@ CREATE TYPE "public"."initiative_permission_type" AS ENUM('view', 'edit', 'manag
 CREATE TYPE "public"."llm_connector_name" AS ENUM('general', 'shortSummarization');--> statement-breakpoint
 CREATE TYPE "public"."llm_message_role" AS ENUM('system', 'human', 'assistant');--> statement-breakpoint
 CREATE TYPE "public"."s3_bucket_name" AS ENUM('core', 'user-content', 'upload-staging');--> statement-breakpoint
+CREATE TYPE "public"."transcription_job_status" AS ENUM('pending', 'processing', 'completed', 'failed');--> statement-breakpoint
 CREATE TYPE "public"."unit_permission_type" AS ENUM('manage_reports', 'assign_work', 'approve_time_off', 'manage_unit', 'view_reports');--> statement-breakpoint
 CREATE TYPE "public"."unit_type" AS ENUM('individual', 'team', 'management');--> statement-breakpoint
 CREATE TABLE "auth_connectors" (
@@ -166,6 +167,20 @@ CREATE TABLE "tenants" (
 	"display_name" text NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "transcription_jobs" (
+	"transcription_job_id" uuid PRIMARY KEY NOT NULL,
+	"tenant_id" uuid NOT NULL,
+	"source_bucket" "s3_bucket_name" NOT NULL,
+	"source_object_name" text NOT NULL,
+	"options" jsonb NOT NULL,
+	"status" "transcription_job_status" DEFAULT 'pending' NOT NULL,
+	"error_message" text,
+	"transcription_text" text,
+	"transcription_metadata" jsonb,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone
+);
+--> statement-breakpoint
 CREATE TABLE "units" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -198,42 +213,6 @@ CREATE TABLE "unit_capabilities" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "valid_dates" CHECK ("unit_capabilities"."end_date" IS NULL OR "unit_capabilities"."end_date" > "unit_capabilities"."start_date")
-);
---> statement-breakpoint
-CREATE TABLE "unit_information" (
-	"id" uuid PRIMARY KEY NOT NULL,
-	"source_unit_id" uuid NOT NULL,
-	"target_unit_id" uuid NOT NULL,
-	"type" "information_type" NOT NULL,
-	"boolean_response" boolean,
-	"gradient_response" double precision,
-	"text_response" text,
-	"audio_source_bucket" text,
-	"audio_source_key" text,
-	"transcription_metadata" jsonb,
-	"collected_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"relevance_score" double precision DEFAULT 1 NOT NULL,
-	"manually_invalidated" boolean DEFAULT false NOT NULL,
-	"previous_version_id" uuid,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone,
-	CONSTRAINT "valid_response_type" CHECK (
-    CASE "unit_information"."type"
-      WHEN 'boolean' THEN
-        ("unit_information"."boolean_response" IS NOT NULL AND "unit_information"."gradient_response" IS NULL AND "unit_information"."text_response" IS NULL)
-      WHEN 'gradient' THEN
-        ("unit_information"."boolean_response" IS NULL AND "unit_information"."gradient_response" IS NOT NULL AND "unit_information"."text_response" IS NULL)
-      WHEN 'text' THEN
-        ("unit_information"."boolean_response" IS NULL AND "unit_information"."gradient_response" IS NULL AND "unit_information"."text_response" IS NOT NULL)
-    END
-  ),
-	CONSTRAINT "valid_audio_source" CHECK (
-    ("unit_information"."type" != 'text' AND "unit_information"."audio_source_bucket" IS NULL AND "unit_information"."audio_source_key" IS NULL AND "unit_information"."transcription_metadata" IS NULL) OR
-    ("unit_information"."type" = 'text' AND (
-      ("unit_information"."audio_source_bucket" IS NULL AND "unit_information"."audio_source_key" IS NULL) OR
-      ("unit_information"."audio_source_bucket" IS NOT NULL AND "unit_information"."audio_source_key" IS NOT NULL)
-    ))
-  )
 );
 --> statement-breakpoint
 CREATE TABLE "unit_permissions" (
@@ -336,14 +315,12 @@ ALTER TABLE "initiative_permissions" ADD CONSTRAINT "initiative_permissions_targ
 ALTER TABLE "initiative_tags" ADD CONSTRAINT "initiative_tags_initiative_id_initiatives_id_fk" FOREIGN KEY ("initiative_id") REFERENCES "public"."initiatives"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "llm_conversations" ADD CONSTRAINT "llm_conversations_tenant_id_tenants_tenant_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("tenant_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "llm_conversation_messages" ADD CONSTRAINT "llm_conversation_messages_conversation_id_llm_conversations_conversation_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."llm_conversations"("conversation_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "transcription_jobs" ADD CONSTRAINT "transcription_jobs_tenant_id_tenants_tenant_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("tenant_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "units" ADD CONSTRAINT "units_parent_unit_id_units_id_fk" FOREIGN KEY ("parent_unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_assignments" ADD CONSTRAINT "unit_assignments_unit_id_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_assignments" ADD CONSTRAINT "unit_assignments_user_id_users_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("user_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_capabilities" ADD CONSTRAINT "unit_capabilities_unit_id_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_capabilities" ADD CONSTRAINT "unit_capabilities_capability_id_capabilities_id_fk" FOREIGN KEY ("capability_id") REFERENCES "public"."capabilities"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "unit_information" ADD CONSTRAINT "unit_information_source_unit_id_units_id_fk" FOREIGN KEY ("source_unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "unit_information" ADD CONSTRAINT "unit_information_target_unit_id_units_id_fk" FOREIGN KEY ("target_unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "unit_information" ADD CONSTRAINT "unit_information_previous_version_id_unit_information_id_fk" FOREIGN KEY ("previous_version_id") REFERENCES "public"."unit_information"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_permissions" ADD CONSTRAINT "unit_permissions_unit_id_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_permissions" ADD CONSTRAINT "unit_permissions_target_unit_id_units_id_fk" FOREIGN KEY ("target_unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_tags" ADD CONSTRAINT "unit_tags_unit_id_units_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."units"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
@@ -374,11 +351,6 @@ CREATE INDEX "idx_unit_assignments_dates" ON "unit_assignments" USING btree ("st
 CREATE INDEX "idx_unit_capabilities_unit" ON "unit_capabilities" USING btree ("unit_id");--> statement-breakpoint
 CREATE INDEX "idx_unit_capabilities_capability" ON "unit_capabilities" USING btree ("capability_id");--> statement-breakpoint
 CREATE INDEX "idx_unit_capabilities_dates" ON "unit_capabilities" USING btree ("start_date","end_date");--> statement-breakpoint
-CREATE INDEX "idx_unit_information_source" ON "unit_information" USING btree ("source_unit_id");--> statement-breakpoint
-CREATE INDEX "idx_unit_information_target" ON "unit_information" USING btree ("target_unit_id");--> statement-breakpoint
-CREATE INDEX "idx_unit_information_type" ON "unit_information" USING btree ("type");--> statement-breakpoint
-CREATE INDEX "idx_unit_information_relevance" ON "unit_information" USING btree ("relevance_score");--> statement-breakpoint
-CREATE INDEX "idx_unit_information_collected" ON "unit_information" USING btree ("collected_at");--> statement-breakpoint
 CREATE INDEX "idx_unit_permissions_unit" ON "unit_permissions" USING btree ("unit_id");--> statement-breakpoint
 CREATE INDEX "idx_unit_permissions_target" ON "unit_permissions" USING btree ("target_unit_id");--> statement-breakpoint
 CREATE INDEX "idx_unit_permissions_dates" ON "unit_permissions" USING btree ("start_date","end_date");
