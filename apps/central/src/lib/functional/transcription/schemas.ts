@@ -13,13 +13,14 @@ export type AppTranscriptionOptions = Static<typeof AppTranscriptionOptions>;
 export const DeepgramTranscriptionOptions = Type.Object({
   model: Type.Optional(Type.String()),
   detectLanguage: Type.Optional(Type.Boolean()),
+  smartFormat: Type.Optional(Type.Boolean()),
   punctuate: Type.Optional(Type.Boolean()),
   profanityFilter: Type.Optional(Type.Boolean()),
   redact: Type.Optional(Type.Array(Type.String())),
   diarize: Type.Optional(Type.Boolean()),
   multichannel: Type.Optional(Type.Boolean()),
   alternatives: Type.Optional(Type.Number()),
-  keywords: Type.Optional(Type.Array(Type.String())),
+  keyterm: Type.Optional(Type.Array(Type.String())),
   utterances: Type.Optional(Type.Boolean()),
 });
 export type DeepgramTranscriptionOptions = Static<
