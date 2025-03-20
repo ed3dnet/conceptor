@@ -150,6 +150,7 @@ async function authRoutes(fastify: AppFastify) {
         sameSite: "strict",
         domain: sessionCookieDomain,
         maxAge: config.auth.sessionCookie.maxAgeMs / 1000,
+        path: "/",
       };
 
       request.log.info(

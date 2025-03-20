@@ -30,6 +30,7 @@ DO NOT ATTEMPT TO DO ENTIRE REQUESTED PROBLEMS IN A SINGLE SHOT. We'll work in s
   - Add new DTOs to the route schemas, e.g. `apps/central/src/_api/routes/users/schemas.ts`. Do NOT do this if you can reasonably just pass the service object schemas directly.
   - Add new routes to the API server in Central, e.g. `apps/central/src/_api/routes/users/index.ts`.
   - Then go implement it on the web side.
+- We always prefer `spine-case` for filenames.
 
 #### Data Flow
 - TypeBox schemas in Central automatically flow through to generated TypeScript types

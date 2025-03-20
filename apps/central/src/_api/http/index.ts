@@ -129,7 +129,8 @@ export async function buildServer(
   });
 
   fastify.register(fastifyCors, {
-    origin: "*",
+    origin: [config.urls.frontendBaseUrl, config.urls.apiBaseUrl],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
     credentials: true,
   });
 

@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@myapp/central-client": "workspace:*",
     "@tailwindcss/vite": "^4.0.14",
     "@tanstack/react-query": "^5.69.0",
+    "@tanstack/react-query-devtools": "^5.69.0",
     "daisyui": "^5.0.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2",
     "react-router-dom": "7",
     "tailwindcss": "^4.0.14"
   },
