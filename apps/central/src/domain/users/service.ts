@@ -82,7 +82,7 @@ export class UserService {
       .from(USERS)
       .innerJoin(USER_EXTERNAL_IDS, eq(USERS.userId, USER_EXTERNAL_IDS.userId))
       .where(
-        sql`${USER_EXTERNAL_IDS.externalIdType} = ${externalIdType} AND ${USER_EXTERNAL_IDS.externalId} = ${externalId}`,
+        sql`${USER_EXTERNAL_IDS.externalIdKind} = ${externalIdType} AND ${USER_EXTERNAL_IDS.externalId} = ${externalId}`,
       )
       .limit(1);
 
@@ -168,7 +168,7 @@ export class UserService {
       })),
       externalIds: externalIds.map((e) => ({
         __type: "UserExternalId",
-        externalIdType: e.externalIdType,
+        externalIdKind: e.externalIdKind,
         externalId: e.externalId,
       })),
       tags: tags.map((t) => ({
@@ -263,7 +263,7 @@ export class UserService {
 
   async setUserExternalId(
     userId: string,
-    externalIdType: string,
+    externalIdKind: string,
     externalId: string,
     executor: Drizzle = this.db,
   ): Promise<DBUserExternalId> {
@@ -271,11 +271,11 @@ export class UserService {
       .insert(USER_EXTERNAL_IDS)
       .values({
         userId,
-        externalIdType,
+        externalIdKind,
         externalId,
       })
       .onConflictDoUpdate({
-        target: [USER_EXTERNAL_IDS.userId, USER_EXTERNAL_IDS.externalIdType],
+        target: [USER_EXTERNAL_IDS.userId, USER_EXTERNAL_IDS.externalIdKind],
         set: { externalId },
       })
       .returning();
@@ -295,7 +295,7 @@ export class UserService {
     await executor
       .delete(USER_EXTERNAL_IDS)
       .where(
-        sql`${USER_EXTERNAL_IDS.userId} = ${userId} AND ${USER_EXTERNAL_IDS.externalIdType} = ${externalIdType}`,
+        sql`${USER_EXTERNAL_IDS.userId} = ${userId} AND ${USER_EXTERNAL_IDS.externalIdKind} = ${externalIdType}`,
       );
   }
 
@@ -442,7 +442,7 @@ export class UserService {
         for (const extId of externalIds) {
           await tx.insert(USER_EXTERNAL_IDS).values({
             userId: user.userId,
-            externalIdType: extId.type,
+            externalIdKind: extId.kind,
             externalId: extId.id,
           });
         }
@@ -451,7 +451,7 @@ export class UserService {
       // Add external ID for IdP sub
       await tx.insert(USER_EXTERNAL_IDS).values({
         userId: user.userId,
-        externalIdType: `${connectorId}:sub`,
+        externalIdKind: `${connectorId}:sub`,
         externalId: idpUserInfo.sub,
       });
 

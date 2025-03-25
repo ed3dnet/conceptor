@@ -50,6 +50,13 @@ export const TENANTS = pgTable("tenants", {
   tenantId: ULIDAsUUID().primaryKey(),
   slug: text("slug").notNull(),
   displayName: text("display_name").notNull(),
+
+  extraAttributes: jsonb("extra_attributes")
+    .$type<Record<string, unknown>>()
+    .notNull()
+    .$default(() => ({})),
+
+  ...TIMESTAMPS_MIXIN,
 });
 
 // ------------ IMAGE UPLOADS ------------- //
@@ -278,6 +285,12 @@ export const USERS = pgTable(
       withTimezone: true,
       mode: "date",
     }).notNull(),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -345,30 +358,26 @@ export const USER_EXTERNAL_IDS = pgTable(
     userId: uuid()
       .references(() => USERS.userId)
       .notNull(),
-    externalIdType: text("external_id_type").notNull(),
+    externalIdKind: text("external_id_kind").notNull(),
     externalId: text("external_id").notNull(),
 
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
     {
-      pk: primaryKey({ columns: [t.userId, t.externalIdType] }),
+      pk: primaryKey({ columns: [t.userId, t.externalIdKind] }),
       userIdx: index("user_external_ids_user_idx").on(t.userId),
       lookupIdx: index("user_external_ids_lookup_idx").on(
-        t.externalIdType,
+        t.externalIdKind,
         t.externalId,
       ),
     },
   ],
 );
 
-export const UNIT_TYPE = pgEnum("unit_type", [
-  "individual",
-  "team",
-  "management",
-]);
+export const UNIT_KIND = pgEnum("unit_kind", ["individual", "organizational"]);
 
-export const UNIT_PERMISSION_TYPE = pgEnum("unit_permission_type", [
+export const UNIT_PERMISSION_KIND = pgEnum("unit_permission_kind", [
   "manage_reports",
   "assign_work",
   "approve_time_off",
@@ -376,7 +385,7 @@ export const UNIT_PERMISSION_TYPE = pgEnum("unit_permission_type", [
   "view_reports",
 ]);
 
-export const CAPABILITY_PERMISSION_TYPE = pgEnum("capability_permission_type", [
+export const CAPABILITY_PERMISSION_KIND = pgEnum("capability_permission_kind", [
   "view",
   "edit",
   "assign",
@@ -384,7 +393,7 @@ export const CAPABILITY_PERMISSION_TYPE = pgEnum("capability_permission_type", [
   "delete",
 ]);
 
-export const INITIATIVE_PERMISSION_TYPE = pgEnum("initiative_permission_type", [
+export const INITIATIVE_PERMISSION_KIND = pgEnum("initiative_permission_kind", [
   "view",
   "edit",
   "manage_resources",
@@ -392,7 +401,7 @@ export const INITIATIVE_PERMISSION_TYPE = pgEnum("initiative_permission_type", [
   "close",
 ]);
 
-export const GLOBAL_PERMISSION_TYPE = pgEnum("global_permission_type", [
+export const GLOBAL_PERMISSION_KIND = pgEnum("global_permission_kind", [
   "admin",
   "audit",
   "create_units",
@@ -400,7 +409,7 @@ export const GLOBAL_PERMISSION_TYPE = pgEnum("global_permission_type", [
   "create_capabilities",
 ]);
 
-export const INFORMATION_TYPE = pgEnum("information_type", [
+export const INFORMATION_KIND = pgEnum("information_kind", [
   "boolean",
   "gradient",
   "text",
@@ -411,12 +420,18 @@ export const UNITS = pgTable(
   {
     id: ULIDAsUUID().primaryKey(),
     name: text("name").notNull(),
-    type: UNIT_TYPE("type").notNull(),
+    type: UNIT_KIND("type").notNull(),
     parentUnitId: uuid("parent_unit_id").references(
       (): AnyPgColumn => UNITS.id,
     ),
 
     description: text("description"),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -439,6 +454,12 @@ export const UNIT_ASSIGNMENTS = pgTable(
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -456,6 +477,12 @@ export const CAPABILITIES = pgTable("capabilities", {
   id: ULIDAsUUID().primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
+
+  extraAttributes: jsonb("extra_attributes")
+    .$type<Record<string, unknown>>()
+    .notNull()
+    .$default(() => ({})),
+
   ...TIMESTAMPS_MIXIN,
 });
 
@@ -469,6 +496,12 @@ export const INITIATIVES = pgTable(
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -494,6 +527,12 @@ export const UNIT_CAPABILITIES = pgTable(
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -524,6 +563,12 @@ export const INITIATIVE_CAPABILITIES = pgTable(
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -548,11 +593,12 @@ export const UNIT_PERMISSIONS = pgTable(
     targetUnitId: uuid("target_unit_id")
       .references(() => UNITS.id)
       .notNull(),
-    permissionType: UNIT_PERMISSION_TYPE("permission_type").notNull(),
+    permissionKind: UNIT_PERMISSION_KIND("permission_kind").notNull(),
     startDate: timestamp("start_date", { withTimezone: true })
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -576,11 +622,12 @@ export const CAPABILITY_PERMISSIONS = pgTable(
     targetCapabilityId: uuid("target_capability_id")
       .references(() => CAPABILITIES.id)
       .notNull(),
-    permissionType: CAPABILITY_PERMISSION_TYPE("permission_type").notNull(),
+    permissionKind: CAPABILITY_PERMISSION_KIND("permission_kind").notNull(),
     startDate: timestamp("start_date", { withTimezone: true })
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -604,11 +651,12 @@ export const INITIATIVE_PERMISSIONS = pgTable(
     targetInitiativeId: uuid("target_initiative_id")
       .references(() => INITIATIVES.id)
       .notNull(),
-    permissionType: INITIATIVE_PERMISSION_TYPE("permission_type").notNull(),
+    permissionKind: INITIATIVE_PERMISSION_KIND("permission_kind").notNull(),
     startDate: timestamp("start_date", { withTimezone: true })
       .notNull()
       .defaultNow(),
     endDate: timestamp("end_date", { withTimezone: true }),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [
@@ -629,7 +677,7 @@ export const GLOBAL_PERMISSIONS = pgTable(
     unitId: uuid("unit_id")
       .references(() => UNITS.id)
       .notNull(),
-    permissionType: GLOBAL_PERMISSION_TYPE("permission_type").notNull(),
+    permissionKind: GLOBAL_PERMISSION_KIND("permission_kind").notNull(),
     startDate: timestamp("start_date", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -679,11 +727,11 @@ export const GLOBAL_PERMISSIONS = pgTable(
 //   (t) => [
 //     index("idx_unit_information_source").on(t.sourceUnitId),
 //     index("idx_unit_information_target").on(t.targetUnitId),
-//     index("idx_unit_information_type").on(t.type),
+//     index("idx_unit_information_kind").on(t.type),
 //     index("idx_unit_information_relevance").on(t.relevanceScore),
 //     index("idx_unit_information_collected").on(t.collectedAt),
 //     check(
-//       "valid_response_type",
+//       "valid_response_kind",
 //       sql`
 //     CASE ${t.type}
 //       WHEN 'boolean' THEN
@@ -717,6 +765,7 @@ export const UNIT_TAGS = pgTable(
       .notNull(),
     key: text("key").notNull(),
     value: text("value"),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [unique("unique_unit_tag").on(t.unitId, t.key)],
@@ -731,6 +780,7 @@ export const CAPABILITY_TAGS = pgTable(
       .notNull(),
     key: text("key").notNull(),
     value: text("value"),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [unique("unique_capability_tag").on(t.capabilityId, t.key)],
@@ -745,6 +795,7 @@ export const INITIATIVE_TAGS = pgTable(
       .notNull(),
     key: text("key").notNull(),
     value: text("value"),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [unique("unique_initiative_tag").on(t.initiativeId, t.key)],
@@ -759,6 +810,7 @@ export const USER_TAGS = pgTable(
       .notNull(),
     key: text("key").notNull(),
     value: text("value"),
+
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [unique("unique_user_tag").on(t.userId, t.key)],

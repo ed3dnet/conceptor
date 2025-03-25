@@ -71,7 +71,7 @@ export const UserExternalId = schemaType(
   "UserExternalId",
   Type.Object({
     __type: Type.Literal("UserExternalId"),
-    externalIdType: Type.String(),
+    externalIdKind: Type.String(),
     externalId: Type.String(),
   }),
 );
@@ -117,7 +117,7 @@ export const CreateUserInput = schemaType(
     externalIds: Type.Optional(
       Type.Array(
         Type.Object({
-          type: Type.String(),
+          kind: Type.String(),
           id: Type.String(),
         }),
       ),

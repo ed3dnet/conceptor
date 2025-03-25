@@ -1,16 +1,16 @@
 CREATE SCHEMA "app_meta";
 --> statement-breakpoint
-CREATE TYPE "public"."capability_permission_type" AS ENUM('view', 'edit', 'assign', 'approve', 'delete');--> statement-breakpoint
-CREATE TYPE "public"."global_permission_type" AS ENUM('admin', 'audit', 'create_units', 'create_initiatives', 'create_capabilities');--> statement-breakpoint
+CREATE TYPE "public"."capability_permission_kind" AS ENUM('view', 'edit', 'assign', 'approve', 'delete');--> statement-breakpoint
+CREATE TYPE "public"."global_permission_kind" AS ENUM('admin', 'audit', 'create_units', 'create_initiatives', 'create_capabilities');--> statement-breakpoint
 CREATE TYPE "public"."image_rendition_format" AS ENUM('fallback', 'image/webp', 'image/avif');--> statement-breakpoint
-CREATE TYPE "public"."information_type" AS ENUM('boolean', 'gradient', 'text');--> statement-breakpoint
-CREATE TYPE "public"."initiative_permission_type" AS ENUM('view', 'edit', 'manage_resources', 'approve_changes', 'close');--> statement-breakpoint
+CREATE TYPE "public"."information_kind" AS ENUM('boolean', 'gradient', 'text');--> statement-breakpoint
+CREATE TYPE "public"."initiative_permission_kind" AS ENUM('view', 'edit', 'manage_resources', 'approve_changes', 'close');--> statement-breakpoint
 CREATE TYPE "public"."llm_connector_name" AS ENUM('general', 'shortSummarization');--> statement-breakpoint
 CREATE TYPE "public"."llm_message_role" AS ENUM('system', 'human', 'assistant');--> statement-breakpoint
 CREATE TYPE "public"."s3_bucket_name" AS ENUM('core', 'user-content', 'upload-staging');--> statement-breakpoint
 CREATE TYPE "public"."transcription_job_status" AS ENUM('pending', 'processing', 'completed', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."unit_permission_type" AS ENUM('manage_reports', 'assign_work', 'approve_time_off', 'manage_unit', 'view_reports');--> statement-breakpoint
-CREATE TYPE "public"."unit_type" AS ENUM('individual', 'team', 'management');--> statement-breakpoint
+CREATE TYPE "public"."unit_kind" AS ENUM('individual', 'organizational');--> statement-breakpoint
+CREATE TYPE "public"."unit_permission_kind" AS ENUM('manage_reports', 'assign_work', 'approve_time_off', 'manage_unit', 'view_reports');--> statement-breakpoint
 CREATE TABLE "auth_connectors" (
 	"auth_connector_id" uuid PRIMARY KEY NOT NULL,
 	"tenant_id" uuid NOT NULL,
@@ -31,6 +31,7 @@ CREATE TABLE "capabilities" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone
 );
@@ -39,7 +40,7 @@ CREATE TABLE "capability_permissions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"unit_id" uuid NOT NULL,
 	"target_capability_id" uuid NOT NULL,
-	"permission_type" "capability_permission_type" NOT NULL,
+	"permission_kind" "capability_permission_kind" NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -60,7 +61,7 @@ CREATE TABLE "capability_tags" (
 CREATE TABLE "global_permissions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"unit_id" uuid NOT NULL,
-	"permission_type" "global_permission_type" NOT NULL,
+	"permission_kind" "global_permission_kind" NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -99,6 +100,7 @@ CREATE TABLE "initiatives" (
 	"description" text,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "valid_dates" CHECK ("initiatives"."end_date" IS NULL OR "initiatives"."end_date" > "initiatives"."start_date")
@@ -111,6 +113,7 @@ CREATE TABLE "initiative_capabilities" (
 	"unit_id" uuid NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "valid_dates" CHECK ("initiative_capabilities"."end_date" IS NULL OR "initiative_capabilities"."end_date" > "initiative_capabilities"."start_date")
@@ -120,7 +123,7 @@ CREATE TABLE "initiative_permissions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"unit_id" uuid NOT NULL,
 	"target_initiative_id" uuid NOT NULL,
-	"permission_type" "initiative_permission_type" NOT NULL,
+	"permission_kind" "initiative_permission_kind" NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -164,7 +167,10 @@ CREATE TABLE "llm_conversation_messages" (
 CREATE TABLE "tenants" (
 	"tenant_id" uuid PRIMARY KEY NOT NULL,
 	"slug" text NOT NULL,
-	"display_name" text NOT NULL
+	"display_name" text NOT NULL,
+	"extra_attributes" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone
 );
 --> statement-breakpoint
 CREATE TABLE "transcription_jobs" (
@@ -184,9 +190,10 @@ CREATE TABLE "transcription_jobs" (
 CREATE TABLE "units" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
-	"type" "unit_type" NOT NULL,
+	"type" "unit_kind" NOT NULL,
 	"parent_unit_id" uuid,
 	"description" text,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "valid_parent" CHECK ("units"."id" != "units"."parent_unit_id")
@@ -198,6 +205,7 @@ CREATE TABLE "unit_assignments" (
 	"user_id" uuid NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "valid_dates" CHECK ("unit_assignments"."end_date" IS NULL OR "unit_assignments"."end_date" > "unit_assignments"."start_date")
@@ -210,6 +218,7 @@ CREATE TABLE "unit_capabilities" (
 	"is_formal" boolean DEFAULT false NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "valid_dates" CHECK ("unit_capabilities"."end_date" IS NULL OR "unit_capabilities"."end_date" > "unit_capabilities"."start_date")
@@ -219,7 +228,7 @@ CREATE TABLE "unit_permissions" (
 	"id" uuid PRIMARY KEY NOT NULL,
 	"unit_id" uuid NOT NULL,
 	"target_unit_id" uuid NOT NULL,
-	"permission_type" "unit_permission_type" NOT NULL,
+	"permission_kind" "unit_permission_kind" NOT NULL,
 	"start_date" timestamp with time zone DEFAULT now() NOT NULL,
 	"end_date" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -246,6 +255,7 @@ CREATE TABLE "users" (
 	"idp_user_info" jsonb,
 	"disabled_at" timestamp with time zone,
 	"last_accessed_at" timestamp with time zone NOT NULL,
+	"extra_attributes" jsonb NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone
 );
@@ -260,7 +270,7 @@ CREATE TABLE "user_emails" (
 --> statement-breakpoint
 CREATE TABLE "user_external_ids" (
 	"user_id" uuid NOT NULL,
-	"external_id_type" text NOT NULL,
+	"external_id_kind" text NOT NULL,
 	"external_id" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone

@@ -11,19 +11,24 @@
     "name": {
       "type": "object",
       "description": "Employee's name components",
-      "required": ["first", "last"],
+      "required": ["given", "family", "name-order"],
       "properties": {
-        "first": {
+        "given": {
           "type": "string",
           "description": "First name"
         },
-        "last": {
+        "family": {
           "type": "string",
           "description": "Last name"
         },
-        "preferred": {
+        "name-order": {
           "type": "string",
-          "description": "Preferred name if different from first name"
+          "enum": ["family-first", "given-first"],
+          "description": "Name order convention"
+        },
+        "override": {
+          "type": "string",
+          "description": "Override for name display, e.g. 'John (Johnny) Smith'"
         }
       }
     },

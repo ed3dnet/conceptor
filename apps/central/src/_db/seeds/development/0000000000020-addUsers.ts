@@ -1,77 +1,313 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { fileURLToPath } from "url";
+
+import { ulid, ulidToUUID } from "ulidx";
 
 import { type SeedFn } from "../../../lib/seeder/index.js";
+import { findRepoRoot } from "../../../lib/utils/find-repo-root.js";
+import { UNIT_ASSIGNMENTS, UNITS, USER_TAGS } from "../../schema/index.js";
+
+import { SeedUnitsChecker, type SeedUnit } from "./data/unit.schema.js";
+import { SeedUsersChecker, type SeedUser } from "./data/user.schema.js";
 
 export const seed: SeedFn = async (deps, logger) => {
-  logger.info({ file: import.meta.url }, "Seeding users from Keycloak config.");
-
-  // Load the technova.json file
-  const repoRoot = resolve(process.cwd(), "../.."); // Assuming we're running from apps/central
-  const technovaJsonPath = resolve(
-    repoRoot,
-    "_dev-env/k8s/keycloak/config/technova.json",
-  );
-
   logger.info(
-    { path: technovaJsonPath },
-    "Loading Keycloak realm configuration",
+    { file: import.meta.url },
+    "Seeding users and units from JSON files",
   );
 
   try {
-    const technovaRealm = JSON.parse(readFileSync(technovaJsonPath, "utf8"));
-    const users = technovaRealm.users || [];
+    // Load the data files
+    const dataDir = resolve(fileURLToPath(import.meta.url), "../data");
 
-    logger.info({ count: users.length }, "Found users in Keycloak config");
+    // Load and validate users
+    const usersPath = resolve(dataDir, "users.json");
+    logger.info({ path: usersPath }, "Loading users data");
+    const usersData = JSON.parse(readFileSync(usersPath, "utf8"));
+
+    if (!SeedUsersChecker.Check(usersData)) {
+      const errors = [...SeedUsersChecker.Errors(usersData)];
+      logger.error({ errors }, "Invalid users data format");
+      throw new Error("Invalid users data format");
+    }
+
+    // Load and validate units
+    const unitsPath = resolve(dataDir, "units.json");
+    logger.info({ path: unitsPath }, "Loading units data");
+    const unitsData = JSON.parse(readFileSync(unitsPath, "utf8"));
+
+    if (!SeedUnitsChecker.Check(unitsData)) {
+      const errors = [...SeedUnitsChecker.Errors(unitsData)];
+      logger.error({ errors }, "Invalid units data format");
+      throw new Error("Invalid units data format");
+    }
+
+    // Load the Keycloak configuration for email addresses
+    const repoRoot = findRepoRoot();
+    const technovaJsonPath = resolve(
+      repoRoot,
+      "_dev-env/k8s/keycloak/config/technova.json",
+    );
+
+    logger.info(
+      { path: technovaJsonPath },
+      "Loading Keycloak realm configuration",
+    );
+    const technovaRealm = JSON.parse(readFileSync(technovaJsonPath, "utf8"));
+    const keycloakUsers = technovaRealm.users || [];
+
+    // Create a mapping of employeeId to email from Keycloak
+    const emailMap = new Map<string, string>();
+    for (const keycloakUser of keycloakUsers) {
+      if (keycloakUser.email && keycloakUser.attributes?.employeeId?.[0]) {
+        emailMap.set(keycloakUser.attributes.employeeId[0], keycloakUser.email);
+      }
+    }
+
+    const users = usersData as SeedUser[];
+    const units = unitsData as SeedUnit[];
 
     // We know these IDs from 0000000000010-addTenant.ts
     const tenantId = "00000000-0000-0000-0000-000000000000";
     const connectorId = "00000000-0000-0000-0000-000000000000";
 
-    // Create users
-    for (const keycloakUser of users) {
-      logger.info({ username: keycloakUser.username }, "Creating user");
+    // Wrap all database operations in a transaction
+    await deps.db.transaction(async (tx) => {
+      logger.info("Starting transaction for users and units seeding");
 
-      // Build IdP user info from Keycloak user
-      const idpUserInfo = {
-        sub: keycloakUser.username,
-        name: `${keycloakUser.firstName} ${keycloakUser.lastName}`,
-        given_name: keycloakUser.firstName,
-        family_name: keycloakUser.lastName,
-        preferred_username: keycloakUser.username,
-        email: keycloakUser.email,
-        email_verified: keycloakUser.emailVerified || false,
-      };
+      // Create a map to store the mapping between seed IDs and database IDs
+      const userIdMap = new Map<string, string>();
+      const unitIdMap = new Map<string, string>();
 
-      // Build external IDs
-      const externalIds = [];
+      // First, create all users
+      for (const user of users) {
+        logger.info({ userId: user.id }, "Creating user");
 
-      // Add employeeId as an externalId if it exists
-      if (
-        keycloakUser.attributes &&
-        keycloakUser.attributes.employeeId &&
-        keycloakUser.attributes.employeeId[0]
-      ) {
-        externalIds.push({
-          type: "employeeId",
-          id: keycloakUser.attributes.employeeId[0],
+        // Get email from Keycloak mapping or throw error
+        const email = emailMap.get(user.id);
+        if (!email) {
+          throw new Error(
+            `No email found in Keycloak for employee ID: ${user.id}`,
+          );
+        }
+
+        // Build IdP user info
+        const idpUserInfo = {
+          sub: user.id.toLowerCase(),
+          name:
+            user.name.override ||
+            (user.name["name-order"] === "family-first"
+              ? `${user.name.family} ${user.name.given}`
+              : `${user.name.given} ${user.name.family}`),
+          given_name: user.name.given,
+          family_name: user.name.family,
+          preferred_username: user.id.toLowerCase(),
+          email: email,
+          email_verified: true,
+        };
+
+        // Create the user
+        const dbUser = await deps.users.createUser(
+          {
+            __type: "CreateUserInput",
+            tenantId,
+            connectorId,
+            idpUserInfo,
+            displayName:
+              user.name.override ??
+              (user.name["name-order"] === "family-first"
+                ? `${user.name.family} ${user.name.given}`
+                : `${user.name.given} ${user.name.family}`),
+            externalIds: [{ kind: "employeeId", id: user.id }],
+          },
+          tx,
+        );
+
+        // Store the mapping
+        userIdMap.set(user.id, dbUser.userId);
+
+        // Add user tags for additional metadata
+        await tx.insert(USER_TAGS).values({
+          id: ulidToUUID(ulid()),
+          userId: dbUser.userId,
+          key: "title",
+          value: user.title,
+        });
+
+        await tx.insert(USER_TAGS).values({
+          id: ulidToUUID(ulid()),
+          userId: dbUser.userId,
+          key: "level",
+          value: user.level,
+        });
+
+        await tx.insert(USER_TAGS).values({
+          id: ulidToUUID(ulid()),
+          userId: dbUser.userId,
+          key: "department",
+          value: user.department,
+        });
+
+        if (user.sub_department) {
+          await tx.insert(USER_TAGS).values({
+            id: ulidToUUID(ulid()),
+            userId: dbUser.userId,
+            key: "subDepartment",
+            value: user.sub_department,
+          });
+        }
+
+        if (user.team) {
+          await tx.insert(USER_TAGS).values({
+            id: ulidToUUID(ulid()),
+            userId: dbUser.userId,
+            key: "team",
+            value: user.team,
+          });
+        }
+
+        await tx.insert(USER_TAGS).values({
+          id: ulidToUUID(ulid()),
+          userId: dbUser.userId,
+          key: "hireDate",
+          value: user.hire_date,
         });
       }
 
-      // Create the user
-      await deps.users.createUser({
-        __type: "CreateUserInput",
-        tenantId,
-        connectorId,
-        idpUserInfo,
-        displayName: `${keycloakUser.firstName} ${keycloakUser.lastName}`,
-        externalIds,
-      });
-    }
+      // Topological sort for units
+      const sortedUnits = topologicalSortUnits(units);
 
-    logger.info("User creation complete");
+      // Create units in topological order
+      for (const unit of sortedUnits) {
+        logger.info({ unitId: unit.id, name: unit.name }, "Creating unit");
+
+        const parentUnitId = unit.parent_id
+          ? unitIdMap.get(unit.parent_id)
+          : null;
+
+        // Create the unit
+        const dbUnit = await tx
+          .insert(UNITS)
+          .values({
+            id: ulidToUUID(ulid()),
+            name: unit.name,
+            type:
+              unit.kind === "Organizational" ? "organizational" : "individual",
+            parentUnitId: parentUnitId || null,
+            description: null,
+          })
+          .returning()
+          .then((rows) => rows[0]);
+
+        if (!dbUnit) {
+          throw new Error(`Failed to create unit ${unit.id}`);
+        }
+
+        // Store the mapping
+        unitIdMap.set(unit.id, dbUnit.id);
+
+        // If it's an individual unit with an employee, create the assignment
+        if (unit.kind === "Individual" && unit.employee_id) {
+          const userId = userIdMap.get(unit.employee_id);
+          if (userId) {
+            await tx.insert(UNIT_ASSIGNMENTS).values({
+              id: ulidToUUID(ulid()),
+              unitId: dbUnit.id,
+              userId: userId,
+              startDate: new Date(),
+              endDate: null,
+            });
+          } else {
+            logger.warn(
+              { unitId: unit.id, employeeId: unit.employee_id },
+              "Employee ID not found for unit assignment",
+            );
+          }
+        }
+      }
+
+      logger.info("Transaction completed successfully");
+    });
+
+    logger.info("User and unit creation complete");
   } catch (error) {
-    logger.error({ error }, "Failed to seed users from Keycloak config");
+    logger.error(
+      { err: error },
+      "Failed to seed users and units from JSON files",
+    );
     throw error;
   }
 };
+
+// Topological sort function for units
+function topologicalSortUnits(units: SeedUnit[]): SeedUnit[] {
+  // Create adjacency list
+  const graph: Record<string, string[]> = {};
+  const result: SeedUnit[] = [];
+  const visited = new Set<string>();
+  const temp = new Set<string>();
+
+  // Initialize graph
+  for (const unit of units) {
+    graph[unit.id] = [];
+  }
+
+  // Build edges (child -> parent)
+  for (const unit of units) {
+    if (unit.parent_id) {
+      const g = graph[unit.id];
+      if (!g) {
+        throw new Error(`No graph found for unit ${unit.id}`);
+      }
+
+      g.push(unit.parent_id);
+    }
+  }
+
+  // DFS function for topological sort
+  function visit(unitId: string) {
+    // Check for cycles
+    if (temp.has(unitId)) {
+      throw new Error(`Cycle detected in unit hierarchy at unit ${unitId}`);
+    }
+
+    // Skip if already visited
+    if (visited.has(unitId)) {
+      return;
+    }
+
+    // Mark as temporarily visited
+    temp.add(unitId);
+
+    // Visit all dependencies (parents)
+    const visiting = graph[unitId];
+    if (!visiting) {
+      throw new Error(`No parents found for unit ${unitId}`);
+    }
+
+    for (const parentId of visiting) {
+      visit(parentId);
+    }
+
+    // Mark as visited
+    temp.delete(unitId);
+    visited.add(unitId);
+
+    // Add to result
+    const unit = units.find((u) => u.id === unitId);
+    if (unit) {
+      result.push(unit);
+    }
+  }
+
+  // Visit all nodes
+  for (const unit of units) {
+    if (!visited.has(unit.id)) {
+      visit(unit.id);
+    }
+  }
+
+  // Reverse to get correct order (parents before children)
+  return result.reverse();
+}
