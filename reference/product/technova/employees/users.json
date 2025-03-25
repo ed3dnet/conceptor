@@ -1,0 +1,1527 @@
+[
+  {
+    "id": "EMP001",
+    "name": {
+      "given": "Katherine",
+      "family": "Winters",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Chief Executive Officer",
+    "level": "L10",
+    "department": "Executive",
+    "hire_date": "2019-04-15",
+    "relationships": [],
+    "information": []
+  },
+  {
+    "id": "EMP002",
+    "name": {
+      "given": "Michael",
+      "family": "Chen",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Chief Technology Officer",
+    "level": "L9",
+    "department": "Technology",
+    "hire_date": "2016-08-22",
+    "relationships": [
+      {
+        "target": "EMP001",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP003",
+    "name": {
+      "given": "Sarah",
+      "family": "Rodriguez",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Chief Financial Officer",
+    "level": "L9",
+    "department": "Finance",
+    "hire_date": "2020-02-10",
+    "relationships": [
+      {
+        "target": "EMP001",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP004",
+    "name": {
+      "given": "James",
+      "family": "Nakamura",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "VP of Cloud Infrastructure",
+    "level": "L7",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "hire_date": "2014-05-18",
+    "relationships": [
+      {
+        "target": "EMP002",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP005",
+    "name": {
+      "given": "Priya",
+      "family": "Sharma",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "VP of AI and Data Analytics",
+    "level": "L7",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "hire_date": "2021-03-15",
+    "relationships": [
+      {
+        "target": "EMP002",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP006",
+    "name": {
+      "given": "Robert",
+      "family": "Martinez",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "VP of Financial Planning",
+    "level": "L7",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "hire_date": "2018-11-05",
+    "relationships": [
+      {
+        "target": "EMP003",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP007",
+    "name": {
+      "given": "Ling",
+      "family": "Wei",
+      "name-order": "family-first",
+      "override": "Wei Ling"
+    },
+    "enabled": true,
+    "title": "VP of Investor Relations",
+    "level": "L7",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "hire_date": "2017-06-20",
+    "relationships": [
+      {
+        "target": "EMP003",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP008",
+    "name": {
+      "given": "Daniel",
+      "family": "Okonkwo",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of NovaCloud Platform",
+    "level": "L6",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "NovaCloud Platform",
+    "hire_date": "2015-09-12",
+    "relationships": [
+      {
+        "target": "EMP004",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP009",
+    "name": {
+      "given": "Olivia",
+      "family": "Kennedy",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of Edge Computing",
+    "level": "L6",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "NovaEdge",
+    "hire_date": "2019-04-03",
+    "relationships": [
+      {
+        "target": "EMP004",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP010",
+    "name": {
+      "given": "Aisha",
+      "family": "Kimani",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Executive Assistant",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "hire_date": "2020-07-15",
+    "relationships": [
+      {
+        "target": "EMP004",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP011",
+    "name": {
+      "given": "Thomas",
+      "family": "Garcia",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of NovaAnalytics",
+    "level": "L6",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaAnalytics",
+    "hire_date": "2016-11-28",
+    "relationships": [
+      {
+        "target": "EMP005",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP012",
+    "name": {
+      "given": "Hiroshi",
+      "family": "Tanaka",
+      "name-order": "family-first",
+      "override": "Tanaka Hiroshi"
+    },
+    "enabled": true,
+    "title": "Director of NovaAI Platform",
+    "level": "L6",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaAI Platform",
+    "hire_date": "2022-01-10",
+    "relationships": [
+      {
+        "target": "EMP005",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP013",
+    "name": {
+      "given": "Lisa",
+      "family": "Wong",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Executive Assistant",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "hire_date": "2021-05-17",
+    "relationships": [
+      {
+        "target": "EMP005",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP014",
+    "name": {
+      "given": "Carlos",
+      "family": "Mendez",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of Corporate Financial Analysis",
+    "level": "L6",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Corporate Analysis",
+    "hire_date": "2016-03-22",
+    "relationships": [
+      {
+        "target": "EMP006",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP015",
+    "name": {
+      "given": "Emma",
+      "family": "Johnson",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of Business Unit Finance",
+    "level": "L6",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "BU Finance",
+    "hire_date": "2019-09-08",
+    "relationships": [
+      {
+        "target": "EMP006",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP016",
+    "name": {
+      "given": "Maya",
+      "family": "Singh",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Executive Assistant",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "hire_date": "2020-10-05",
+    "relationships": [
+      {
+        "target": "EMP006",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP017",
+    "name": {
+      "given": "Jonathan",
+      "family": "Kim",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of Investor Communications",
+    "level": "L6",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Investor Communications",
+    "hire_date": "2018-04-16",
+    "relationships": [
+      {
+        "target": "EMP007",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP018",
+    "name": {
+      "given": "Sophia",
+      "family": "Andersen",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Director of ESG Reporting",
+    "level": "L6",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "ESG Reporting",
+    "hire_date": "2021-08-19",
+    "relationships": [
+      {
+        "target": "EMP007",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP019",
+    "name": {
+      "given": "David",
+      "family": "Cohen",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Executive Assistant",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "hire_date": "2019-11-30",
+    "relationships": [
+      {
+        "target": "EMP007",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP020",
+    "name": {
+      "given": "Rachel",
+      "family": "Cruz",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of NovaCompute",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "NovaCompute",
+    "hire_date": "2017-08-21",
+    "relationships": [
+      {
+        "target": "EMP008",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP021",
+    "name": {
+      "given": "Paul",
+      "family": "Nguyen",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of NovaDB",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "NovaDB",
+    "hire_date": "2018-02-12",
+    "relationships": [
+      {
+        "target": "EMP008",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP022",
+    "name": {
+      "given": "Alexandra",
+      "family": "Petrova",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of NovaEdge Platform",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "NovaEdge Platform",
+    "hire_date": "2020-03-09",
+    "relationships": [
+      {
+        "target": "EMP009",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP023",
+    "name": {
+      "given": "Omar",
+      "family": "Hassan",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of Edge Integration Solutions",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Edge Integration",
+    "hire_date": "2021-06-14",
+    "relationships": [
+      {
+        "target": "EMP009",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP024",
+    "name": {
+      "given": "Jasmine",
+      "family": "Patel",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for NovaVisual",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaVisual",
+    "hire_date": "2019-10-22",
+    "relationships": [
+      {
+        "target": "EMP011",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP025",
+    "name": {
+      "given": "Martin",
+      "family": "Weber",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of NovaPredict",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaPredict",
+    "hire_date": "2017-12-04",
+    "relationships": [
+      {
+        "target": "EMP011",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP026",
+    "name": {
+      "given": "Fatima",
+      "family": "Al-Farsi",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of AI Solutions",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "AI Solutions",
+    "hire_date": "2022-04-11",
+    "relationships": [
+      {
+        "target": "EMP012",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP027",
+    "name": {
+      "given": "Diego",
+      "family": "Santos",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of AI Infrastructure",
+    "level": "L5",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "AI Infrastructure",
+    "hire_date": "2023-01-23",
+    "relationships": [
+      {
+        "target": "EMP012",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP028",
+    "name": {
+      "given": "Samantha",
+      "family": "Miller",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of Corporate Financial Planning",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Corporate Planning",
+    "hire_date": "2017-05-15",
+    "relationships": [
+      {
+        "target": "EMP014",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP029",
+    "name": {
+      "given": "Raj",
+      "family": "Patel",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of Financial Analysis",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Financial Analysis",
+    "hire_date": "2018-09-17",
+    "relationships": [
+      {
+        "target": "EMP014",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP030",
+    "name": {
+      "given": "Victoria",
+      "family": "Lopez",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for BU Finance",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "BU Finance Direct",
+    "hire_date": "2019-03-25",
+    "relationships": [
+      {
+        "target": "EMP015",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP031",
+    "name": {
+      "given": "Marcus",
+      "family": "Johnson",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of BU Performance",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "BU Performance",
+    "hire_date": "2020-01-13",
+    "relationships": [
+      {
+        "target": "EMP015",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP032",
+    "name": {
+      "given": "Julia",
+      "family": "Chen",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of Investor Messaging",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Investor Messaging",
+    "hire_date": "2019-07-08",
+    "relationships": [
+      {
+        "target": "EMP017",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP033",
+    "name": {
+      "given": "Kwame",
+      "family": "Adu",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of Analyst Relations",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Analyst Relations",
+    "hire_date": "2020-05-18",
+    "relationships": [
+      {
+        "target": "EMP017",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP034",
+    "name": {
+      "given": "Natalie",
+      "family": "Brown",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of ESG Metrics",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "ESG Metrics",
+    "hire_date": "2022-03-07",
+    "relationships": [
+      {
+        "target": "EMP018",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP035",
+    "name": {
+      "given": "Adam",
+      "family": "Taylor",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Manager of Sustainability Reporting",
+    "level": "L5",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Sustainability",
+    "hire_date": "2021-11-15",
+    "relationships": [
+      {
+        "target": "EMP018",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP036",
+    "name": {
+      "given": "Zainab",
+      "family": "Malik",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Compute Services",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Compute Services",
+    "hire_date": "2018-06-25",
+    "relationships": [
+      {
+        "target": "EMP020",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP037",
+    "name": {
+      "given": "Brian",
+      "family": "Wilson",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Virtualization",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Virtualization",
+    "hire_date": "2019-02-18",
+    "relationships": [
+      {
+        "target": "EMP020",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP038",
+    "name": {
+      "given": "Elena",
+      "family": "Kovalev",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for NovaDB Platform",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "NovaDB Platform",
+    "hire_date": "2019-05-13",
+    "relationships": [
+      {
+        "target": "EMP021",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP039",
+    "name": {
+      "given": "Ryan",
+      "family": "Park",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Database Services",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Database Services",
+    "hire_date": "2020-08-10",
+    "relationships": [
+      {
+        "target": "EMP021",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP040",
+    "name": {
+      "given": "Isabella",
+      "family": "Rossi",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Edge Computing",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Edge Computing",
+    "hire_date": "2021-04-05",
+    "relationships": [
+      {
+        "target": "EMP022",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP041",
+    "name": {
+      "given": "Jamal",
+      "family": "Williams",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Edge Security",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Edge Security",
+    "hire_date": "2022-02-21",
+    "relationships": [
+      {
+        "target": "EMP022",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP042",
+    "name": {
+      "given": "Yuri",
+      "family": "Ivanov",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Industry Solutions",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Industry Solutions",
+    "hire_date": "2021-09-20",
+    "relationships": [
+      {
+        "target": "EMP023",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP043",
+    "name": {
+      "given": "Amara",
+      "family": "Okafor",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for IoT Integration",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "IoT Integration",
+    "hire_date": "2022-07-18",
+    "relationships": [
+      {
+        "target": "EMP023",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP044",
+    "name": {
+      "given": "Sophia",
+      "family": "Hamilton",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Senior Data Visualization Engineer",
+    "level": "L3",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaVisual",
+    "hire_date": "2020-06-15",
+    "relationships": [
+      {
+        "target": "EMP024",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP045",
+    "name": {
+      "given": "Miguel",
+      "family": "Gonzalez",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Data Visualization Developer",
+    "level": "L2",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaVisual",
+    "hire_date": "2023-04-10",
+    "relationships": [
+      {
+        "target": "EMP024",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP046",
+    "name": {
+      "given": "Liam",
+      "family": "Murphy",
+      "name-order": "given-first"
+    },
+    "enabled": false,
+    "title": "UX Designer",
+    "level": "L3",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "NovaVisual",
+    "hire_date": "2021-08-09",
+    "relationships": [
+      {
+        "target": "EMP024",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP047",
+    "name": {
+      "given": "Hannah",
+      "family": "Schmidt",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Predictive Analytics",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "Predictive Analytics",
+    "hire_date": "2018-11-12",
+    "relationships": [
+      {
+        "target": "EMP025",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP048",
+    "name": {
+      "given": "David",
+      "family": "Lee",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for ML Operations",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "ML Operations",
+    "hire_date": "2019-07-22",
+    "relationships": [
+      {
+        "target": "EMP025",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP049",
+    "name": {
+      "given": "Noor",
+      "family": "Al-Saeed",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for AI Research",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "AI Research",
+    "hire_date": "2022-05-16",
+    "relationships": [
+      {
+        "target": "EMP026",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP050",
+    "name": {
+      "given": "Lucas",
+      "family": "Thompson",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for AI Applications",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "AI Applications",
+    "hire_date": "2023-02-13",
+    "relationships": [
+      {
+        "target": "EMP026",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP051",
+    "name": {
+      "given": "Mei",
+      "family": "Zhang",
+      "name-order": "family-first",
+      "override": "Zhang Mei"
+    },
+    "enabled": true,
+    "title": "Team Lead for AI Infrastructure",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "AI Infrastructure",
+    "hire_date": "2023-03-20",
+    "relationships": [
+      {
+        "target": "EMP027",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP052",
+    "name": {
+      "given": "Victor",
+      "family": "Osei",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for AI Operations",
+    "level": "L4",
+    "department": "Technology",
+    "sub_department": "AI & Analytics",
+    "team": "AI Operations",
+    "hire_date": "2023-06-05",
+    "relationships": [
+      {
+        "target": "EMP027",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP053",
+    "name": {
+      "given": "Gabriela",
+      "family": "Reyes",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Financial Planning",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Financial Planning",
+    "hire_date": "2018-07-16",
+    "relationships": [
+      {
+        "target": "EMP028",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP054",
+    "name": {
+      "given": "Benjamin",
+      "family": "Clark",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Financial Forecasting",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Financial Forecasting",
+    "hire_date": "2019-01-28",
+    "relationships": [
+      {
+        "target": "EMP028",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP055",
+    "name": {
+      "given": "Anika",
+      "family": "Gupta",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Corporate Analysis",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Corporate Analysis",
+    "hire_date": "2019-08-19",
+    "relationships": [
+      {
+        "target": "EMP029",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP056",
+    "name": {
+      "given": "Jacob",
+      "family": "Goldstein",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Investment Analysis",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Investment Analysis",
+    "hire_date": "2020-10-12",
+    "relationships": [
+      {
+        "target": "EMP029",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP057",
+    "name": {
+      "given": "Sofia",
+      "family": "Morales",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Senior Financial Analyst",
+    "level": "L3",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "BU Finance Direct",
+    "hire_date": "2020-05-04",
+    "relationships": [
+      {
+        "target": "EMP030",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP058",
+    "name": {
+      "given": "Noah",
+      "family": "Evans",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Financial Analyst",
+    "level": "L2",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "BU Finance Direct",
+    "hire_date": "2022-09-19",
+    "relationships": [
+      {
+        "target": "EMP030",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP059",
+    "name": {
+      "given": "Leila",
+      "family": "Karim",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Performance Analysis",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "Performance Analysis",
+    "hire_date": "2020-07-06",
+    "relationships": [
+      {
+        "target": "EMP031",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP060",
+    "name": {
+      "given": "Daniel",
+      "family": "Svensson",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for KPI Management",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Financial Planning",
+    "team": "KPI Management",
+    "hire_date": "2021-03-15",
+    "relationships": [
+      {
+        "target": "EMP031",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP061",
+    "name": {
+      "given": "Ava",
+      "family": "Washington",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Shareholder Communications",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Shareholder Communications",
+    "hire_date": "2020-02-24",
+    "relationships": [
+      {
+        "target": "EMP032",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP062",
+    "name": {
+      "given": "Takashi",
+      "family": "Yamamoto",
+      "name-order": "family-first",
+      "override": "Yamamoto Takashi"
+    },
+    "enabled": true,
+    "title": "Team Lead for Earnings Reporting",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Earnings Reporting",
+    "hire_date": "2019-10-07",
+    "relationships": [
+      {
+        "target": "EMP032",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP063",
+    "name": {
+      "given": "Isabel",
+      "family": "Rivera",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Financial Analyst Relations",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Financial Analyst Relations",
+    "hire_date": "2020-09-14",
+    "relationships": [
+      {
+        "target": "EMP033",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP064",
+    "name": {
+      "given": "Emmanuel",
+      "family": "Mbeki",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Investment Community",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Investment Community",
+    "hire_date": "2021-06-21",
+    "relationships": [
+      {
+        "target": "EMP033",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP065",
+    "name": {
+      "given": "Olivia",
+      "family": "Thomas",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for ESG Performance",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "ESG Performance",
+    "hire_date": "2022-05-30",
+    "relationships": [
+      {
+        "target": "EMP034",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP066",
+    "name": {
+      "given": "Alejandro",
+      "family": "Diaz",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for ESG Reporting",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "ESG Reporting",
+    "hire_date": "2022-08-22",
+    "relationships": [
+      {
+        "target": "EMP034",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP067",
+    "name": {
+      "given": "Emma",
+      "family": "Williams",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Sustainability Strategy",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Sustainability Strategy",
+    "hire_date": "2022-02-14",
+    "relationships": [
+      {
+        "target": "EMP035",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP068",
+    "name": {
+      "given": "Raj",
+      "family": "Sharma",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Team Lead for Impact Reporting",
+    "level": "L4",
+    "department": "Finance",
+    "sub_department": "Investor Relations",
+    "team": "Impact Reporting",
+    "hire_date": "2022-06-13",
+    "relationships": [
+      {
+        "target": "EMP035",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP069",
+    "name": {
+      "given": "Lina",
+      "family": "Khalil",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Senior Cloud Engineer",
+    "level": "L3",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Compute Services",
+    "hire_date": "2019-03-11",
+    "relationships": [
+      {
+        "target": "EMP036",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  },
+  {
+    "id": "EMP070",
+    "name": {
+      "given": "Marcus",
+      "family": "Edwards",
+      "name-order": "given-first"
+    },
+    "enabled": true,
+    "title": "Cloud Engineer",
+    "level": "L2",
+    "department": "Technology",
+    "sub_department": "Cloud Services",
+    "team": "Compute Services",
+    "hire_date": "2022-01-17",
+    "relationships": [
+      {
+        "target": "EMP036",
+        "kind": "manager"
+      }
+    ],
+    "information": []
+  }
+]
