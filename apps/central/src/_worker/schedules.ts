@@ -3,6 +3,9 @@ import { type CompiledScheduleOptions } from "@temporalio/client";
 
 import { vacuumUploadsWorkflow } from "../lib/functional/images/workflows/vacuum-uploads.js";
 
+import { dailyTrigger } from "./workflows/core/daily-trigger.workflow.js";
+import { hourlyTrigger } from "./workflows/core/hourly-trigger.workflow.js";
+
 export type WorkerSchedule = Omit<
   CompiledScheduleOptions,
   "scheduleId" | "action"
@@ -16,23 +19,35 @@ export const TEMPORAL_SCHEDULED_WORKFLOWS: Record<
   Record<string, WorkerSchedule | null>
 > = {
   core: {
-    "one-minute-ping": null,
-    // "one-minute-ping": {
-    //   action: {
-    //     type: "startWorkflow",
-    //     workflowId: "ping-1min",
-    //     workflowType: ping.name,
-    //     taskQueue: "### REPLACE ###",
-    //     args: [],
-    //   },
-    //   spec: {
-    //     calendars: [],
-    //     intervals: [{ every: ms("1 minute"), offset: 0 }],
-    //   },
-    // },
+    "daily-trigger": {
+      action: {
+        type: "startWorkflow",
+        workflowId: "daily-trigger-" + Date.now(),
+        workflowType: dailyTrigger.name,
+        taskQueue: "core",
+        args: [],
+      },
+      spec: {
+        intervals: [{ every: "1 day", offset: "1 hour" }],
+        jitter: "30 minutes",
+      },
+    },
+    "hourly-trigger": {
+      action: {
+        type: "startWorkflow",
+        workflowId: "hourly-trigger-" + Date.now(),
+        workflowType: hourlyTrigger.name,
+        taskQueue: "core",
+        args: [],
+      },
+      spec: {
+        intervals: [{ every: "1 hour", offset: "5 minutes" }],
+        jitter: "5 minutes",
+      },
+    },
   },
   media: {
-    "one-minute-ping": null,
+    "one-minute-ping": null, // deletes from scheduler
     "vacuum-uploads": {
       action: {
         type: "startWorkflow",

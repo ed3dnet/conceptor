@@ -4,7 +4,9 @@ import { EMAIL_DELIVERY_ACTIVITIES } from "../../lib/functional/email-delivery/a
 import { IMAGE_ACTIVITIES } from "../../lib/functional/images/activities/index.js";
 import { type ExportedActivity } from "../activity-helpers.js";
 
-import { doPingActivity } from "./ping.js";
+import { doDailyTriggerActivity } from "./daily-trigger.activity.js";
+import { doHourlyTriggerActivity } from "./hourly-trigger.activity.js";
+import { doPingActivity } from "./ping.activity.js";
 
 // TODO:  figure out how to break these out by queue type
 //        it is relatively difficult to encode into the type system
@@ -12,6 +14,8 @@ import { doPingActivity } from "./ping.js";
 //        and not others in its queue. it also might not be worth it.
 export const ALL_ACTIVITIES: Array<ExportedActivity> = [
   doPingActivity,
+  doHourlyTriggerActivity,
+  doDailyTriggerActivity,
 
   // core queue activities
   ...EMAIL_DELIVERY_ACTIVITIES,

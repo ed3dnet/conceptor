@@ -1,6 +1,6 @@
 import * as workflow from "@temporalio/workflow";
 
-import type { doPingActivity } from "../activities/ping.js";
+import type { doPingActivity } from "../activities/ping.activity.js";
 
 const { doPing } = workflow.proxyActivities<{
   doPing: (typeof doPingActivity)["activity"];
