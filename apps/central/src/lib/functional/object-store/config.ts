@@ -2,7 +2,7 @@ import { type Static, Type } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
 import { S3_BUCKET_NAME } from "../../../_db/schema/index.js";
-import { StringEnum } from "../../ext/typebox.js";
+import { StringEnum } from "../../ext/typebox/index.js";
 
 export const S3_BUCKET_NAMES = S3_BUCKET_NAME.enumValues;
 export const S3_PUBLIC_BUCKET_NAMES: Array<(typeof S3_BUCKET_NAMES)[number]> =

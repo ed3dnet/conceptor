@@ -1,7 +1,9 @@
 import { command, positional, string } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
+import { TenantIds } from "../../domain/tenants/id.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
+import { ImageUploadIds } from "../../lib/functional/images/id.js";
 
 export const completeImageUploadCommand = command({
   name: "complete-image-upload",
@@ -27,8 +29,8 @@ export const completeImageUploadCommand = command({
     );
 
     const { imageId } = await ROOT_CONTAINER.cradle.images.completeUpload(
-      tenantId,
-      imageUploadId,
+      TenantIds.ensure(tenantId),
+      ImageUploadIds.ensure(imageUploadId),
     );
 
     ROOT_LOGGER.info({ imageId }, "Completed image upload");

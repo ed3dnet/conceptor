@@ -1,6 +1,7 @@
 import { command, positional, string } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
+import { TenantIds } from "../../domain/tenants/id.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
 import { type ImageUsage } from "../../lib/functional/images/schemas.js";
 
@@ -29,7 +30,7 @@ export const createImageUploadCommand = command({
 
     const { uploadUrl, imageUploadId } =
       await ROOT_CONTAINER.cradle.images.createUploadUrl(
-        tenantId,
+        TenantIds.ensure(tenantId),
         usage as ImageUsage,
       );
 

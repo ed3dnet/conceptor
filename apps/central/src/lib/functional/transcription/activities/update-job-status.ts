@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm";
+import { type PgUpdateSetSource } from "drizzle-orm/pg-core";
 
 import { TRANSCRIPTION_JOBS } from "../../../../_db/schema/index.js";
 import { activity } from "../../../../_worker/activity-helpers.js";
+import { TranscriptionJobIds } from "../id.js";
 
 import { type UpdateTranscriptionJobStatusInput } from "./schemas/index.js";
 
@@ -22,7 +24,7 @@ export const updateJobTranscriptionStatusActivity = activity(
       });
 
       // Build the update object based on the status
-      const updateData: Record<string, unknown> = {
+      const updateData: PgUpdateSetSource<typeof TRANSCRIPTION_JOBS> = {
         status: input.status,
       };
 
@@ -32,7 +34,7 @@ export const updateJobTranscriptionStatusActivity = activity(
         updateData.transcriptionMetadata = input.transcriptionMetadata;
       } else if (input.status === "failed") {
         updateData.errorMessage = input.errorMessage;
-        updateData.transcriptionMetadata = input.transcriptionMetadata;
+        updateData.transcriptionMetadata = {};
       }
 
       // Update the job in the database
@@ -40,7 +42,10 @@ export const updateJobTranscriptionStatusActivity = activity(
         .update(TRANSCRIPTION_JOBS)
         .set(updateData)
         .where(
-          eq(TRANSCRIPTION_JOBS.transcriptionJobId, input.transcriptionJobId),
+          eq(
+            TRANSCRIPTION_JOBS.transcriptionJobId,
+            TranscriptionJobIds.toUUID(input.transcriptionJobId),
+          ),
         );
 
       logger.debug("Successfully updated transcription job status", {

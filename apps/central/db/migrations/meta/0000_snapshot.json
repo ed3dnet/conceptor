@@ -1,5 +1,5 @@
 {
-  "id": "a43d9df9-a308-4b2b-93b1-4deadbb4ff8f",
+  "id": "4d7af9ac-9f12-4b87-80ce-181d2c379389",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -142,6 +142,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -186,9 +192,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "permission_type": {
-          "name": "permission_type",
-          "type": "capability_permission_type",
+        "permission_kind": {
+          "name": "permission_kind",
+          "type": "capability_permission_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -401,9 +407,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "permission_type": {
-          "name": "permission_type",
-          "type": "global_permission_type",
+        "permission_kind": {
+          "name": "permission_kind",
+          "type": "global_permission_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -707,6 +713,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -774,6 +786,12 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -931,9 +949,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "permission_type": {
-          "name": "permission_type",
-          "type": "initiative_permission_type",
+        "permission_kind": {
+          "name": "permission_kind",
+          "type": "initiative_permission_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -1311,6 +1329,25 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -1436,7 +1473,7 @@
         },
         "type": {
           "name": "type",
-          "type": "unit_type",
+          "type": "unit_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -1452,6 +1489,12 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -1544,6 +1587,12 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -1693,6 +1742,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1821,9 +1876,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "permission_type": {
-          "name": "permission_type",
-          "type": "unit_permission_type",
+        "permission_kind": {
+          "name": "permission_kind",
+          "type": "unit_permission_kind",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
@@ -2072,6 +2127,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -2190,8 +2251,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "external_id_type": {
-          "name": "external_id_type",
+        "external_id_kind": {
+          "name": "external_id_kind",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -2484,8 +2545,8 @@
     }
   },
   "enums": {
-    "public.capability_permission_type": {
-      "name": "capability_permission_type",
+    "public.capability_permission_kind": {
+      "name": "capability_permission_kind",
       "schema": "public",
       "values": [
         "view",
@@ -2495,8 +2556,8 @@
         "delete"
       ]
     },
-    "public.global_permission_type": {
-      "name": "global_permission_type",
+    "public.global_permission_kind": {
+      "name": "global_permission_kind",
       "schema": "public",
       "values": [
         "admin",
@@ -2515,8 +2576,8 @@
         "image/avif"
       ]
     },
-    "public.information_type": {
-      "name": "information_type",
+    "public.information_kind": {
+      "name": "information_kind",
       "schema": "public",
       "values": [
         "boolean",
@@ -2524,8 +2585,8 @@
         "text"
       ]
     },
-    "public.initiative_permission_type": {
-      "name": "initiative_permission_type",
+    "public.initiative_permission_kind": {
+      "name": "initiative_permission_kind",
       "schema": "public",
       "values": [
         "view",
@@ -2571,8 +2632,16 @@
         "failed"
       ]
     },
-    "public.unit_permission_type": {
-      "name": "unit_permission_type",
+    "public.unit_kind": {
+      "name": "unit_kind",
+      "schema": "public",
+      "values": [
+        "individual",
+        "organizational"
+      ]
+    },
+    "public.unit_permission_kind": {
+      "name": "unit_permission_kind",
       "schema": "public",
       "values": [
         "manage_reports",
@@ -2580,15 +2649,6 @@
         "approve_time_off",
         "manage_unit",
         "view_reports"
-      ]
-    },
-    "public.unit_type": {
-      "name": "unit_type",
-      "schema": "public",
-      "values": [
-        "individual",
-        "team",
-        "management"
       ]
     }
   },

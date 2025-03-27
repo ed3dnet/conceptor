@@ -32,10 +32,17 @@ import {
   type DrizzleRO,
   type Drizzle,
 } from "../../lib/datastores/postgres/types.js";
+import { type StringUUID } from "../../lib/ext/typebox/index.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
 import { sha256 } from "../../lib/utils/cryptography.js";
+import {
+  type AuthConnectorId,
+  AuthConnectorIds,
+} from "../auth-connectors/id.js";
 import { type OIDCConnectorState } from "../auth-connectors/schemas/index.js";
 import { type AuthConnectorService } from "../auth-connectors/service.js";
+import { type TenantId, TenantIds } from "../tenants/id.js";
+import { type UserId, UserIds } from "../users/id.js";
 import { type UserService } from "../users/service.js";
 
 import { type AuthConfig } from "./config.js";
@@ -149,8 +156,8 @@ export class AuthService {
   }
 
   async initiateOAuthFlow(
-    tenantId: string,
-    authConnectorId: string,
+    tenantId: TenantId,
+    authConnectorId: AuthConnectorId,
     redirectUri: string,
   ): Promise<URL> {
     const logger = this.logger.child({
@@ -184,8 +191,8 @@ export class AuthService {
       scope: connectorState.settings.scopes.join(" "),
       state: await this.createStateToken({
         nonce,
-        tenantId,
-        authConnectorId,
+        tenantId: TenantIds.toRichId(tenantId),
+        authConnectorId: AuthConnectorIds.toRichId(authConnectorId),
         redirectUri,
         // pkceVerifier,
       }),
@@ -194,7 +201,11 @@ export class AuthService {
     return buildAuthorizationUrl(oidcConfig, params);
   }
 
-  async createSessionRow(userId: string, tenantId: string, executor: Drizzle) {
+  async createSessionRow(
+    userId: UserId,
+    tenantId: TenantId,
+    executor: Drizzle,
+  ) {
     const token =
       "CPTR_V1_" + cryptoRandomString({ length: 32, type: "distinguishable" });
     const tokenHash = sha256(token, TOKEN_HASH_ROUNDS);
@@ -202,8 +213,8 @@ export class AuthService {
     const [session] = await executor
       .insert(USER_SESSIONS)
       .values({
-        userId,
-        tenantId,
+        userId: UserIds.toUUID(userId),
+        tenantId: TenantIds.toUUID(tenantId),
         tokenHash,
       })
       .returning();
@@ -244,7 +255,7 @@ export class AuthService {
         return null;
       }
 
-      const user = await this.users.getByUserId(session.userId);
+      const user = await this.users.getByUserUUID(session.userId);
 
       if (!user) {
         logger.warn(
@@ -279,7 +290,7 @@ export class AuthService {
 
   async TX_handleOIDCCallback(
     expectedTenantId: string,
-    expectedAuthConnectorId: string,
+    expectedAuthConnectorId: AuthConnectorId,
     state: string,
     originalUrl: URL,
   ) {
@@ -349,7 +360,7 @@ export class AuthService {
       logger = logger.child({ userId: user.userId });
       logger.info({ email }, "Found user for OIDC callback.");
 
-      await this.users.setUserIdPUserInfo(user.userId, {
+      await this.users.setUserIdPUserInfo(UserIds.toRichId(user.userId), {
         ...userInfo,
         email,
       });
@@ -357,8 +368,8 @@ export class AuthService {
       logger.debug("Updated user record with latest IDP user info.");
 
       const tokenResult = await this.createSessionRow(
-        user.userId,
-        user.tenantId,
+        UserIds.toRichId(user.userId),
+        TenantIds.toRichId(user.tenantId),
         tx,
       );
 

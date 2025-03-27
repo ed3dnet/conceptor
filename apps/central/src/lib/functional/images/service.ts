@@ -14,6 +14,7 @@ import { type Logger } from "pino";
 import { type UrlsConfig } from "../../../_config/types.js";
 import { type DBImage } from "../../../_db/models.js";
 import { IMAGE_UPLOADS, IMAGES } from "../../../_db/schema/index.js";
+import { type TenantId, TenantIds } from "../../../domain/tenants/id.js";
 import {
   type DrizzleRO,
   type Drizzle,
@@ -23,6 +24,12 @@ import { type ObjectStoreService } from "../object-store/service.js";
 import { type TemporalDispatcher } from "../temporal-dispatcher/index.js";
 import { type VaultService } from "../vault/service.js";
 
+import {
+  type ImageId,
+  ImageIds,
+  type ImageUploadId,
+  ImageUploadIds,
+} from "./id.js";
 import { analyzeImage, type ImageAnalysis } from "./processing/analyze.js";
 import { computeBlurHash } from "./processing/blurhash.js";
 import { convertToAvif, optimizeAvif } from "./processing/optimize-avif.js";
@@ -47,18 +54,18 @@ export class ImagesService {
     this.logger = logger.child({ context: this.constructor.name });
   }
 
-  async getImageById(imageId: string): Promise<DBImage | null> {
+  async getImageById(imageId: ImageId): Promise<DBImage | null> {
     const [image] = await this.dbRO
       .select()
       .from(IMAGES)
-      .where(eq(IMAGES.imageId, imageId))
+      .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)))
       .limit(1);
 
     return image ?? null;
   }
 
   async getImageLinkSetById(
-    imageId: string,
+    imageId: ImageId,
     executor?: DrizzleRO,
   ): Promise<ImageLinkSet | null> {
     executor = executor ?? this.dbRO;
@@ -66,7 +73,7 @@ export class ImagesService {
     const [image] = await executor
       .select()
       .from(IMAGES)
-      .where(eq(IMAGES.imageId, imageId))
+      .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)))
       .limit(1);
 
     if (!image) {
@@ -99,11 +106,11 @@ export class ImagesService {
   }
 
   async createUploadUrl(
-    tenantId: string,
+    tenantId: TenantId,
     usage: ImageUsage,
   ): Promise<{
     uploadUrl: string;
-    imageUploadId: string;
+    imageUploadId: ImageUploadId;
   }> {
     const logger = this.logger.child({
       fn: this.createUploadUrl.name,
@@ -117,7 +124,7 @@ export class ImagesService {
     const [upload] = await this.db
       .insert(IMAGE_UPLOADS)
       .values({
-        tenantId,
+        tenantId: TenantIds.toUUID(tenantId),
         usage,
         stagingObjectName,
         targetBucket: "upload-staging",
@@ -141,18 +148,20 @@ export class ImagesService {
 
     return {
       uploadUrl,
-      imageUploadId: upload.imageUploadId,
+      imageUploadId: ImageUploadIds.toRichId(upload.imageUploadId),
     };
   }
 
   async completeUpload(
-    tenantId: string,
-    imageUploadId: string,
-  ): Promise<{ imageId: string }> {
+    tenantId: TenantId,
+    imageUploadId: ImageUploadId,
+  ): Promise<{ imageId: ImageId }> {
     const [upload] = await this.db
       .select()
       .from(IMAGE_UPLOADS)
-      .where(eq(IMAGE_UPLOADS.imageUploadId, imageUploadId))
+      .where(
+        eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+      )
       .limit(1);
 
     if (!upload) {
@@ -170,7 +179,7 @@ export class ImagesService {
     const [image] = await this.db
       .insert(IMAGES)
       .values({
-        tenantId,
+        tenantId: TenantIds.toUUID(tenantId),
         usage: upload.usage,
         bucket: upload.targetBucket,
         path: upload.targetPath,
@@ -184,7 +193,7 @@ export class ImagesService {
 
     await this.temporalDispatch.startMedia(processImageWorkflow, [
       {
-        imageId: image.imageId,
+        imageId: ImageIds.toRichId(image.imageId),
         sourceBucket: "upload-staging",
         sourceObject: upload.stagingObjectName,
         targetBucket: image.bucket,
@@ -192,10 +201,10 @@ export class ImagesService {
       },
     ]);
 
-    return { imageId: image.imageId };
+    return { imageId: ImageIds.toRichId(image.imageId) };
   }
 
-  async deleteUpload(imageUploadId: string): Promise<void> {
+  async deleteUpload(imageUploadId: ImageUploadId): Promise<void> {
     const logger = this.logger.child({
       fn: this.deleteUpload.name,
       imageUploadId,
@@ -204,7 +213,9 @@ export class ImagesService {
     const [upload] = await this.db
       .select()
       .from(IMAGE_UPLOADS)
-      .where(eq(IMAGE_UPLOADS.imageUploadId, imageUploadId))
+      .where(
+        eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+      )
       .limit(1);
 
     if (!upload) {
@@ -221,12 +232,14 @@ export class ImagesService {
     // Delete from database
     await this.db
       .delete(IMAGE_UPLOADS)
-      .where(eq(IMAGE_UPLOADS.imageUploadId, imageUploadId));
+      .where(
+        eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+      );
 
     logger.info("Upload deleted successfully");
   }
 
-  async deleteImage(imageId: string): Promise<void> {
+  async deleteImage(imageId: ImageId): Promise<void> {
     const logger = this.logger.child({ fn: this.deleteImage.name, imageId });
     logger.info("Attempting to delete image");
 
@@ -260,13 +273,15 @@ export class ImagesService {
     await Promise.all(deletePromises);
 
     // Delete database record
-    await this.db.delete(IMAGES).where(eq(IMAGES.imageId, imageId));
+    await this.db
+      .delete(IMAGES)
+      .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
 
     logger.info("Image and all renditions deleted successfully");
   }
 
   async analyzeImage(
-    imageId: string,
+    imageId: ImageId,
     sourceBucket: S3BucketName,
     sourceObject: string,
   ): Promise<{
@@ -297,7 +312,7 @@ export class ImagesService {
       await this.db
         .update(IMAGES)
         .set({ blurhash })
-        .where(eq(IMAGES.imageId, imageId));
+        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
 
       return {
         analysis,
@@ -309,7 +324,7 @@ export class ImagesService {
   }
 
   async optimizeOriginal(
-    imageId: string,
+    imageId: ImageId,
     sourceBucket: S3BucketName,
     sourceObject: string,
     analysis: ImageAnalysis,
@@ -370,14 +385,14 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, ${renditionFormat})`,
         })
-        .where(eq(IMAGES.imageId, imageId));
+        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
   }
 
   async generateFallback(
-    imageId: string,
+    imageId: ImageId,
     sourceBucket: S3BucketName,
     sourceObject: string,
     analysis: ImageAnalysis,
@@ -430,14 +445,14 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, 'fallback')`,
         })
-        .where(eq(IMAGES.imageId, imageId));
+        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
   }
 
   async generateWebP(
-    imageId: string,
+    imageId: ImageId,
     sourceBucket: S3BucketName,
     sourceObject: string,
     analysis: ImageAnalysis,
@@ -492,14 +507,14 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, 'image/webp')`,
         })
-        .where(eq(IMAGES.imageId, imageId));
+        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
   }
 
   async generateAVIF(
-    imageId: string,
+    imageId: ImageId,
     sourceBucket: S3BucketName,
     sourceObject: string,
     analysis: ImageAnalysis,
@@ -560,7 +575,7 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, 'image/avif')`,
         })
-        .where(eq(IMAGES.imageId, imageId));
+        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }

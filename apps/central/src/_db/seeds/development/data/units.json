@@ -1,0 +1,410 @@
+[
+  {
+    "id": "UNIT100",
+    "name": "Chief Executive Officer",
+    "kind": "Individual",
+    "parent_id": null,
+    "employee_id": "EMP001",
+    "insights": []
+  },
+  {
+    "id": "UNIT101",
+    "name": "Executive Office",
+    "kind": "Organizational",
+    "parent_id": null,
+    "leader_unit_id": "UNIT100",
+    "insights": []
+  },
+  {
+    "id": "UNIT102",
+    "name": "Chief Technology Officer",
+    "kind": "Individual",
+    "parent_id": "UNIT101",
+    "employee_id": "EMP002",
+    "insights": []
+  },
+  {
+    "id": "UNIT103",
+    "name": "Technology Division",
+    "kind": "Organizational",
+    "parent_id": "UNIT101",
+    "leader_unit_id": "UNIT102",
+    "insights": []
+  },
+  {
+    "id": "UNIT104",
+    "name": "Chief Financial Officer",
+    "kind": "Individual",
+    "parent_id": "UNIT101",
+    "employee_id": "EMP003",
+    "insights": []
+  },
+  {
+    "id": "UNIT105",
+    "name": "Finance Division",
+    "kind": "Organizational",
+    "parent_id": "UNIT101",
+    "leader_unit_id": "UNIT104",
+    "insights": []
+  },
+  {
+    "id": "UNIT106",
+    "name": "VP of Cloud Infrastructure",
+    "kind": "Individual",
+    "parent_id": "UNIT103",
+    "employee_id": "EMP004",
+    "insights": []
+  },
+  {
+    "id": "UNIT107",
+    "name": "Cloud Services Department",
+    "kind": "Organizational",
+    "parent_id": "UNIT103",
+    "leader_unit_id": "UNIT106",
+    "insights": []
+  },
+  {
+    "id": "UNIT108",
+    "name": "VP of AI and Data Analytics",
+    "kind": "Individual",
+    "parent_id": "UNIT103",
+    "employee_id": "EMP005",
+    "insights": []
+  },
+  {
+    "id": "UNIT109",
+    "name": "AI & Analytics Department",
+    "kind": "Organizational",
+    "parent_id": "UNIT103",
+    "leader_unit_id": "UNIT108",
+    "insights": []
+  },
+  {
+    "id": "UNIT110",
+    "name": "VP of Financial Planning",
+    "kind": "Individual",
+    "parent_id": "UNIT105",
+    "employee_id": "EMP006",
+    "insights": []
+  },
+  {
+    "id": "UNIT111",
+    "name": "Financial Planning Department",
+    "kind": "Organizational",
+    "parent_id": "UNIT105",
+    "leader_unit_id": "UNIT110",
+    "insights": []
+  },
+  {
+    "id": "UNIT112",
+    "name": "VP of Investor Relations",
+    "kind": "Individual",
+    "parent_id": "UNIT105",
+    "employee_id": "EMP007",
+    "insights": []
+  },
+  {
+    "id": "UNIT113",
+    "name": "Investor Relations Department",
+    "kind": "Organizational",
+    "parent_id": "UNIT105",
+    "leader_unit_id": "UNIT112",
+    "insights": []
+  },
+  {
+    "id": "UNIT114",
+    "name": "Director of NovaCloud Platform",
+    "kind": "Individual",
+    "parent_id": "UNIT107",
+    "employee_id": "EMP008",
+    "insights": []
+  },
+  {
+    "id": "UNIT115",
+    "name": "NovaCloud Platform Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT107",
+    "leader_unit_id": "UNIT114",
+    "insights": []
+  },
+  {
+    "id": "UNIT116",
+    "name": "Director of Edge Computing",
+    "kind": "Individual",
+    "parent_id": "UNIT107",
+    "employee_id": "EMP009",
+    "insights": []
+  },
+  {
+    "id": "UNIT117",
+    "name": "Edge Computing Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT107",
+    "leader_unit_id": "UNIT116",
+    "insights": []
+  },
+  {
+    "id": "UNIT118",
+    "name": "Director of NovaAnalytics",
+    "kind": "Individual",
+    "parent_id": "UNIT109",
+    "employee_id": "EMP011",
+    "insights": []
+  },
+  {
+    "id": "UNIT119",
+    "name": "NovaAnalytics Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT109",
+    "leader_unit_id": "UNIT118",
+    "insights": []
+  },
+  {
+    "id": "UNIT120",
+    "name": "Director of NovaAI Platform",
+    "kind": "Individual",
+    "parent_id": "UNIT109",
+    "employee_id": "EMP012",
+    "insights": []
+  },
+  {
+    "id": "UNIT121",
+    "name": "NovaAI Platform Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT109",
+    "leader_unit_id": "UNIT120",
+    "insights": []
+  },
+  {
+    "id": "UNIT122",
+    "name": "Director of Corporate Financial Analysis",
+    "kind": "Individual",
+    "parent_id": "UNIT111",
+    "employee_id": "EMP014",
+    "insights": []
+  },
+  {
+    "id": "UNIT123",
+    "name": "Corporate Financial Analysis Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT111",
+    "leader_unit_id": "UNIT122",
+    "insights": []
+  },
+  {
+    "id": "UNIT124",
+    "name": "Director of Business Unit Finance",
+    "kind": "Individual",
+    "parent_id": "UNIT111",
+    "employee_id": "EMP015",
+    "insights": []
+  },
+  {
+    "id": "UNIT125",
+    "name": "Business Unit Finance Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT111",
+    "leader_unit_id": "UNIT124",
+    "insights": []
+  },
+  {
+    "id": "UNIT126",
+    "name": "Director of Investor Communications",
+    "kind": "Individual",
+    "parent_id": "UNIT113",
+    "employee_id": "EMP017",
+    "insights": []
+  },
+  {
+    "id": "UNIT127",
+    "name": "Investor Communications Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT113",
+    "leader_unit_id": "UNIT126",
+    "insights": []
+  },
+  {
+    "id": "UNIT128",
+    "name": "Director of ESG Reporting",
+    "kind": "Individual",
+    "parent_id": "UNIT113",
+    "employee_id": "EMP018",
+    "insights": []
+  },
+  {
+    "id": "UNIT129",
+    "name": "ESG Reporting Group",
+    "kind": "Organizational",
+    "parent_id": "UNIT113",
+    "leader_unit_id": "UNIT128",
+    "insights": []
+  },
+  {
+    "id": "UNIT130",
+    "name": "Manager of NovaCompute",
+    "kind": "Individual",
+    "parent_id": "UNIT115",
+    "employee_id": "EMP020",
+    "insights": []
+  },
+  {
+    "id": "UNIT131",
+    "name": "NovaCompute Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT115",
+    "leader_unit_id": "UNIT130",
+    "insights": []
+  },
+  {
+    "id": "UNIT132",
+    "name": "Manager of NovaDB",
+    "kind": "Individual",
+    "parent_id": "UNIT115",
+    "employee_id": "EMP021",
+    "insights": []
+  },
+  {
+    "id": "UNIT133",
+    "name": "NovaDB Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT115",
+    "leader_unit_id": "UNIT132",
+    "insights": []
+  },
+  {
+    "id": "UNIT134",
+    "name": "Manager of NovaEdge Platform",
+    "kind": "Individual",
+    "parent_id": "UNIT117",
+    "employee_id": "EMP022",
+    "insights": []
+  },
+  {
+    "id": "UNIT135",
+    "name": "NovaEdge Platform Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT117",
+    "leader_unit_id": "UNIT134",
+    "insights": []
+  },
+  {
+    "id": "UNIT136",
+    "name": "Manager of Edge Integration Solutions",
+    "kind": "Individual",
+    "parent_id": "UNIT117",
+    "employee_id": "EMP023",
+    "insights": []
+  },
+  {
+    "id": "UNIT137",
+    "name": "Edge Integration Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT117",
+    "leader_unit_id": "UNIT136",
+    "insights": []
+  },
+  {
+    "id": "UNIT138",
+    "name": "Team Lead for NovaVisual",
+    "kind": "Individual",
+    "parent_id": "UNIT119",
+    "employee_id": "EMP024",
+    "insights": []
+  },
+  {
+    "id": "UNIT139",
+    "name": "NovaVisual Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT119",
+    "leader_unit_id": "UNIT138",
+    "insights": []
+  },
+  {
+    "id": "UNIT140",
+    "name": "Manager of NovaPredict",
+    "kind": "Individual",
+    "parent_id": "UNIT119",
+    "employee_id": "EMP025",
+    "insights": []
+  },
+  {
+    "id": "UNIT141",
+    "name": "NovaPredict Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT119",
+    "leader_unit_id": "UNIT140",
+    "insights": []
+  },
+  {
+    "id": "UNIT142",
+    "name": "Manager of AI Solutions",
+    "kind": "Individual",
+    "parent_id": "UNIT121",
+    "employee_id": "EMP026",
+    "insights": []
+  },
+  {
+    "id": "UNIT143",
+    "name": "AI Solutions Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT121",
+    "leader_unit_id": "UNIT142",
+    "insights": []
+  },
+  {
+    "id": "UNIT144",
+    "name": "Manager of AI Infrastructure",
+    "kind": "Individual",
+    "parent_id": "UNIT121",
+    "employee_id": "EMP027",
+    "insights": []
+  },
+  {
+    "id": "UNIT145",
+    "name": "AI Infrastructure Team",
+    "kind": "Organizational",
+    "parent_id": "UNIT121",
+    "leader_unit_id": "UNIT144",
+    "insights": []
+  },
+  {
+    "id": "UNIT146",
+    "name": "Senior Data Visualization Engineer",
+    "kind": "Individual",
+    "parent_id": "UNIT139",
+    "employee_id": "EMP044",
+    "insights": []
+  },
+  {
+    "id": "UNIT147",
+    "name": "Data Visualization Developer",
+    "kind": "Individual",
+    "parent_id": "UNIT139",
+    "employee_id": "EMP045",
+    "insights": []
+  },
+  {
+    "id": "UNIT148",
+    "name": "UX Designer",
+    "kind": "Individual",
+    "parent_id": "UNIT139",
+    "employee_id": "EMP046",
+    "insights": []
+  },
+  {
+    "id": "UNIT149",
+    "name": "Senior AI Engineer",
+    "kind": "Individual",
+    "parent_id": "UNIT143",
+    "employee_id": null,
+    "insights": []
+  },
+  {
+    "id": "UNIT150",
+    "name": "Junior AI Engineer",
+    "kind": "Individual",
+    "parent_id": "UNIT143",
+    "employee_id": null,
+    "insights": []
+  }
+]

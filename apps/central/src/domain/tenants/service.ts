@@ -11,8 +11,14 @@ import {
   type Drizzle,
   type DrizzleRO,
 } from "../../lib/datastores/postgres/types.js";
+import {
+  StringUUID,
+  StringUUIDChecker,
+  type StringUUIDType,
+} from "../../lib/ext/typebox/index.js";
 
-import { type CreateTenantInput } from "./schemas.js";
+import { type TenantId, TenantIds } from "./id.js";
+import { type CreateTenantInput, type TenantPublic } from "./schemas.js";
 
 export class TenantService {
   private readonly logger: Logger;
@@ -25,56 +31,85 @@ export class TenantService {
     this.logger = logger.child({ component: this.constructor.name });
   }
 
-  async getByTenantId(
-    tenantId: string,
+  /**
+   * Convert a DB tenant to a public tenant with rich ID
+   */
+  private toPublicTenant(dbTenant: DBTenant): TenantPublic {
+    return {
+      tenantId: TenantIds.toRichId(dbTenant.tenantId),
+      slug: dbTenant.slug,
+      displayName: dbTenant.displayName,
+    };
+  }
+
+  /**
+   * Get a tenant by its UUID
+   */
+  private async getByUUID(
+    uuid: StringUUIDType,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBTenant | null> {
     const tenant = await executor
       .select()
       .from(TENANTS)
-      .where(eq(TENANTS.tenantId, tenantId))
+      .where(eq(TENANTS.tenantId, uuid))
       .limit(1);
 
     return tenant[0] ?? null;
   }
 
+  /**
+   * Get a tenant by its tenant ID (rich ID or UUID)
+   */
+  async getByTenantId(
+    tenantId: TenantId,
+    executor: DrizzleRO = this.dbRO,
+  ): Promise<TenantPublic | null> {
+    const tenant = await this.getByUUID(TenantIds.toUUID(tenantId), executor);
+    return tenant ? this.toPublicTenant(tenant) : null;
+  }
+
   async getBySlug(
     slug: string,
     executor: DrizzleRO = this.dbRO,
-  ): Promise<DBTenant | null> {
+  ): Promise<TenantPublic | null> {
     const tenant = await executor
       .select()
       .from(TENANTS)
       .where(eq(TENANTS.slug, slug))
       .limit(1);
 
-    return tenant[0] ?? null;
+    return tenant[0] ? this.toPublicTenant(tenant[0]) : null;
   }
 
   async getByIdOrSlug(
     idOrSlug: string,
     executor: DrizzleRO = this.dbRO,
-  ): Promise<DBTenant | null> {
-    // Try UUID format first - if invalid, treat as slug
-    const isUuid =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        idOrSlug,
-      );
-
-    if (isUuid) {
+  ): Promise<TenantPublic | null> {
+    // Try as rich ID or UUID first
+    if (TenantIds.guard(idOrSlug)) {
       return this.getByTenantId(idOrSlug, executor);
     }
+
+    if (StringUUIDChecker.Check(idOrSlug)) {
+      const tenant = await this.getByUUID(idOrSlug, executor);
+      if (tenant) {
+        return this.toPublicTenant(tenant);
+      }
+    }
+
+    // Try as slug
     const r = await this.getBySlug(idOrSlug, executor);
     if (r) {
       return r;
     }
 
-    return this.getByTenantId(idOrSlug, executor);
+    return null;
   }
 
   async withTenantByIdOrSlug<T>(
     idOrSlug: string,
-    fn: (tenant: DBTenant) => Promise<T>,
+    fn: (tenant: TenantPublic) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
   ): Promise<T> {
     const tenant = await this.getByIdOrSlug(idOrSlug, executor);
@@ -85,10 +120,10 @@ export class TenantService {
   }
 
   async withTenantByTenantId<T>(
-    tenantId: string,
-    fn: (tenant: DBTenant) => Promise<T>,
+    tenantId: TenantId,
+    fn: (tenant: TenantPublic) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
-  ): Promise<T | null> {
+  ): Promise<T> {
     const tenant = await this.getByTenantId(tenantId, executor);
     if (!tenant) {
       throw new NotFoundError(`Tenant not found: ${tenantId}`);
@@ -98,9 +133,9 @@ export class TenantService {
 
   async withTenantBySlug<T>(
     slug: string,
-    fn: (tenant: DBTenant) => Promise<T>,
+    fn: (tenant: TenantPublic) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
-  ): Promise<T | null> {
+  ): Promise<T> {
     const tenant = await this.getBySlug(slug, executor);
     if (!tenant) {
       throw new NotFoundError(`Tenant not found: ${slug}`);
@@ -108,7 +143,7 @@ export class TenantService {
     return fn(tenant);
   }
 
-  async TX_createTenant(input: CreateTenantInput): Promise<DBTenant> {
+  async TX_createTenant(input: CreateTenantInput): Promise<TenantPublic> {
     const logger = this.logger.child({ fn: this.TX_createTenant.name });
 
     return this.db.transaction(async (tx) => {
@@ -127,8 +162,9 @@ export class TenantService {
       const [tenant] = await tx
         .insert(TENANTS)
         .values({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          tenantId: (input as any).tenantId,
+          tenantId: input.tenantId
+            ? TenantIds.toUUID(input.tenantId)
+            : undefined,
           slug: input.slug,
           displayName: input.displayName,
         })
@@ -139,7 +175,7 @@ export class TenantService {
       }
 
       logger.info({ tenantId: tenant.tenantId }, "Created new tenant");
-      return tenant;
+      return this.toPublicTenant(tenant);
     });
   }
 }

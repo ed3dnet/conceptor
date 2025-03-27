@@ -4,10 +4,11 @@ import {
   transcribeWithDeepgram,
   type TranscribeWithDeepgramOutput,
 } from "../backends/deepgram/index.js";
+import { type TranscriptionJobId } from "../id.js";
 import { type TranscriptionOptions } from "../schemas.js";
 
 export interface HandleTranscriptionInput {
-  transcriptionJobId: string;
+  transcriptionJobId: TranscriptionJobId;
   sourceFile: S3Locator;
   options: TranscriptionOptions;
 }

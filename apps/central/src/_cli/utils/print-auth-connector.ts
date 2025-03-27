@@ -2,6 +2,7 @@ import { NotFoundError } from "@myapp/shared-universal/errors/index.js";
 import { command, option, string } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
+import { AuthConnectorIds } from "../../domain/auth-connectors/id.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
 
 export const printAuthConnectorCommand = command({
@@ -25,7 +26,9 @@ export const printAuthConnectorCommand = command({
     const authConnectorService = ROOT_CONTAINER.cradle.authConnectors;
     const vaultService = ROOT_CONTAINER.cradle.vault;
 
-    const connector = await authConnectorService.getById(connectorId);
+    const connector = await authConnectorService.getById(
+      AuthConnectorIds.ensure(connectorId),
+    );
     if (!connector) {
       throw new NotFoundError(`Auth connector not found: ${connectorId}`);
     }

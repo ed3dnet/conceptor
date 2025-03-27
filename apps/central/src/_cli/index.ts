@@ -2,6 +2,7 @@ import { subcommands } from "cmd-ts";
 
 import { API_CLI } from "./api/index.js";
 import { DB_CLI } from "./db/index.js";
+import { FIRE_EVENT_CLI } from "./fire-event/index.js";
 import { IMAGES_CLI } from "./images/index.js";
 import { SEED_CLI } from "./seed/index.js";
 import { UTILS_CLI } from "./utils/index.js";
@@ -12,6 +13,7 @@ const subs = [
   SEED_CLI,
   UTILS_CLI,
   DB_CLI,
+  FIRE_EVENT_CLI,
   WORKER_CLI,
   IMAGES_CLI,
 ].sort((a, b) => a.name.localeCompare(b.name));

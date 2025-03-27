@@ -1,9 +1,10 @@
 import { activity } from "../../../../../_worker/activity-helpers.js";
 import { type S3BucketName } from "../../../object-store/config.js";
+import { type ImageId } from "../../id.js";
 import { type ImageAnalysis } from "../../processing/analyze.js";
 
 export interface OptimizeOriginalActivityInput {
-  imageId: string;
+  imageId: ImageId;
   sourceBucket: S3BucketName;
   sourceObject: string;
   analysis: ImageAnalysis;

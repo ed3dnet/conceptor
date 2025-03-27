@@ -1,12 +1,12 @@
 import * as workflow from "@temporalio/workflow";
 
+import { type TenantId } from "../../../../domain/tenants/id.js";
 import { type S3Locator } from "../../object-store/types.js";
-import { type WorkflowSignalLocator } from "../../temporal-dispatcher/types.js";
 import { type handleTranscriptionActivity } from "../activities/handle-transcription.js";
 import { type normalizeTranscriptionActivity } from "../activities/normalize-transcription.js";
 import { type signalWorkflowFromTranscriptionActivity } from "../activities/signal-workflow.js";
 import { type updateJobTranscriptionStatusActivity } from "../activities/update-job-status.js";
-import { type TranscriptionEvent } from "../events.js";
+import { type TranscriptionJobId } from "../id.js";
 import { type TranscriptionOptions } from "../schemas.js";
 
 // We'll define these activities later
@@ -25,8 +25,8 @@ const {
 });
 
 export interface ProcessTranscriptionJobInput {
-  transcriptionJobId: string;
-  tenantId: string;
+  transcriptionJobId: TranscriptionJobId;
+  tenantId: TenantId;
   sourceFile: S3Locator;
   options: TranscriptionOptions;
 }

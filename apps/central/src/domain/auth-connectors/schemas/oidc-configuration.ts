@@ -1,7 +1,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 import { TypeCompiler } from "@sinclair/typebox/compiler";
 
-import { StringEnum } from "../../../lib/ext/typebox.js";
+import { StringEnum } from "../../../lib/ext/typebox/index.js";
 
 export const ClaimTypes = StringEnum(["normal", "aggregated", "distributed"]);
 export type ClaimTypes = Static<typeof ClaimTypes>;

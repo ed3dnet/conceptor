@@ -1,7 +1,10 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { type Static, Type } from "@sinclair/typebox";
 
-import { StringUUID } from "../../lib/ext/typebox.js";
+import { AuthConnectorIds } from "../auth-connectors/id.js";
+import { TenantIds } from "../tenants/id.js";
+
+import { UserIds } from "./id.js";
 
 export const IdPUserInfo = Type.Object(
   {
@@ -49,8 +52,8 @@ export const UserPublic = schemaType(
   "UserPublic",
   Type.Object({
     __type: Type.Literal("UserPublic"),
-    userId: StringUUID,
-    tenantId: StringUUID,
+    userId: UserIds.TRichId,
+    tenantId: TenantIds.TRichId,
     displayName: Type.String(),
     avatarUrl: Type.Optional(Type.String()),
   }),
@@ -71,7 +74,7 @@ export const UserExternalId = schemaType(
   "UserExternalId",
   Type.Object({
     __type: Type.Literal("UserExternalId"),
-    externalIdType: Type.String(),
+    externalIdKind: Type.String(),
     externalId: Type.String(),
   }),
 );
@@ -88,9 +91,9 @@ export const UserPrivate = schemaType(
   "UserPrivate",
   Type.Object({
     __type: Type.Literal("UserPrivate"),
-    userId: StringUUID,
-    tenantId: StringUUID,
-    connectorId: StringUUID,
+    userId: UserIds.TRichId,
+    tenantId: TenantIds.TRichId,
+    connectorId: AuthConnectorIds.TRichId,
     displayName: Type.String(),
     avatarUrl: Type.Optional(Type.String()),
     lastAccessedAt: Type.Optional(Type.String({ format: "date-time" })),
@@ -108,16 +111,16 @@ export const CreateUserInput = schemaType(
   "CreateUserInput",
   Type.Object({
     __type: Type.Literal("CreateUserInput"),
-    tenantId: StringUUID,
-    connectorId: StringUUID,
+    tenantId: TenantIds.TRichId,
+    connectorId: AuthConnectorIds.TRichId,
     idpUserInfo: IdPUserInfo,
     displayName: Type.Optional(Type.String()),
-    userId: Type.Optional(StringUUID),
+    userId: Type.Optional(UserIds.TRichId),
     avatarUrl: Type.Optional(Type.String()),
     externalIds: Type.Optional(
       Type.Array(
         Type.Object({
-          type: Type.String(),
+          kind: Type.String(),
           id: Type.String(),
         }),
       ),
@@ -125,3 +128,60 @@ export const CreateUserInput = schemaType(
   }),
 );
 export type CreateUserInput = Static<typeof CreateUserInput>;
+
+// Event Schemas
+export const UserCreatedEvent = Type.Object({
+  __type: Type.Literal("UserCreated"),
+  tenantId: TenantIds.TRichId,
+  userId: UserIds.TRichId,
+  email: Type.String(),
+  displayName: Type.String(),
+  timestamp: Type.String({ format: "date-time" }),
+});
+export type UserCreatedEvent = Static<typeof UserCreatedEvent>;
+
+export const UserUpdatedEvent = Type.Object({
+  __type: Type.Literal("UserUpdated"),
+  tenantId: TenantIds.TRichId,
+  userId: UserIds.TRichId,
+  changedFields: Type.Array(Type.String()),
+  timestamp: Type.String({ format: "date-time" }),
+});
+export type UserUpdatedEvent = Static<typeof UserUpdatedEvent>;
+
+export const UserEmailAddedEvent = Type.Object({
+  __type: Type.Literal("UserEmailAdded"),
+  tenantId: TenantIds.TRichId,
+  userId: UserIds.TRichId,
+  email: Type.String(),
+  isPrimary: Type.Boolean(),
+  timestamp: Type.String({ format: "date-time" }),
+});
+export type UserEmailAddedEvent = Static<typeof UserEmailAddedEvent>;
+
+export const UserEmailSetPrimaryEvent = Type.Object({
+  __type: Type.Literal("UserEmailSetPrimary"),
+  tenantId: TenantIds.TRichId,
+  userId: UserIds.TRichId,
+  email: Type.String(),
+  timestamp: Type.String({ format: "date-time" }),
+});
+export type UserEmailSetPrimaryEvent = Static<typeof UserEmailSetPrimaryEvent>;
+
+export const UserEmailRemovedEvent = Type.Object({
+  __type: Type.Literal("UserEmailRemoved"),
+  tenantId: TenantIds.TRichId,
+  userId: UserIds.TRichId,
+  email: Type.String(),
+  timestamp: Type.String({ format: "date-time" }),
+});
+export type UserEmailRemovedEvent = Static<typeof UserEmailRemovedEvent>;
+
+// Export all events in a single object for easy import in event-list.ts
+export const UserEvents = {
+  UserCreatedEvent,
+  UserUpdatedEvent,
+  UserEmailAddedEvent,
+  UserEmailSetPrimaryEvent,
+  UserEmailRemovedEvent,
+};

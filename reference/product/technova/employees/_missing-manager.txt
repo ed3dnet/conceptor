@@ -1,0 +1,8 @@
+In the team hierarchy, Jasmine Patel (EMP024), Team Lead for NovaVisual, reports
+directly to Thomas Garcia (EMP011), Director of NovaAnalytics, which means there
+is no manager level between them. This represents the "missing manager"
+situation described in the requirements.
+
+Note: Unit 138 (Team Lead for NovaVisual) reports directly to Unit 119
+(NovaAnalytics Group) which is led by Director Thomas Garcia (EMP011), without a
+manager in between - this represents our "missing manager" case.

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { type Logger } from "pino";
 
 import { TRANSCRIPTION_JOBS } from "../../../_db/schema/index.js";
+import { TenantIds } from "../../../domain/tenants/id.js";
 import {
   type Drizzle,
   type DrizzleRO,
@@ -11,6 +12,7 @@ import { type S3Locator } from "../object-store/types.js";
 import { type TemporalDispatcher } from "../temporal-dispatcher/index.js";
 
 import { type TranscriptionConfig } from "./config.js";
+import { TranscriptionJobIds } from "./id.js";
 import {
   type CreateTranscriptionJobInput,
   type CreateTranscriptionJobOutput,
@@ -49,7 +51,7 @@ export class TranscriptionService {
     const [job] = await this.db
       .insert(TRANSCRIPTION_JOBS)
       .values({
-        tenantId: input.tenantId,
+        tenantId: TenantIds.toUUID(input.tenantId),
         sourceBucket: input.sourceFile.bucket,
         sourceObjectName: input.sourceFile.objectName,
         options: input.options,
@@ -63,8 +65,10 @@ export class TranscriptionService {
 
     try {
       const workflowInput: ProcessTranscriptionJobInput = {
-        transcriptionJobId: job.transcriptionJobId,
-        tenantId: job.tenantId,
+        transcriptionJobId: TranscriptionJobIds.toRichId(
+          job.transcriptionJobId,
+        ),
+        tenantId: TenantIds.toRichId(job.tenantId),
         sourceFile: input.sourceFile,
         options: input.options,
       };
@@ -82,7 +86,7 @@ export class TranscriptionService {
     }
 
     return {
-      transcriptionJobId: job.transcriptionJobId,
+      transcriptionJobId: TranscriptionJobIds.toRichId(job.transcriptionJobId),
     };
   }
 }

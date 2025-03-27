@@ -1,55 +1,15 @@
 import tailwindcss from "@tailwindcss/vite";
-import { svelteTesting } from "@testing-library/svelte/vite";
-import { sveltekit } from '@sveltejs/kit/vite';
-import GetEnv from "node-getenv";
-import { defineConfig } from 'vite';
-
-// Environment configuration
-const panelBaseUrl = GetEnv.requireStr("PANEL_URLS__PANEL_BASE_URL");
-const port = GetEnv.requireNum("PANEL_PORT");
-
-// Parse the hostname from PANEL_BASE_URL
-const hmrHostname = new URL(panelBaseUrl).hostname;
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 export default defineConfig({
-    plugins: [sveltekit(), tailwindcss()],
-
-    server: {
-        strictPort: true,
-        host: "0.0.0.0",
-        port,
-        open: false,
-        hmr: {
-            protocol: "wss",
-            host: hmrHostname,
-            port,
-            clientPort: 443,
-        },
-        cors: true,
-    },
-
-    test: {
-        workspace: [{
-            extends: "./vite.config.ts",
-            plugins: [svelteTesting()],
-
-            test: {
-                name: "client",
-                environment: "jsdom",
-                clearMocks: true,
-                include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
-                exclude: ['src/lib/server/**'],
-                setupFiles: ['./vitest-setup-client.ts']
-            }
-        }, {
-            extends: "./vite.config.ts",
-
-            test: {
-                name: "server",
-                environment: "node",
-                include: ['src/**/*.{test,spec}.{js,ts}'],
-                exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
-            }
-        }]
-    }
+  server: {
+    // this is only used in development mode, not production, so
+    // allowedHosts filtering isn't important here like it would be
+    // for an app with a SSR component, like SvelteKit.
+    allowedHosts: true,
+    // @ts-expect-error it's OK if this explodes
+    port: parseInt(process.env.PANEL_PORT, 10),
+  },
+  plugins: [react(), tailwindcss()],
 });

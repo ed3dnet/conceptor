@@ -1,7 +1,9 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { type Static, Type } from "@sinclair/typebox";
 
-import { StringEnum, StringUUID } from "../../../lib/ext/typebox.js";
+import { StringEnum, StringUUID } from "../../../lib/ext/typebox/index.js";
+import { TenantIds, type TenantId } from "../../tenants/id.js";
+import { type AuthConnectorId, AuthConnectorIds } from "../id.js";
 
 import { OidcConfiguration } from "./oidc-configuration.js";
 
@@ -25,8 +27,8 @@ export type OIDCConnectorState = Static<typeof OIDCConnectorState>;
 export const CreateAuthConnectorInput = schemaType(
   "CreateAuthConnectorInput",
   Type.Object({
-    authConnectorId: Type.Optional(StringUUID),
-    tenantId: StringUUID,
+    authConnectorId: Type.Optional(AuthConnectorIds.TRichId),
+    tenantId: TenantIds.TRichId,
     name: Type.String({ minLength: 1, maxLength: 255 }),
     settings: OIDCConnectorSettings,
     domains: Type.Array(Type.String({ format: "hostname" })),
@@ -47,8 +49,8 @@ export const AuthConnectorPublic = schemaType(
   "AuthConnectorPublic",
   Type.Object({
     __type: Type.Literal("AuthConnectorPublic"),
-    authConnectorId: StringUUID,
-    tenantId: StringUUID,
+    authConnectorId: AuthConnectorIds.TRichId,
+    tenantId: TenantIds.TRichId,
     name: Type.String(),
     domains: Type.Array(Type.String()),
   }),

@@ -63,6 +63,88 @@ async function apiRoutes(fastify: AppFastify) {
   - When creating a new resource, check for the existence of a resource with the same name before creating it. If it exists, throw a `ConflictError`.
   - Remember that our standard discriminated union key is `kind`, not `type`.
 
+### Rich IDs
+
+We use "rich IDs" for all externally visible resource identifiers. These combine a resource-specific prefix with a ULID to create human-readable, sortable, and globally unique identifiers.
+
+#### Structure and Implementation
+
+- Rich IDs follow the format: `{prefix}-{ULID}` (e.g., `tenant-01H2XVNZ7C9NXWK3TMCRD9QWMN`)
+- Each resource type has its own ID type and utilities:
+
+```ts
+// In domain/resource/id.ts
+import { createRichIdUtils, type RichId } from "../../lib/utils/rich-id.js";
+
+export type ResourceId = RichId<"resource">;
+export const ResourceIds = createRichIdUtils("resource");
+```
+
+#### Usage Rules
+
+1. **Type Definitions**:
+   - Define resource-specific ID types in a dedicated `id.ts` file in the resource's domain directory
+   - Name the type as singular `ResourceId` (e.g., `TenantId`, `AuthConnectorId`)
+   - Export utility functions as plural `ResourceIds` (e.g., `TenantIds`, `AuthConnectorIds`)
+
+2. **In Schemas**:
+   - Use `ResourceIds.TRichId` for TypeBox schema definitions
+   - Example: `tenantId: TenantIds.TRichId`
+
+3. **In Services**:
+   - Create separate methods for UUID and rich ID access patterns
+   - Convert to UUID for database operations: `ResourceIds.toUUID(resourceId)`
+   - Convert to rich ID for responses: `ResourceIds.toRichId(dbResource.resourceId)`
+   - Create helper methods like `toPublicResource` that handle the conversion
+
+4. **In API Routes**:
+   - Accept string parameters in routes and validate with appropriate schemas
+   - Let services handle the conversion between rich IDs and UUIDs
+
+5. **Conversion Utilities**:
+   - `ResourceIds.toRichId(id)`: Converts UUID or existing rich ID to a rich ID
+   - `ResourceIds.toUUID(richId)`: Extracts the UUID from a rich ID
+   - `ResourceIds.guard(value)`: Type guard to check if a string is a valid rich ID
+   - `ResourceIds.ensure(value)`: assertion; throws an error if the value is not a valid rich ID
+
+#### Example Implementation
+
+```ts
+// Private method for UUID access (internal use)
+private async getByTenantUUID(
+  uuid: StringUUIDType,
+  executor: DrizzleRO = this.dbRO,
+): Promise<DBTenant | null> {
+  const tenant = await executor
+    .select()
+    .from(TENANTS)
+    .where(eq(TENANTS.tenantId, uuid))
+    .limit(1);
+
+  return tenant[0] ?? null;
+}
+
+// Public method for rich ID access (external API)
+async getByTenantId(
+  tenantId: TenantId,
+  executor: DrizzleRO = this.dbRO,
+): Promise<TenantPublic | null> {
+  const uuid = TenantIds.toUUID(tenantId);
+  const tenant = await this.getByTenantUUID(uuid, executor);
+  return tenant ? this.toPublicTenant(tenant) : null;
+}
+
+// Converting DB entity to public response
+private toPublicTenant(dbTenant: DBTenant): TenantPublic {
+  return {
+    tenantId: TenantIds.toRichId(dbTenant.tenantId),
+    slug: dbTenant.slug,
+    displayName: dbTenant.displayName,
+  };
+}
+```
+
+
 ### Temporal
 - We use Temporal to handle long-running jobs. They run from a separate instance of the same container as the API server, and in the same NPM package.
 - Temporal is provided a dependency injection container.
@@ -73,6 +155,15 @@ async function apiRoutes(fastify: AppFastify) {
 - Activities need to be registered in `apps/central/src/_worker/activities/index.ts` so the worker can find it and invoke it.
 - The `TemporalDispatcher` is a wrapper that only allows workflows to be invoked on the correct queue: core and media.
 - Workflows need to be registered in the correct file for its queue, for example: `apps/central/src/_worker/workflows/identity/index.ts`
+
+## Postgres
+When you need to dynamically build an update statement, you will want something like this from `@drizzle-orm/pg-core`:
+
+```ts
+const updateData: PgUpdateSetSource<typeof TRANSCRIPTION_JOBS> = {
+  status: input.status,
+};
+```
 
 ## Initial instructions to Cody
 

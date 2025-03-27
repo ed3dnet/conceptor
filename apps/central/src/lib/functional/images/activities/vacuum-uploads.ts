@@ -4,6 +4,7 @@ import { and, lt, exists, eq, arrayContains, not } from "drizzle-orm";
 
 import { IMAGE_UPLOADS, IMAGES } from "../../../../_db/schema/index.js";
 import { activity } from "../../../../_worker/activity-helpers.js";
+import { ImageUploadIds } from "../id.js";
 
 export const vacuumUploadsActivity = activity("vacuumUploads", {
   fn: async (_context, logger, deps): Promise<void> => {
@@ -66,10 +67,10 @@ export const vacuumUploadsActivity = activity("vacuumUploads", {
 
     const awaiter = await Promise.allSettled([
       ...incompleteUploads.map((upload) =>
-        images.deleteUpload(upload.imageUploadId),
+        images.deleteUpload(ImageUploadIds.toRichId(upload.imageUploadId)),
       ),
       ...completedUploads.map((upload) =>
-        images.deleteUpload(upload.imageUploadId),
+        images.deleteUpload(ImageUploadIds.toRichId(upload.imageUploadId)),
       ),
     ]);
 

@@ -31,7 +31,9 @@ import type { DeepReadonly } from "utility-types";
 import { type AppConfig } from "../_config/types.js";
 import { AuthService } from "../domain/auth/service.js";
 import { AuthConnectorService } from "../domain/auth-connectors/service.js";
+import { EventService } from "../domain/events/service.js";
 import { TenantService } from "../domain/tenants/service.js";
+import { UnitService } from "../domain/units/service.js";
 import { UserService } from "../domain/users/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
 import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.js";
@@ -88,10 +90,12 @@ export type AppBaseCradleItems = {
   transcription: TranscriptionService;
 
   // domain objects below here
+  events: EventService;
   tenants: TenantService;
   auth: AuthService;
   authConnectors: AuthConnectorService;
   users: UserService;
+  units: UnitService;
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
 
@@ -255,6 +259,11 @@ export async function configureBaseAwilixContainer(
     ),
 
     // domain objects below here
+    events: asFunction(
+      ({ logger, temporalDispatch }: AppSingletonCradle) =>
+        new EventService(logger, temporalDispatch),
+    ),
+
     tenants: asFunction(
       ({ logger, db, dbRO }: AppSingletonCradle) =>
         new TenantService(logger, db, dbRO),
@@ -290,8 +299,13 @@ export async function configureBaseAwilixContainer(
     ),
 
     users: asFunction(
-      ({ logger, db, dbRO, vault }: AppSingletonCradle) =>
-        new UserService(logger, db, dbRO, vault),
+      ({ logger, db, dbRO, vault, events }: AppSingletonCradle) =>
+        new UserService(logger, db, dbRO, vault, events),
+    ),
+
+    units: asFunction(
+      ({ logger, db, dbRO, events, users }: AppSingletonCradle) =>
+        new UnitService(logger, db, dbRO, events, users),
     ),
   });
 

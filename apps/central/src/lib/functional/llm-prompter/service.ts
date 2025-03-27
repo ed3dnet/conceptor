@@ -3,11 +3,14 @@ import type { BaseChatModel } from "@langchain/core/language_models/chat_models"
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import type { Logger } from "pino";
 
+import { type TenantId } from "../../../domain/tenants/id.js";
 import type { Drizzle } from "../../datastores/postgres/types.js";
+import { type StringUUID } from "../../ext/typebox/index.js";
 import type { VaultService } from "../vault/service.js";
 
 import type { LlmModelConnectorName, LlmPrompterConfig } from "./config.js";
 import { Conversation } from "./conversation.js";
+import { type ConversationId } from "./id.js";
 
 export class LlmPrompterService {
   private readonly logger: Logger;
@@ -57,7 +60,7 @@ export class LlmPrompterService {
   }
 
   async createConversation(
-    tenantId: string,
+    tenantId: TenantId,
     connectorName: LlmModelConnectorName,
     purpose?: string,
   ) {
@@ -72,7 +75,7 @@ export class LlmPrompterService {
     });
   }
 
-  async getConversation(conversationId: string) {
+  async getConversation(conversationId: ConversationId | StringUUID) {
     return Conversation.load({
       conversationId,
       db: this.db,

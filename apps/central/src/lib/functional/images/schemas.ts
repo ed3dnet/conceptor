@@ -1,7 +1,7 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { type Static, Type } from "@sinclair/typebox";
 
-import { StringEnum, UnionOneOf } from "../../ext/typebox.js";
+import { StringEnum, UnionOneOf } from "../../ext/typebox/index.js";
 
 export const ImageUsage = schemaType(
   "ImageUsage",

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unit",
+  "type": "object",
+  "required": ["id", "name", "kind", "parent_id", "insights"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the unit"
+    },
+    "name": {
+      "type": "string",
+      "description": "Unit name"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["Organizational", "Individual"],
+      "description": "Type of unit"
+    },
+    "parent_id": {
+      "type": ["string", "null"],
+      "description": "ID of the parent unit, null only for the CEO unit"
+    },
+    "insights": {
+      "type": "array",
+      "description": "Derived data from employee information",
+      "items": {
+        "type": "object",
+        "required": ["sourceEmployeeIds", "insightContent"],
+        "properties": {
+          "sourceEmployeeIds": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "IDs of employees whose information contributed to this insight"
+          },
+          "insightContent": {
+            "type": "string",
+            "description": "The insight derived from employee information"
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "kind": {"enum": ["Individual"]},
+        "employee_id": {
+          "type": ["string", "null"],
+          "description": "ID of the employee filling this role, null if unfilled"
+        }
+      },
+      "required": ["employee_id"]
+    },
+    {
+      "properties": {
+        "kind": {"enum": ["Organizational"]},
+        "leader_unit_id": {
+          "type": "string",
+          "description": "ID of the individual unit representing the leader role"
+        }
+      },
+      "required": ["leader_unit_id"]
+    }
+  ]
+}

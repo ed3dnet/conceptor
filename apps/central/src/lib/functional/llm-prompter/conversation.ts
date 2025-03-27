@@ -7,12 +7,17 @@ import {
   LLM_CONVERSATIONS,
   LLM_CONVERSATION_MESSAGES,
 } from "../../../_db/schema/index.js";
+import { type TenantId, TenantIds } from "../../../domain/tenants/id.js";
 import type { Drizzle } from "../../datastores/postgres/types.js";
+import { type StringUUID } from "../../ext/typebox/index.js";
 import type { VaultService } from "../vault/service.js";
 
 import { type LlmModelConnectorName } from "./config.js";
+import { ConversationIds, type ConversationId } from "./id.js";
 
 export class Conversation {
+  private readonly conversationId: ConversationId;
+  private readonly uuid: StringUUID;
   private messages: DBLLMConversationMessage[] = [];
 
   async sendMessage(content: string) {
@@ -51,7 +56,7 @@ export class Conversation {
     const [message] = await this.db
       .insert(LLM_CONVERSATION_MESSAGES)
       .values({
-        conversationId: this.conversationId,
+        conversationId: this.uuid,
         role,
         content: await this.vault.encrypt(content),
         orderIndex,
@@ -67,11 +72,14 @@ export class Conversation {
   }
 
   private constructor(
-    readonly conversationId: string,
+    conversationId: ConversationId | StringUUID,
     private readonly model: BaseChatModel,
     private readonly db: Drizzle,
     private readonly vault: VaultService,
-  ) {}
+  ) {
+    this.conversationId = ConversationIds.toRichId(conversationId);
+    this.uuid = ConversationIds.toUUID(conversationId);
+  }
 
   static async create({
     tenantId,
@@ -81,7 +89,7 @@ export class Conversation {
     vault,
     purpose,
   }: {
-    tenantId: string;
+    tenantId: TenantId;
     model: BaseChatModel;
     connectorName: LlmModelConnectorName;
     db: Drizzle;
@@ -91,7 +99,7 @@ export class Conversation {
     const [conversation] = await db
       .insert(LLM_CONVERSATIONS)
       .values({
-        tenantId,
+        tenantId: TenantIds.toUUID(tenantId),
         connectorName,
         modelOptions: model.invocationParams(),
         purpose,
@@ -102,7 +110,12 @@ export class Conversation {
       throw new Error("Failed to create conversation");
     }
 
-    return new Conversation(conversation.conversationId, model, db, vault);
+    return new Conversation(
+      ConversationIds.toRichId(conversation.conversationId),
+      model,
+      db,
+      vault,
+    );
   }
 
   static async load({
@@ -111,15 +124,16 @@ export class Conversation {
     vault,
     getModel,
   }: {
-    conversationId: string;
+    conversationId: ConversationId | StringUUID;
     db: Drizzle;
     vault: VaultService;
     getModel: (name: LlmModelConnectorName) => BaseChatModel;
   }) {
+    const conversationUuid = ConversationIds.toUUID(conversationId);
     const [conversation] = await db
       .select()
       .from(LLM_CONVERSATIONS)
-      .where(eq(LLM_CONVERSATIONS.conversationId, conversationId))
+      .where(eq(LLM_CONVERSATIONS.conversationId, conversationUuid))
       .limit(1);
 
     if (!conversation) {
@@ -132,7 +146,7 @@ export class Conversation {
     instance.messages = await db
       .select()
       .from(LLM_CONVERSATION_MESSAGES)
-      .where(eq(LLM_CONVERSATION_MESSAGES.conversationId, conversationId))
+      .where(eq(LLM_CONVERSATION_MESSAGES.conversationId, conversationUuid))
       .orderBy(LLM_CONVERSATION_MESSAGES.orderIndex);
 
     return instance;

@@ -1,8 +1,11 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { Type, type Static } from "@sinclair/typebox";
 
+import { TenantIds } from "../../../domain/tenants/id.js";
 import { S3BucketName } from "../object-store/config.js";
 import { WorkflowSignalLocator } from "../temporal-dispatcher/types.js";
+
+import { TranscriptionJobIds } from "./id.js";
 
 // Base options that apply to all transcription providers
 export const AppTranscriptionOptions = Type.Object({
@@ -36,7 +39,7 @@ export type TranscriptionOptions = Static<typeof TranscriptionOptions>;
 export const CreateTranscriptionJobInput = schemaType(
   "CreateTranscriptionJobInput",
   Type.Object({
-    tenantId: Type.String(),
+    tenantId: TenantIds.TRichId,
     sourceFile: Type.Object({
       bucket: S3BucketName,
       objectName: Type.String(),
@@ -51,7 +54,7 @@ export type CreateTranscriptionJobInput = Static<
 export const CreateTranscriptionJobOutput = schemaType(
   "CreateTranscriptionJobOutput",
   Type.Object({
-    transcriptionJobId: Type.String(),
+    transcriptionJobId: TranscriptionJobIds.TRichId,
   }),
 );
 export type CreateTranscriptionJobOutput = Static<

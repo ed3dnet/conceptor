@@ -21,13 +21,22 @@ import {
   type Drizzle,
   type DrizzleRO,
 } from "../../lib/datastores/postgres/types.js";
+import { type StringUUID } from "../../lib/ext/typebox/index.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
+import { AuthConnectorIds } from "../auth-connectors/id.js";
+import { type EventService } from "../events/service.js";
+import { type TenantId, TenantIds } from "../tenants/id.js";
 
+import { type UserId, UserIds } from "./id.js";
 import {
   type CreateUserInput,
   type IdPUserInfo,
   type UserPrivate,
 } from "./schemas.js";
+
+interface UserServiceOptions {
+  squelchEvents?: boolean;
+}
 
 export class UserService {
   private readonly logger: Logger;
@@ -37,18 +46,32 @@ export class UserService {
     private readonly db: Drizzle,
     private readonly dbRO: DrizzleRO,
     private readonly vault: VaultService,
+    private readonly events: EventService,
   ) {
     this.logger = logger.child({ component: this.constructor.name });
   }
 
   async getByUserId(
-    userId: string,
+    userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUser | null> {
     const user = await executor
       .select()
       .from(USERS)
-      .where(eq(USERS.userId, userId))
+      .where(eq(USERS.userId, UserIds.toUUID(userId)))
+      .limit(1);
+
+    return user[0] ?? null;
+  }
+
+  async getByUserUUID(
+    userUuid: StringUUID,
+    executor: DrizzleRO = this.dbRO,
+  ): Promise<DBUser | null> {
+    const user = await executor
+      .select()
+      .from(USERS)
+      .where(eq(USERS.userId, userUuid))
       .limit(1);
 
     return user[0] ?? null;
@@ -82,7 +105,7 @@ export class UserService {
       .from(USERS)
       .innerJoin(USER_EXTERNAL_IDS, eq(USERS.userId, USER_EXTERNAL_IDS.userId))
       .where(
-        sql`${USER_EXTERNAL_IDS.externalIdType} = ${externalIdType} AND ${USER_EXTERNAL_IDS.externalId} = ${externalId}`,
+        sql`${USER_EXTERNAL_IDS.externalIdKind} = ${externalIdType} AND ${USER_EXTERNAL_IDS.externalId} = ${externalId}`,
       )
       .limit(1);
 
@@ -111,7 +134,7 @@ export class UserService {
   }
 
   async withUserById<T>(
-    userId: string,
+    userId: UserId,
     fn: (user: DBUser) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
   ): Promise<T> {
@@ -123,13 +146,13 @@ export class UserService {
   }
 
   async getUserPrivate(
-    userId: string,
+    userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<UserPrivate> {
     const user = await executor
       .select()
       .from(USERS)
-      .where(eq(USERS.userId, userId))
+      .where(eq(USERS.userId, UserIds.toUUID(userId)))
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -153,9 +176,9 @@ export class UserService {
 
     return {
       __type: "UserPrivate",
-      userId: user.userId,
-      tenantId: user.tenantId,
-      connectorId: user.connectorId,
+      userId: UserIds.toRichId(user.userId),
+      tenantId: TenantIds.toRichId(user.tenantId),
+      connectorId: AuthConnectorIds.toRichId(user.connectorId),
       displayName: user.displayName,
       avatarUrl,
       lastAccessedAt: (user.lastAccessedAt ?? undefined)?.toISOString(),
@@ -168,7 +191,7 @@ export class UserService {
       })),
       externalIds: externalIds.map((e) => ({
         __type: "UserExternalId",
-        externalIdType: e.externalIdType,
+        externalIdKind: e.externalIdKind,
         externalId: e.externalId,
       })),
       tags: tags.map((t) => ({
@@ -180,7 +203,7 @@ export class UserService {
   }
 
   async setUserIdPUserInfo(
-    userId: string,
+    userId: UserId,
     userInfo: IdPUserInfo,
     executor: Drizzle = this.db,
   ): Promise<DBUser> {
@@ -191,7 +214,7 @@ export class UserService {
       .set({
         idpUserInfo: encrypted,
       })
-      .where(eq(USERS.userId, userId))
+      .where(eq(USERS.userId, UserIds.toUUID(userId)))
       .returning();
 
     if (!result) {
@@ -203,17 +226,17 @@ export class UserService {
 
   // Tags
   async getUserTags(
-    userId: string,
+    userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUserTag[]> {
     return executor
       .select()
       .from(USER_TAGS)
-      .where(eq(USER_TAGS.userId, userId));
+      .where(eq(USER_TAGS.userId, UserIds.toUUID(userId)));
   }
 
   async setUserTag(
-    userId: string,
+    userId: UserId,
     key: string,
     value: string | null,
     executor: Drizzle = this.db,
@@ -221,7 +244,7 @@ export class UserService {
     const [tag] = await executor
       .insert(USER_TAGS)
       .values({
-        userId,
+        userId: UserIds.toUUID(userId),
         key,
         value,
       })
@@ -239,43 +262,43 @@ export class UserService {
   }
 
   async deleteUserTag(
-    userId: string,
+    userId: UserId,
     key: string,
     executor: Drizzle = this.db,
   ): Promise<void> {
     await executor
       .delete(USER_TAGS)
       .where(
-        sql`${USER_TAGS.userId} = ${userId} AND ${USER_TAGS.key} = ${key}`,
+        sql`${USER_TAGS.userId} = ${UserIds.toUUID(userId)} AND ${USER_TAGS.key} = ${key}`,
       );
   }
 
   // External IDs
   async getUserExternalIds(
-    userId: string,
+    userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUserExternalId[]> {
     return executor
       .select()
       .from(USER_EXTERNAL_IDS)
-      .where(eq(USER_EXTERNAL_IDS.userId, userId));
+      .where(eq(USER_EXTERNAL_IDS.userId, UserIds.toUUID(userId)));
   }
 
   async setUserExternalId(
-    userId: string,
-    externalIdType: string,
+    userId: UserId,
+    externalIdKind: string,
     externalId: string,
     executor: Drizzle = this.db,
   ): Promise<DBUserExternalId> {
     const [extId] = await executor
       .insert(USER_EXTERNAL_IDS)
       .values({
-        userId,
-        externalIdType,
+        userId: UserIds.toUUID(userId),
+        externalIdKind,
         externalId,
       })
       .onConflictDoUpdate({
-        target: [USER_EXTERNAL_IDS.userId, USER_EXTERNAL_IDS.externalIdType],
+        target: [USER_EXTERNAL_IDS.userId, USER_EXTERNAL_IDS.externalIdKind],
         set: { externalId },
       })
       .returning();
@@ -288,101 +311,39 @@ export class UserService {
   }
 
   async deleteUserExternalId(
-    userId: string,
+    userId: UserId,
     externalIdType: string,
     executor: Drizzle = this.db,
   ): Promise<void> {
     await executor
       .delete(USER_EXTERNAL_IDS)
       .where(
-        sql`${USER_EXTERNAL_IDS.userId} = ${userId} AND ${USER_EXTERNAL_IDS.externalIdType} = ${externalIdType}`,
+        sql`${USER_EXTERNAL_IDS.userId} = ${UserIds.toUUID(userId)} AND ${USER_EXTERNAL_IDS.externalIdKind} = ${externalIdType}`,
       );
   }
 
   // Emails
   async getUserEmails(
-    userId: string,
+    userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUserEmail[]> {
     return executor
       .select()
       .from(USER_EMAILS)
-      .where(eq(USER_EMAILS.userId, userId));
-  }
-
-  async addUserEmail(
-    userId: string,
-    email: string,
-    isPrimary: boolean = false,
-    executor: Drizzle = this.db,
-  ): Promise<DBUserEmail> {
-    // If this is primary, we need to unset other primary emails first
-    if (isPrimary) {
-      await executor
-        .update(USER_EMAILS)
-        .set({ isPrimary: false })
-        .where(eq(USER_EMAILS.userId, userId));
-    }
-
-    const [emailRecord] = await executor
-      .insert(USER_EMAILS)
-      .values({
-        userId,
-        email,
-        isPrimary,
-      })
-      .returning();
-
-    if (!emailRecord) {
-      throw new Error("Failed to add user email");
-    }
-
-    return emailRecord;
-  }
-
-  async setUserEmailPrimary(
-    userId: string,
-    email: string,
-    executor: Drizzle = this.db,
-  ): Promise<void> {
-    await executor.transaction(async (tx) => {
-      // Unset all primary flags for this user
-      await tx
-        .update(USER_EMAILS)
-        .set({ isPrimary: false })
-        .where(eq(USER_EMAILS.userId, userId));
-
-      // Set the specified email as primary
-      await tx
-        .update(USER_EMAILS)
-        .set({ isPrimary: true })
-        .where(
-          sql`${USER_EMAILS.userId} = ${userId} AND ${USER_EMAILS.email} = ${email}`,
-        );
-    });
-  }
-
-  async deleteUserEmail(
-    userId: string,
-    email: string,
-    executor: Drizzle = this.db,
-  ): Promise<void> {
-    await executor
-      .delete(USER_EMAILS)
-      .where(
-        sql`${USER_EMAILS.userId} = ${userId} AND ${USER_EMAILS.email} = ${email}`,
-      );
+      .where(eq(USER_EMAILS.userId, UserIds.toUUID(userId)));
   }
 
   /**
-   * Creates a new user from IdP user information
+   * Creates a new user
    *
    * @param input User creation parameters
+   * @param options Service options
    * @param executor Optional database executor
    * @returns The created user
    */
   async createUser(
     input: CreateUserInput,
+    options: UserServiceOptions = {},
     executor: Drizzle = this.db,
   ): Promise<DBUser> {
     const {
@@ -411,9 +372,9 @@ export class UserService {
       const [user] = await tx
         .insert(USERS)
         .values({
-          userId, // Now optional and will be auto-generated if not provided
-          tenantId,
-          connectorId,
+          userId: userId ? UserIds.toUUID(userId) : undefined,
+          tenantId: TenantIds.toUUID(tenantId),
+          connectorId: AuthConnectorIds.toUUID(connectorId),
           displayName: userDisplayName,
           avatarUrl,
           idpUserInfo: encryptedIdpUserInfo,
@@ -424,6 +385,7 @@ export class UserService {
       if (!user) {
         throw new Error("Failed to create user");
       }
+      const newUserId = UserIds.toRichId(user.userId);
 
       // Add user email from IdP info
       await tx.insert(USER_EMAILS).values({
@@ -434,7 +396,7 @@ export class UserService {
 
       // Add additional emails if present in IdP info
       if (idpUserInfo.email_verified) {
-        await this.setUserTag(user.userId, "email_verified", "true", tx);
+        await this.setUserTag(newUserId, "email_verified", "true", tx);
       }
 
       // Add external IDs
@@ -442,7 +404,7 @@ export class UserService {
         for (const extId of externalIds) {
           await tx.insert(USER_EXTERNAL_IDS).values({
             userId: user.userId,
-            externalIdType: extId.type,
+            externalIdKind: extId.kind,
             externalId: extId.id,
           });
         }
@@ -451,7 +413,7 @@ export class UserService {
       // Add external ID for IdP sub
       await tx.insert(USER_EXTERNAL_IDS).values({
         userId: user.userId,
-        externalIdType: `${connectorId}:sub`,
+        externalIdKind: `${connectorId}:sub`,
         externalId: idpUserInfo.sub,
       });
 
@@ -460,7 +422,152 @@ export class UserService {
         "Created new user from IdP information",
       );
 
+      // Fire event if not squelched
+      if (!options.squelchEvents) {
+        await this.events.dispatchEvent({
+          __type: "UserCreated",
+          tenantId,
+          userId: UserIds.toRichId(user.userId),
+          email: idpUserInfo.email,
+          displayName: userDisplayName,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       return user;
     });
+  }
+
+  /**
+   * Adds an email to a user
+   * @param tenantId The tenant ID
+   * @param userId The user ID
+   * @param email The email to add
+   * @param isPrimary Whether this is the primary email
+   * @param options Service options
+   * @param executor Optional transaction executor
+   * @returns The created email record
+   */
+  async addUserEmail(
+    tenantId: TenantId,
+    userId: UserId,
+    email: string,
+    isPrimary: boolean = false,
+    options: UserServiceOptions = {},
+    executor: Drizzle = this.db,
+  ): Promise<DBUserEmail> {
+    // If this is primary, we need to unset other primary emails first
+    const userUuid = UserIds.toUUID(userId);
+    if (isPrimary) {
+      await executor
+        .update(USER_EMAILS)
+        .set({ isPrimary: false })
+        .where(eq(USER_EMAILS.userId, userUuid));
+    }
+
+    const [emailRecord] = await executor
+      .insert(USER_EMAILS)
+      .values({
+        userId: userUuid,
+        email,
+        isPrimary,
+      })
+      .returning();
+
+    if (!emailRecord) {
+      throw new Error("Failed to add user email");
+    }
+
+    // Fire event if not squelched
+    if (!options.squelchEvents) {
+      await this.events.dispatchEvent({
+        __type: "UserEmailAdded",
+        tenantId: TenantIds.toRichId(tenantId),
+        userId: UserIds.toRichId(userId),
+        email,
+        isPrimary,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return emailRecord;
+  }
+
+  /**
+   * Sets a user email as primary
+   * @param tenantId The tenant ID
+   * @param userId The user ID
+   * @param email The email to set as primary
+   * @param options Service options
+   * @param executor Optional transaction executor
+   */
+  async setUserEmailPrimary(
+    tenantId: TenantId,
+    userId: UserId,
+    email: string,
+    options: UserServiceOptions = {},
+    executor: Drizzle = this.db,
+  ): Promise<void> {
+    await executor.transaction(async (tx) => {
+      const userUuid = UserIds.toUUID(userId);
+
+      // Unset all primary flags for this user
+      await tx
+        .update(USER_EMAILS)
+        .set({ isPrimary: false })
+        .where(eq(USER_EMAILS.userId, userUuid));
+
+      // Set the specified email as primary
+      await tx
+        .update(USER_EMAILS)
+        .set({ isPrimary: true })
+        .where(
+          sql`${USER_EMAILS.userId} = ${userUuid} AND ${USER_EMAILS.email} = ${email}`,
+        );
+    });
+
+    // Fire event if not squelched
+    if (!options.squelchEvents) {
+      await this.events.dispatchEvent({
+        __type: "UserEmailSetPrimary",
+        tenantId: TenantIds.toRichId(tenantId),
+        userId: UserIds.toRichId(userId),
+        email,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  /**
+   * Deletes a user email
+   * @param tenantId The tenant ID
+   * @param userId The user ID
+   * @param email The email to delete
+   * @param options Service options
+   * @param executor Optional transaction executor
+   */
+  async deleteUserEmail(
+    tenantId: TenantId,
+    userId: UserId,
+    email: string,
+    options: UserServiceOptions = {},
+    executor: Drizzle = this.db,
+  ): Promise<void> {
+    await executor
+      .delete(USER_EMAILS)
+      .where(
+        sql`${USER_EMAILS.userId} = ${UserIds.toUUID(userId)} AND ${USER_EMAILS.email} = ${email}`,
+      );
+
+    // Fire event if not squelched
+    if (!options.squelchEvents) {
+      await this.events.dispatchEvent({
+        __type: "UserEmailRemoved",
+        tenantId: TenantIds.toRichId(tenantId),
+        userId: UserIds.toRichId(userId),
+        email,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 }

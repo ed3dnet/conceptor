@@ -1,12 +1,12 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { type Static, Type } from "@sinclair/typebox";
 
-import { StringUUID } from "../../lib/ext/typebox.js";
+import { type TenantId, TenantIds } from "./id.js";
 
 export const TenantPublic = schemaType(
   "TenantPublic",
   Type.Object({
-    tenantId: StringUUID,
+    tenantId: TenantIds.TRichId,
     slug: Type.String(),
     displayName: Type.String(),
   }),
@@ -16,6 +16,7 @@ export type TenantPublic = Static<typeof TenantPublic>;
 export const CreateTenantInput = schemaType(
   "CreateTenantInput",
   Type.Object({
+    tenantId: Type.Optional(TenantIds.TRichId),
     slug: Type.String({
       minLength: 3,
       maxLength: 63,

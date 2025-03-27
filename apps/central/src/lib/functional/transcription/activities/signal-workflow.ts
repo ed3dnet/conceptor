@@ -1,9 +1,10 @@
 import { activity } from "../../../../_worker/activity-helpers.js";
 import { type WorkflowSignalLocator } from "../../temporal-dispatcher/types.js";
 import { type TranscriptionEvent } from "../events.js";
+import { type TranscriptionJobId } from "../id.js";
 
 export interface SignalWorkflowFromTranscriptionInput {
-  transcriptionJobId: string;
+  transcriptionJobId: TranscriptionJobId;
   signal: WorkflowSignalLocator;
   event: TranscriptionEvent;
 }

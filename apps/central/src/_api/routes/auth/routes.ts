@@ -9,8 +9,13 @@ import { Type } from "@sinclair/typebox";
 import cryptoRandomString from "crypto-random-string";
 import fp from "fastify-plugin";
 
+import {
+  type AuthConnectorId,
+  AuthConnectorIds,
+} from "../../../domain/auth-connectors/id.js";
+import { UserIds } from "../../../domain/users/id.js";
 import { UserPrivate } from "../../../domain/users/schemas.js";
-import { StringUUID } from "../../../lib/ext/typebox.js";
+import { type StringUUID } from "../../../lib/ext/typebox/index.js";
 import { TENANT_USER_AUTH, uH } from "../../http/security.js";
 import { type AppFastify } from "../../http/type-providers.js";
 import { RedirectResponse } from "../schemas.js";
@@ -60,7 +65,7 @@ async function authRoutes(fastify: AppFastify) {
   fastify.get<{
     Params: {
       tenantIdOrSlug: string;
-      authConnectorId: string;
+      authConnectorId: AuthConnectorId;
     };
     Querystring: {
       redirectUri: string | undefined;
@@ -69,7 +74,7 @@ async function authRoutes(fastify: AppFastify) {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
-        authConnectorId: StringUUID,
+        authConnectorId: AuthConnectorIds.TRichId,
       }),
       querystring: Type.Object({
         redirectUri: Type.Optional(Type.String()),
@@ -109,7 +114,7 @@ async function authRoutes(fastify: AppFastify) {
   fastify.get<{
     Params: {
       tenantIdOrSlug: string;
-      authConnectorId: string;
+      authConnectorId: AuthConnectorId;
     };
     Querystring: {
       code: string;
@@ -119,7 +124,7 @@ async function authRoutes(fastify: AppFastify) {
     schema: {
       params: Type.Object({
         tenantIdOrSlug: Type.String(),
-        authConnectorId: StringUUID,
+        authConnectorId: AuthConnectorIds.TRichId,
       }),
       querystring: Type.Object({
         code: Type.String(),
@@ -150,6 +155,7 @@ async function authRoutes(fastify: AppFastify) {
         sameSite: "strict",
         domain: sessionCookieDomain,
         maxAge: config.auth.sessionCookie.maxAgeMs / 1000,
+        path: "/",
       };
 
       request.log.info(
@@ -188,7 +194,7 @@ async function authRoutes(fastify: AppFastify) {
       security: [TENANT_USER_AUTH],
     },
     handler: uH(async (user, _tenant, request, _reply) => {
-      return request.deps.users.getUserPrivate(user.userId);
+      return request.deps.users.getUserPrivate(UserIds.toRichId(user.userId));
     }),
   });
 }

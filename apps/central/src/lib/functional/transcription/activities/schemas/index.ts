@@ -1,6 +1,7 @@
 import { Type, type Static } from "@sinclair/typebox";
 
-import { UnionOneOf } from "../../../../ext/typebox.js";
+import { UnionOneOf } from "../../../../ext/typebox/index.js";
+import { TranscriptionJobIds } from "../../id.js";
 
 import {
   DeepgramTranscribeResults,
@@ -15,24 +16,24 @@ export type TranscriptionMetadata = Static<typeof TranscriptionMetadata>;
 
 // Status-specific input types with required fields for each status
 export const PendingStatusInput = Type.Object({
-  transcriptionJobId: Type.String(),
+  transcriptionJobId: TranscriptionJobIds.TRichId,
   status: Type.Literal("pending"),
 });
 
 export const ProcessingStatusInput = Type.Object({
-  transcriptionJobId: Type.String(),
+  transcriptionJobId: TranscriptionJobIds.TRichId,
   status: Type.Literal("processing"),
 });
 
 export const CompletedStatusInput = Type.Object({
-  transcriptionJobId: Type.String(),
+  transcriptionJobId: TranscriptionJobIds.TRichId,
   status: Type.Literal("completed"),
   transcriptionText: Type.String(),
   transcriptionMetadata: TranscriptionMetadata,
 });
 
 export const FailedStatusInput = Type.Object({
-  transcriptionJobId: Type.String(),
+  transcriptionJobId: TranscriptionJobIds.TRichId,
   status: Type.Literal("failed"),
   errorMessage: Type.String(),
 });

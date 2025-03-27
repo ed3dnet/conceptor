@@ -20,8 +20,11 @@ import {
   type Drizzle,
   type DrizzleRO,
 } from "../../lib/datastores/postgres/types.js";
+import { type StringUUID } from "../../lib/ext/typebox/index.js";
 import { type VaultService } from "../../lib/functional/vault/service.js";
+import { type TenantId, TenantIds } from "../tenants/id.js";
 
+import { type AuthConnectorId, AuthConnectorIds } from "./id.js";
 import {
   type CreateAuthConnectorInput,
   type UpdateAuthConnectorInput,
@@ -81,9 +84,11 @@ export class AuthConnectorService {
   }
 
   async toPublic(connector: DBAuthConnector): Promise<AuthConnectorPublic>;
-  async toPublic(authConnectorId: string): Promise<AuthConnectorPublic>;
   async toPublic(
-    input: DBAuthConnector | string,
+    authConnectorId: AuthConnectorId,
+  ): Promise<AuthConnectorPublic>;
+  async toPublic(
+    input: DBAuthConnector | AuthConnectorId,
   ): Promise<AuthConnectorPublic> {
     const connector =
       typeof input === "string" ? await this.getById(input) : input;
@@ -92,38 +97,45 @@ export class AuthConnectorService {
       throw new NotFoundError(`Auth connector not found: ${input}`);
     }
 
-    const domains = await this.getDomains(connector.authConnectorId);
+    const domains = await this.getDomains(
+      AuthConnectorIds.toRichId(connector.authConnectorId),
+    );
 
     return {
       __type: "AuthConnectorPublic",
-      authConnectorId: connector.authConnectorId,
-      tenantId: connector.tenantId,
+      authConnectorId: AuthConnectorIds.toRichId(connector.authConnectorId),
+      tenantId: TenantIds.toRichId(connector.tenantId),
       name: connector.name,
       domains: domains.map((d) => d.domain),
     };
   }
 
   async getById(
-    authConnectorId: string,
+    authConnectorId: AuthConnectorId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBAuthConnector | null> {
     const connector = await executor
       .select()
       .from(AUTH_CONNECTORS)
-      .where(eq(AUTH_CONNECTORS.authConnectorId, authConnectorId))
+      .where(
+        eq(
+          AUTH_CONNECTORS.authConnectorId,
+          AuthConnectorIds.toUUID(authConnectorId),
+        ),
+      )
       .limit(1);
 
     return connector[0] ?? null;
   }
 
   async getByTenantId(
-    tenantId: string,
+    tenantId: TenantId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBAuthConnector[]> {
     return executor
       .select()
       .from(AUTH_CONNECTORS)
-      .where(eq(AUTH_CONNECTORS.tenantId, tenantId));
+      .where(eq(AUTH_CONNECTORS.tenantId, TenantIds.toUUID(tenantId)));
   }
 
   async getByDomain(
@@ -147,7 +159,7 @@ export class AuthConnectorService {
   }
 
   async withConnectorById<T>(
-    authConnectorId: string,
+    authConnectorId: AuthConnectorId,
     fn: (connector: DBAuthConnector) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
   ): Promise<T | null> {
@@ -159,17 +171,22 @@ export class AuthConnectorService {
   }
 
   async getDomains(
-    authConnectorId: string,
+    authConnectorId: AuthConnectorId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBAuthConnectorDomain[]> {
     return executor
       .select()
       .from(AUTH_CONNECTOR_DOMAINS)
-      .where(eq(AUTH_CONNECTOR_DOMAINS.authConnectorId, authConnectorId));
+      .where(
+        eq(
+          AUTH_CONNECTOR_DOMAINS.authConnectorId,
+          AuthConnectorIds.toUUID(authConnectorId),
+        ),
+      );
   }
 
   async addDomain(
-    authConnectorId: string,
+    authConnectorId: AuthConnectorId,
     domain: string,
     executor: Drizzle = this.db,
   ): Promise<DBAuthConnectorDomain> {
@@ -178,7 +195,7 @@ export class AuthConnectorService {
     const [domainRecord] = await executor
       .insert(AUTH_CONNECTOR_DOMAINS)
       .values({
-        authConnectorId,
+        authConnectorId: AuthConnectorIds.toUUID(authConnectorId),
         domain,
       })
       .returning();
@@ -192,7 +209,7 @@ export class AuthConnectorService {
   }
 
   async deleteDomain(
-    authConnectorId: string,
+    authConnectorId: AuthConnectorId,
     domain: string,
     executor: Drizzle = this.db,
   ): Promise<void> {
@@ -202,7 +219,10 @@ export class AuthConnectorService {
       .delete(AUTH_CONNECTOR_DOMAINS)
       .where(
         and(
-          eq(AUTH_CONNECTOR_DOMAINS.authConnectorId, authConnectorId),
+          eq(
+            AUTH_CONNECTOR_DOMAINS.authConnectorId,
+            AuthConnectorIds.toUUID(authConnectorId),
+          ),
           eq(AUTH_CONNECTOR_DOMAINS.domain, domain),
         ),
       );
@@ -241,8 +261,10 @@ export class AuthConnectorService {
       const [connector] = await tx
         .insert(AUTH_CONNECTORS)
         .values({
-          authConnectorId: input.authConnectorId,
-          tenantId: input.tenantId,
+          authConnectorId: input.authConnectorId
+            ? AuthConnectorIds.toUUID(input.authConnectorId)
+            : undefined,
+          tenantId: TenantIds.toUUID(input.tenantId),
           name: input.name,
           state: await this.vault.encrypt(state),
         })
@@ -270,7 +292,7 @@ export class AuthConnectorService {
   }
 
   async TX_updateConnector(
-    authConnectorId: string,
+    authConnectorId: AuthConnectorId,
     input: Static<typeof UpdateAuthConnectorInput>,
   ): Promise<DBAuthConnector> {
     const logger = this.logger.child({ fn: this.TX_updateConnector.name });
@@ -279,7 +301,12 @@ export class AuthConnectorService {
       const existing = await tx
         .select()
         .from(AUTH_CONNECTORS)
-        .where(eq(AUTH_CONNECTORS.authConnectorId, authConnectorId))
+        .where(
+          eq(
+            AUTH_CONNECTORS.authConnectorId,
+            AuthConnectorIds.toUUID(authConnectorId),
+          ),
+        )
         .limit(1);
 
       if (!existing[0]) {
@@ -310,7 +337,12 @@ export class AuthConnectorService {
           name: input.name,
           state: await this.vault.encrypt(newState),
         })
-        .where(eq(AUTH_CONNECTORS.authConnectorId, authConnectorId))
+        .where(
+          eq(
+            AUTH_CONNECTORS.authConnectorId,
+            AuthConnectorIds.toUUID(authConnectorId),
+          ),
+        )
         .returning();
 
       if (!updated) {
@@ -322,17 +354,27 @@ export class AuthConnectorService {
     });
   }
 
-  async TX_deleteConnector(authConnectorId: string): Promise<void> {
+  async TX_deleteConnector(authConnectorId: AuthConnectorId): Promise<void> {
     const logger = this.logger.child({ fn: this.TX_deleteConnector.name });
 
     await this.db.transaction(async (tx) => {
       await tx
         .delete(AUTH_CONNECTOR_DOMAINS)
-        .where(eq(AUTH_CONNECTOR_DOMAINS.authConnectorId, authConnectorId));
+        .where(
+          eq(
+            AUTH_CONNECTOR_DOMAINS.authConnectorId,
+            AuthConnectorIds.toUUID(authConnectorId),
+          ),
+        );
 
       const result = await tx
         .delete(AUTH_CONNECTORS)
-        .where(eq(AUTH_CONNECTORS.authConnectorId, authConnectorId));
+        .where(
+          eq(
+            AUTH_CONNECTORS.authConnectorId,
+            AuthConnectorIds.toUUID(authConnectorId),
+          ),
+        );
 
       if (!result) {
         throw new NotFoundError(`Auth connector not found: ${authConnectorId}`);

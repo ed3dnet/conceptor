@@ -1,3 +1,5 @@
+import { AuthConnectorIds } from "../../../domain/auth-connectors/id.js";
+import { TenantIds } from "../../../domain/tenants/id.js";
 import { type SeedFn } from "../../../lib/seeder/index.js";
 
 export const seed: SeedFn = async (deps, logger) => {
@@ -9,14 +11,16 @@ export const seed: SeedFn = async (deps, logger) => {
   }
 
   const tenant = await deps.tenants.TX_createTenant({
-    tenantId: "00000000-0000-0000-0000-000000000000",
+    tenantId: TenantIds.toRichId("00000000-0000-0000-0000-000000000000"),
     slug: "technova",
     displayName: "TechNova Global",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
   const connector = await deps.authConnectors.TX_createConnector({
-    authConnectorId: "00000000-0000-0000-0000-000000000000",
+    authConnectorId: AuthConnectorIds.toRichId(
+      "00000000-0000-0000-0000-000000000000",
+    ),
     tenantId: tenant.tenantId,
     name: "Keycloak OIDC",
     domains: ["example.net"],

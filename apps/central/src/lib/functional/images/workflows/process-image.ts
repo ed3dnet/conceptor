@@ -6,6 +6,7 @@ import { type generateAVIFActivity } from "../activities/process-image/generate-
 import { type generateFallbackActivity } from "../activities/process-image/generate-fallback.js";
 import { type generateWebPActivity } from "../activities/process-image/generate-webp.js";
 import { type optimizeOriginalActivity } from "../activities/process-image/optimize-original.js";
+import { type ImageId } from "../id.js";
 
 const {
   analyzeImage,
@@ -26,7 +27,7 @@ const {
 const MINIMUM_PIXELS_FOR_AVIF = 1280 * 720;
 
 export interface ProcessImageWorkflowInput {
-  imageId: string;
+  imageId: ImageId;
   sourceBucket: S3BucketName;
   sourceObject: string;
   targetBucket: S3BucketName;

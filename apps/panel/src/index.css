@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@import "./themes.css";
+
+@plugin "daisyui" {
+    themes: conceptorv1 --default, conceptordarkv1 --prefersdark;
+}
