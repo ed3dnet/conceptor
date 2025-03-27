@@ -110,7 +110,7 @@ To add a new event to the system:
 3. Export the event schema from the domain module
 4. Import and add it to the `ALL_EVENTS` array in the central registry
 5. Create any necessary event listeners
-6. Add a CLI command for manual triggering if needed
+6. Add a CLI command for manual triggering if needed (assume yes if not told otherwise)
 7. Create Temporal workflows/activities that respond to the event
 
 ## Example: User Service Events
@@ -154,3 +154,78 @@ await this.events.dispatchEvent({
 ```
 
 This approach keeps event definitions close to the services that emit them while maintaining a centralized registry for type safety and discovery.
+
+## Other notes
+
+If your CLI command needs arguments, they look like this:
+
+```ts
+// for positional args (prefer for required args and when you have less than 3 args)
+export const createImageUploadCommand = command({
+  name: "create-image-upload",
+  args: {
+    tenantId: positional({
+      type: string,
+      displayName: "tenantId",
+      description: "The tenant that created the upload",
+    }),
+    usage: positional({
+      type: string,
+      displayName: "usage",
+      description: "The usage type for this image (avatar, header, etc)",
+    }),
+  },
+  handler: async ({ tenantId, usage }) => {
+    const { ROOT_LOGGER, ROOT_CONTAINER } = await bootstrapNode(
+      "cli-image-upload",
+      loadAppConfigFromEnvNode(),
+      {
+        skipMigrations: true,
+      },
+    );
+
+```
+
+```ts
+// for options (prefer these for optional args and for all args when you have more than 2)
+export const unitCreatedCommand = command({
+  name: "unit-created",
+  args: {
+    tenantId: option({
+      type: string,
+      long: "tenant-id",
+      description: "The tenant ID",
+    }),
+    unitId: option({
+      type: string,
+      long: "unit-id",
+      description: "The unit ID",
+    }),
+    name: option({
+      type: string,
+      long: "name",
+      description: "The unit name",
+    }),
+    type: option({
+      type: oneOf(["individual", "organizational"]),
+      long: "type",
+      description: "The unit type (individual or organizational)",
+    }),
+    parentUnitId: option({
+      // either type optional() or defaultValue: () => "value" signal that
+      // an option is not required on the command line.
+      type: optional(string),
+      long: "parent-unit-id",
+      description: "The parent unit ID (optional)",
+    }),
+  },
+  handler: async ({ tenantId, unitId, name, type, parentUnitId }) => {
+    const { ROOT_LOGGER, ROOT_CONTAINER } = await bootstrapNode(
+      "cli-fire-event-unit-created",
+      loadAppConfigFromEnvNode(),
+      {
+        skipMigrations: true,
+      },
+    );
+```
+
