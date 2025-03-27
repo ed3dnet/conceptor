@@ -1,8 +1,4 @@
-import { schemaType } from "@eropple/fastify-openapi3";
-import { type Static, Type } from "@sinclair/typebox";
 import type { InferSelectModel } from "drizzle-orm";
-
-import { StringEnum } from "../lib/ext/typebox.js";
 
 import type { SEEDS } from "./schema/app-meta.js";
 import {
@@ -19,6 +15,9 @@ import {
   type AUTH_CONNECTOR_DOMAINS,
   type USER_TAGS,
   type USER_SESSIONS,
+  type UNITS,
+  type UNIT_ASSIGNMENTS,
+  type UNIT_TAGS,
 } from "./schema/index.js";
 
 export type DBSeed = InferSelectModel<typeof SEEDS>;
@@ -46,3 +45,7 @@ export type DBAuthConnectorDomain = InferSelectModel<
   typeof AUTH_CONNECTOR_DOMAINS
 >;
 export type DBUserSession = InferSelectModel<typeof USER_SESSIONS>;
+
+export type DBUnit = InferSelectModel<typeof UNITS>;
+export type DBUnitAssignment = InferSelectModel<typeof UNIT_ASSIGNMENTS>;
+export type DBUnitTag = InferSelectModel<typeof UNIT_TAGS>;

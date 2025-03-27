@@ -2,11 +2,8 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 
-import { ulid, ulidToUUID } from "ulidx";
-
 import { type SeedFn } from "../../../lib/seeder/index.js";
 import { findRepoRoot } from "../../../lib/utils/find-repo-root.js";
-import { UNIT_ASSIGNMENTS, UNITS, USER_TAGS } from "../../schema/index.js";
 
 import { SeedUnitsChecker, type SeedUnit } from "./data/unit.schema.js";
 import { SeedUsersChecker, type SeedUser } from "./data/user.schema.js";
@@ -127,55 +124,22 @@ export const seed: SeedFn = async (deps, logger) => {
         // Store the mapping
         userIdMap.set(user.id, dbUser.userId);
 
-        // Add user tags for additional metadata
-        await tx.insert(USER_TAGS).values({
-          id: ulidToUUID(ulid()),
-          userId: dbUser.userId,
-          key: "title",
-          value: user.title,
-        });
+        const userTags = [
+          ["title", user.title],
+          ["level", user.level],
+          ["department", user.department],
+          ["subDepartment", user.sub_department],
+          ["team", user.team],
+          ["hireDate", user.hire_date],
+        ] as const;
 
-        await tx.insert(USER_TAGS).values({
-          id: ulidToUUID(ulid()),
-          userId: dbUser.userId,
-          key: "level",
-          value: user.level,
-        });
-
-        await tx.insert(USER_TAGS).values({
-          id: ulidToUUID(ulid()),
-          userId: dbUser.userId,
-          key: "department",
-          value: user.department,
-        });
-
-        if (user.sub_department) {
-          await tx.insert(USER_TAGS).values({
-            id: ulidToUUID(ulid()),
-            userId: dbUser.userId,
-            key: "subDepartment",
-            value: user.sub_department,
-          });
+        for (const [key, value] of userTags) {
+          if (value) {
+            await deps.users.setUserTag(dbUser.userId, key, value, tx);
+          }
         }
-
-        if (user.team) {
-          await tx.insert(USER_TAGS).values({
-            id: ulidToUUID(ulid()),
-            userId: dbUser.userId,
-            key: "team",
-            value: user.team,
-          });
-        }
-
-        await tx.insert(USER_TAGS).values({
-          id: ulidToUUID(ulid()),
-          userId: dbUser.userId,
-          key: "hireDate",
-          value: user.hire_date,
-        });
       }
 
-      // Topological sort for units
       const sortedUnits = topologicalSortUnits(units);
 
       // Create units in topological order
@@ -186,23 +150,19 @@ export const seed: SeedFn = async (deps, logger) => {
           ? unitIdMap.get(unit.parent_id)
           : null;
 
-        // Create the unit
-        const dbUnit = await tx
-          .insert(UNITS)
-          .values({
-            id: ulidToUUID(ulid()),
+        // Create the unit using UnitService
+        const dbUnit = await deps.units.createUnit(
+          tenantId,
+          {
+            __type: "CreateUnitInput",
             name: unit.name,
             type:
               unit.kind === "Organizational" ? "organizational" : "individual",
-            parentUnitId: parentUnitId || null,
-            description: null,
-          })
-          .returning()
-          .then((rows) => rows[0]);
-
-        if (!dbUnit) {
-          throw new Error(`Failed to create unit ${unit.id}`);
-        }
+            parentUnitId: parentUnitId || undefined,
+          },
+          { squelchEvents: true }, // Squelch events during seeding
+          tx,
+        );
 
         // Store the mapping
         unitIdMap.set(unit.id, dbUnit.id);
@@ -211,13 +171,17 @@ export const seed: SeedFn = async (deps, logger) => {
         if (unit.kind === "Individual" && unit.employee_id) {
           const userId = userIdMap.get(unit.employee_id);
           if (userId) {
-            await tx.insert(UNIT_ASSIGNMENTS).values({
-              id: ulidToUUID(ulid()),
-              unitId: dbUnit.id,
-              userId: userId,
-              startDate: new Date(),
-              endDate: null,
-            });
+            // Assign user to unit using UnitService
+            await deps.units.assignUserToUnit(
+              tenantId,
+              dbUnit.id,
+              {
+                __type: "UnitAssignmentInput",
+                userId: userId,
+              },
+              { squelchEvents: true }, // Squelch events during seeding
+              tx,
+            );
           } else {
             logger.warn(
               { unitId: unit.id, employeeId: unit.employee_id },
@@ -240,7 +204,6 @@ export const seed: SeedFn = async (deps, logger) => {
   }
 };
 
-// Topological sort function for units
 function topologicalSortUnits(units: SeedUnit[]): SeedUnit[] {
   // Create adjacency list
   const graph: Record<string, string[]> = {};

@@ -425,7 +425,9 @@ export const UNITS = pgTable(
       (): AnyPgColumn => UNITS.id,
     ),
 
-    description: text("description"),
+    description: text("description")
+      .notNull()
+      .$default(() => "No description given."),
 
     extraAttributes: jsonb("extra_attributes")
       .$type<Record<string, unknown>>()
