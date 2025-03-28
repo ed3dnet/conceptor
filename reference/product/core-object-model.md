@@ -120,58 +120,93 @@ Relationships represent connections between entities in the organization.
 
 ## Knowledge Acquisition Entities
 
-### Question
+### Ask
 
-Questions represent specific queries presented to users to gather organizational knowledge.
+Asks represent specific queries presented to users to gather organizational knowledge.
 
 **Attributes:**
 
-- `id`: Unique identifier  
-- `text`: The actual question asked  
-- `question_type`: Open-ended, verification, depth, resolution, etc.  
-- `response_format`: Boolean, gradient, text, multiple choice  
-- `subject_ids`: Primary entities being asked about (array of IDs)  
-- `subject_types`: Types of the subject entities  
-- `object_ids`: Secondary entities referenced (array of IDs)  
-- `object_types`: Types of the object entities  
-- `staleness_factor`: How quickly this type of question becomes stale  
-- `source_agent_id`: Agent that generated this question  
+- `id`: Unique identifier, uses rich ID prefix `ask` when publicly referenced
+- `hardcode_kind`: "hard code" asks are, when answered, routed to specific code paths that may or may not involve LLMs. this allows us to differentiate on them when we need to.
+- `source_agent_name`: Agent that generated this question (if any)
+- `notify_source_agent`: Whether to notify the source agent when the question is answered (must be set if `source_agent_name` is set)
+- `query`: a JSON object representing a set of questions. Think Google Forms.
+   - Should support boolean, gradient, multiple choice, and text questions
+   - For booleans, gradients, and multiple choice questions, each potential answer should include a text string that will be used by the response processor pair to provide context to the LLM that receives these.
+      - for example, for gradient values 1-5, the text may be:
+         1. "I strongly disagree that XYZ is an important priority for my team"
+         2. "I disagree that XYZ is an important priority for my team"
+         3. "I have no strong feeling on whether XYZ is an important priority for my team"
+         4. "I agree that XYZ is an important priority for my team"
+         5. "I strongly agree that XYZ is an important priority for my team"
+   - For text questions, the user will be able to provide a free-form answer.
+      - `question_text`: the question being asked
+      - `description`: an optional, in-depth description (can use Markdown)
+      - `minimum_words`: the minimum number of words the user must provide in their answer
+      - `maximum_words`: the maximum number of words the user may provide in their answer
+      - `cleanup`: controls whether the editing LLM should be invoked to clean up this answer without modifying the content
+         - if `false`, don't do it
+         - `true` is the default
+         - can pass an object instead of `true`
+            - `llm_context`: additional contextual text to pass to the editing LLM so it does a better job than the default prompt.
+- `visibility`: how visible this ask is to agents and other users within the system
+   - `private`: this ask is available ONLY to the agent for the subject that created it--so if `user-ABC` answers a `private` ask for `unit-DEF`, only `unit-DEF`'s agent is able to see this.
+      - the intent here is to allow the agent to develop additional context in which to place other questions, and to create new questions for the answerer.
+      - other agents asking `unit-DEF`'s agent questions may NOT see this ask and any answers to this ask, or insights that point back to this ask, must be masked from the agent while answering them.
+   - `derive-only`: like `private`, this ask is available only to the agent for the subject that created it, _but_ it may yield Insights that can be used in responses from other agents.
+      - the intent here is to allow a user to speak reasonably frankly, but to allow the agent to use this information to inform other questions.
+      - other agents asking `unit-DEF`'s agent questions may NOT see this ask. Any answers that point back to this ask must be masked from the agent while answering them, but insights that point to this ask may be used in responses from other agents.
+   - `upward`: this ask and answers are available to agents for units higher in the tree than `unit-DEF`, as well as queries made by leaders for those units (e.g., `unit-DEF` is part of `unit-GHI`, so `unit-GHI` can ask, but manager `unit-JKL` can also ask because that unit is GHI's leader)
+   - `downward`: this ask and answers are available to agents for units lower in the tree than `unit-DEF`, as well as queries made by subordinates for those units (e.g., `unit-XYZ` is `unit-GHI`'s VP-level unit, so `downward` answers from XYZ are available to GHI and to DEF)
+      - TODO: do we actually proactively inform based on this?
+   - `public`: this ask and answer is available to any agent in the system.
+      - generally speaking, broadcasted asks like this are probably pretty rare.
+   - in the UI, we do need to stress that agents are prompted to raise flags for answers that may indicate legal issues, even for private asks.
+- `multiple_answer_strategy`
+   - `disallow`
+   - `remember-last`
 
-**Relationships:**
+### Ask Reference
 
-- Asked to specific User  
-- References Subject entities  
-- References Object entities  
-- Has one or more Answers  
-- Generated by Agent
+An Ask Reference is populated by the system (either hard code or agent) to help the LLMs link together what other entities the answer is related to.
+
+- `id`: Unique identifier, uses rich ID prefix `askref` when publicly referenced
+- `ask_id`: ID of the ask being referenced
+- `reference_direction`: either `subject` or `object`
+   - is it asking OF the reference target (`subject`) or ABOUT the reference target (`object`)?
+- `unit_id`: ID of the unit being referenced (can be nullable)
+- `initiative_id`: ID of the initiative being referenced (can be nullable)
+- `capability_id`: ID of the capability being referenced (can be nullable)
+- `answer_id`: ID of the answer being referenced (can be nullable)
+   - used for follow-up questions, must always be `object`
+
+only one foreign key may be non-null at any given time in a given row.
+
+### Ask Response
+
+Ask Responses represent the raw responses to specific asks. They are not, by themselves, actionable to the system.
+
+**Attributes:**
+
+- `id`: Unique identifier, uses rich ID prefix `askresp` when publicly referenced
+- `user_id`: User who provided the answer
+- `ask_id`: The question being answered
+- `created_at`
+- `response`: the raw response, in a JSON format that echoes the format of `ask.query`. It will be used by 
+
+PLEASE NOTE: The same user can, if `ask.multiple_answer_strategy` allows, answer the same question multiple times. We will need to enact a data cleanup on existing data to ensure consistency.
+
+## Analysis Entities
 
 ### Answer
 
-Answers represent responses to specific questions.
+An Answer is a processed response of a single question within an `ask.data`. We extract it from `askResponse.response` and, when appropriate, extract potentially interesting content from the answer.
 
-**Attributes:**
+- `id`: Unique identifier. Uses rich ID prefix `answer` when publicly referenced (but this is rare except during debugging).
+- `ask_response_id`: The `askResponse` this answer is associated with.
+- `text`: The extracted text from the answer.
+   - for booleans, gradients, etc. this should be the text associated with the equivalent response from `ask.query`.
 
-- `id`: Unique identifier  
-- `question_id`: The question being answered  
-- `user_id`: User who provided the answer  
-- `timestamp`: When the answer was provided  
-- `raw_response`: Complete verbatim response  
-- `response_type`: Boolean, gradient, text, multiple choice  
-- `response_value`: Structured value (for boolean/gradient/multiple choice)  
-- `summarization`: Condensed version (for text responses)  
-- `transcription_id`: Link to audio transcription (if verbal)  
-- `status`: Active, superseded, invalidated  
-- `confidence_indicators`: Explicitly stated certainty qualifiers (e.g., "definitely", "unsure")
-
-**Relationships:**
-
-- Provided by User  
-- Responds to Question  
-- References various entities  
-- Supports Insights  
-- May supersede other Answers
-
-## Analysis Entities
 
 ### Insight
 
@@ -205,107 +240,8 @@ Insights represent patterns, interpretations, and discoveries derived from answe
 - Related to other Insights  
 - May lead to Potential Actions
 
-### Potential Action
 
-Potential Actions represent suggested responses to insights.
-
-**Attributes:**
-
-- `id`: Unique identifier  
-- `description`: What should be done  
-- `insight_ids`: What observation(s) this action addresses  
-- `action_type`: Process change, investigation, resource allocation, etc.  
-- `stakeholder_ids`: Who would need to be involved  
-- `stakeholder_types`: Types of stakeholders  
-- `expected_impact`: What outcome is anticipated  
-- `priority`: Importance/urgency level  
-- `effort_estimation`: Rough assessment of implementation difficulty  
-- `status`: Suggested, reviewed, implemented, etc.  
-- `requires_approval_from`: ID of entity that would approve
-
-**Relationships:**
-
-- Addresses specific Insights  
-- Involves Stakeholders  
-- Targets specific entities (Units, Capabilities, etc.)  
-- May depend on other Potential Actions
-
-## System Entities
-
-### Agent
-
-Agents represent the autonomous components of the Conceptor system.
-
-**Attributes:**
-
-- `id`: Unique identifier  
-- `name`: Agent identifier  
-- `purpose`: Primary function  
-- `domain`: Knowledge/responsibility area  
-- `access_pattern`: What entity types and instances this agent can access  
-- `question_generation_capability`: Types of questions it can formulate  
-- `insight_generation_capability`: Types of insights it can produce  
-- `action_recommendation_capability`: Types of actions it can suggest  
-- `status`: Active, inactive, in development
-
-**Relationships:**
-
-- Generates Questions  
-- Produces Insights  
-- Suggests Potential Actions  
-- Has access to specific entity domains
-
-### Entity Change Log
-
-Tracks significant changes to entities for historical analysis.
-
-**Attributes:**
-
-- `id`: Unique identifier  
-- `entity_id`: ID of the changed entity  
-- `entity_type`: Type of the changed entity  
-- `change_type`: Creation, modification, status change, etc.  
-- `change_timestamp`: When the change occurred  
-- `previous_state`: JSON representation of prior state  
-- `new_state`: JSON representation of new state  
-- `change_agent`: What caused the change (user or agent)  
-- `related_insight_id`: If change was prompted by an insight
-
-**Relationships:**
-
-- References changed entity  
-- May link to prompting Insight  
-- Part of organizational change tracking
-
-## Data Relationships Diagram
-
-\[User\] \--occupies--\> \[Unit\] \--implements--\> \[Capability\]
-
-  |                   |                         |
-
-  |                   |                         |
-
-  v                   v                         v
-
-\[Answer\] \<--references-- \[Question\] \---references---\>
-
-  |                        |
-
-  |                        |
-
-  v                        |
-
-\[Insight\] \<------supports--+
-
-  |
-
-  |
-
-  v
-
-\[Potential Action\]
-
-## Insight Types
+#### Insight Types
 
 The Insight entity supports various types of analytical results, including:
 
