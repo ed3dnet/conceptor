@@ -131,24 +131,26 @@ Asks represent specific queries presented to users to gather organizational know
 - `source_agent_name`: Agent that generated this question (if any)
 - `notify_source_agent`: Whether to notify the source agent when the question is answered (must be set if `source_agent_name` is set)
 - `query`: a JSON object representing a set of questions. Think Google Forms.
-   - Should support boolean, gradient, multiple choice, and text questions
-   - For booleans, gradients, and multiple choice questions, each potential answer should include a text string that will be used by the response processor pair to provide context to the LLM that receives these.
+   - each question in `query`:
+      - Should support one of boolean, gradient, multiple choice, and text questions
+      - For booleans, gradients, and multiple choice questions, each potential answer should include a text string that will be used by the response processor pair to provide context to the LLM that receives these.
       - for example, for gradient values 1-5, the text may be:
          1. "I strongly disagree that XYZ is an important priority for my team"
          2. "I disagree that XYZ is an important priority for my team"
          3. "I have no strong feeling on whether XYZ is an important priority for my team"
          4. "I agree that XYZ is an important priority for my team"
          5. "I strongly agree that XYZ is an important priority for my team"
-   - For text questions, the user will be able to provide a free-form answer.
-      - `question_text`: the question being asked
-      - `description`: an optional, in-depth description (can use Markdown)
-      - `minimum_words`: the minimum number of words the user must provide in their answer
-      - `maximum_words`: the maximum number of words the user may provide in their answer
-      - `cleanup`: controls whether the editing LLM should be invoked to clean up this answer without modifying the content
-         - if `false`, don't do it
-         - `true` is the default
-         - can pass an object instead of `true`
-            - `llm_context`: additional contextual text to pass to the editing LLM so it does a better job than the default prompt.
+      - For text questions, the user will be able to provide a free-form answer.
+         - `question_text`: the question being asked
+         - `description`: an optional, in-depth description (can use Markdown)
+         - `minimum_words`: the minimum number of words the user must provide in their answer
+         - `maximum_words`: the maximum number of words the user may provide in their answer
+         - `cleanup`: controls whether the editing LLM should be invoked to clean up this answer without modifying the content
+            - if `false`, don't do it
+            - `true` is the default
+            - can pass an object instead of `true`
+               - `llm_context`: additional contextual text to pass to the editing LLM so it does a better job than the default prompt.
+      - `llm_context`: this will be passed to the answer processor to provide additional context when creating the processed response.
 - `visibility`: how visible this ask is to agents and other users within the system
    - `private`: this ask is available ONLY to the agent for the subject that created it--so if `user-ABC` answers a `private` ask for `unit-DEF`, only `unit-DEF`'s agent is able to see this.
       - the intent here is to allow the agent to develop additional context in which to place other questions, and to create new questions for the answerer.
@@ -192,7 +194,8 @@ Ask Responses represent the raw responses to specific asks. They are not, by the
 - `user_id`: User who provided the answer
 - `ask_id`: The question being answered
 - `created_at`
-- `response`: the raw response, in a JSON format that echoes the format of `ask.query`. It will be used by 
+- `response`: the raw response, in a JSON format that echoes the format of `ask.query`.
+   - if `cleanup` was on, the user should be provided the opportunity to accept or reject the cleanup before creating the `answer`; this will be implemented browser-side and the server API will assume these responses are canonical.
 
 PLEASE NOTE: The same user can, if `ask.multiple_answer_strategy` allows, answer the same question multiple times. We will need to enact a data cleanup on existing data to ensure consistency.
 
@@ -200,17 +203,19 @@ PLEASE NOTE: The same user can, if `ask.multiple_answer_strategy` allows, answer
 
 ### Answer
 
-An Answer is a processed response of a single question within an `ask.data`. We extract it from `askResponse.response` and, when appropriate, extract potentially interesting content from the answer.
+An Answer is a processed response of a single question within an `ask.query`. We extract it from `askResponse.response` and, when appropriate, extract potentially interesting content from the answer.
 
 - `id`: Unique identifier. Uses rich ID prefix `answer` when publicly referenced (but this is rare except during debugging).
 - `ask_response_id`: The `askResponse` this answer is associated with.
-- `text`: The extracted text from the answer.
+- `question`: The question that was asked, as sourced from `ask.query`. Copy the entire question here.
+- `response`: The extracted text from the answer.
    - for booleans, gradients, etc. this should be the text associated with the equivalent response from `ask.query`.
-
+   - for text questions, this should be the full text of the answer.
 
 ### Insight
+An Insight is a derived understanding or interpretation based on multiple answers. It is not a direct answer to a question but rather an analysis of the information gathered. Insights are generated by agents and can be used to inform potential actions.
 
-Insights represent patterns, interpretations, and discoveries derived from answers.
+The basic "look at an insight" will be for a unit's agent (with its history loaded into it; history generation from insights/information TBD but probably needs a vector database and embeddings) to look at all answers related to a specific `ask_response_id` in a single pass to derive zero or more insights.
 
 **Attributes:**
 
