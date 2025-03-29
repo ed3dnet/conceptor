@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type PgUpdateSetSource } from "drizzle-orm/pg-core";
 
 import { TRANSCRIPTION_JOBS } from "../../../../_db/schema/index.js";
 import { activity } from "../../../../_worker/activity-helpers.js";
+import { TenantIds } from "../../../../domain/tenants/id.js";
 import { TranscriptionJobIds } from "../id.js";
 
 import { type UpdateTranscriptionJobStatusInput } from "./schemas/index.js";
@@ -20,6 +21,7 @@ export const updateJobTranscriptionStatusActivity = activity(
 
       logger.debug("Updating transcription job status", {
         transcriptionJobId: input.transcriptionJobId,
+        tenantId: input.tenantId,
         status: input.status,
       });
 
@@ -37,19 +39,26 @@ export const updateJobTranscriptionStatusActivity = activity(
         updateData.transcriptionMetadata = {};
       }
 
-      // Update the job in the database
+      // Convert IDs to UUIDs for database operations
+      const transcriptionJobUuid = TranscriptionJobIds.toUUID(
+        input.transcriptionJobId,
+      );
+      const tenantUuid = TenantIds.toUUID(input.tenantId);
+
+      // Update the job in the database with tenant isolation
       await db
         .update(TRANSCRIPTION_JOBS)
         .set(updateData)
         .where(
-          eq(
-            TRANSCRIPTION_JOBS.transcriptionJobId,
-            TranscriptionJobIds.toUUID(input.transcriptionJobId),
+          and(
+            eq(TRANSCRIPTION_JOBS.transcriptionJobId, transcriptionJobUuid),
+            eq(TRANSCRIPTION_JOBS.tenantId, tenantUuid),
           ),
         );
 
       logger.debug("Successfully updated transcription job status", {
         transcriptionJobId: input.transcriptionJobId,
+        tenantId: input.tenantId,
         status: input.status,
       });
     },

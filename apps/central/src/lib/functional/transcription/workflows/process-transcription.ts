@@ -42,6 +42,7 @@ export async function processTranscriptionJob(
     // Update job status to processing
     await updateTranscriptionJobStatus({
       transcriptionJobId: input.transcriptionJobId,
+      tenantId: input.tenantId,
       status: "processing",
     });
 
@@ -66,6 +67,7 @@ export async function processTranscriptionJob(
     // Update job with successful result
     await updateTranscriptionJobStatus({
       transcriptionJobId: input.transcriptionJobId,
+      tenantId: input.tenantId,
       status: "completed",
       transcriptionText: normalizedResult.transcriptionText,
       transcriptionMetadata: normalizedResult.metadata,
@@ -94,6 +96,7 @@ export async function processTranscriptionJob(
     // Update job with failure status
     await updateTranscriptionJobStatus({
       transcriptionJobId: input.transcriptionJobId,
+      tenantId: input.tenantId,
       status: "failed",
       errorMessage: err instanceof Error ? err.message : String(err),
     });

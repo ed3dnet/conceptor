@@ -40,6 +40,7 @@ interface UnitServiceOptions {
 
 export class UnitService {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
@@ -47,14 +48,16 @@ export class UnitService {
     private readonly dbRO: DrizzleRO,
     private readonly events: EventService,
     private readonly users: UserService,
+    readonly tenantId: TenantId,
   ) {
     this.logger = logger.child({ component: this.constructor.name });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   async toPublic(unit: DBUnit): Promise<UnitPublic> {
     return {
       __type: "UnitPublic",
-      id: UnitIds.toRichId(unit.id),
+      id: UnitIds.toRichId(unit.unitId),
       name: unit.name,
       type: unit.type,
       parentUnitId: unit.parentUnitId
@@ -70,14 +73,14 @@ export class UnitService {
       .from(UNIT_ASSIGNMENTS)
       .where(
         and(
-          eq(UNIT_ASSIGNMENTS.unitId, unit.id),
+          eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unit.unitId)),
           isNull(UNIT_ASSIGNMENTS.endDate),
         ),
       );
 
     return {
       __type: "UnitWithAssignments",
-      id: UnitIds.toRichId(unit.id),
+      id: UnitIds.toRichId(unit.unitId),
       name: unit.name,
       type: unit.type,
       parentUnitId: unit.parentUnitId
@@ -99,7 +102,12 @@ export class UnitService {
     const units = await executor
       .select()
       .from(UNITS)
-      .where(eq(UNITS.unitId, UnitIds.toUUID(unitId)))
+      .where(
+        and(
+          eq(UNITS.unitId, UnitIds.toUUID(unitId)),
+          eq(UNITS.tenantId, this.tenantUuid),
+        ),
+      )
       .limit(1);
 
     return units[0] || null;
@@ -124,7 +132,12 @@ export class UnitService {
     return executor
       .select()
       .from(UNITS)
-      .where(eq(UNITS.parentUnitId, UnitIds.toUUID(parentUnitId)));
+      .where(
+        and(
+          eq(UNITS.parentUnitId, UnitIds.toUUID(parentUnitId)),
+          eq(UNITS.tenantId, this.tenantUuid),
+        ),
+      );
   }
 
   async getUnitAssignments(
@@ -132,6 +145,12 @@ export class UnitService {
     includeInactive: boolean = false,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUnitAssignment[]> {
+    // First verify the unit belongs to this tenant
+    const unit = await this.getUnitById(unitId, executor);
+    if (!unit) {
+      throw new NotFoundError(`Unit not found: ${unitId}`);
+    }
+
     const whereClause = includeInactive
       ? eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unitId))
       : and(
@@ -149,14 +168,12 @@ export class UnitService {
 
   /**
    * Creates a new unit
-   * @param tenantId The tenant ID
    * @param input Unit creation input
    * @param options Service options
    * @param executor Optional transaction executor
    * @returns The created unit
    */
   async createUnit(
-    tenantId: TenantId,
     input: CreateUnitInput,
     options: UnitServiceOptions = {},
     executor: Drizzle = this.db,
@@ -175,6 +192,7 @@ export class UnitService {
     const [unit] = await executor
       .insert(UNITS)
       .values({
+        tenantId: this.tenantUuid,
         name: input.name,
         type: input.type,
         parentUnitId: input.parentUnitId
@@ -192,8 +210,8 @@ export class UnitService {
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UnitCreated",
-        tenantId: TenantIds.toRichId(tenantId),
-        unitId: UnitIds.toRichId(unit.id),
+        tenantId: this.tenantId,
+        unitId: UnitIds.toRichId(unit.unitId),
         name: unit.name,
         type: unit.type,
         parentUnitId: unit.parentUnitId
@@ -203,13 +221,12 @@ export class UnitService {
       });
     }
 
-    logger.info({ unitId: unit.id }, "Created unit");
+    logger.info({ unitId: UnitIds.toRichId(unit.unitId) }, "Created unit");
     return unit;
   }
 
   /**
    * Updates an existing unit
-   * @param tenantId The tenant ID
    * @param unitId The unit ID to update
    * @param input Update input
    * @param options Service options
@@ -217,7 +234,6 @@ export class UnitService {
    * @returns The updated unit
    */
   async updateUnit(
-    tenantId: TenantId,
     unitId: UnitId,
     input: UpdateUnitInput,
     options: UnitServiceOptions = {},
@@ -278,7 +294,12 @@ export class UnitService {
     const [updatedUnit] = await executor
       .update(UNITS)
       .set(updateValues)
-      .where(eq(UNITS.unitId, UnitIds.toUUID(unitId)))
+      .where(
+        and(
+          eq(UNITS.unitId, UnitIds.toUUID(unitId)),
+          eq(UNITS.tenantId, this.tenantUuid),
+        ),
+      )
       .returning();
 
     if (!updatedUnit) {
@@ -289,7 +310,7 @@ export class UnitService {
     if (!options.squelchEvents && changedFields.length > 0) {
       await this.events.dispatchEvent({
         __type: "UnitUpdated",
-        tenantId: TenantIds.toRichId(tenantId),
+        tenantId: this.tenantId,
         unitId: UnitIds.toRichId(updatedUnit.unitId),
         changedFields,
         timestamp: new Date().toISOString(),
@@ -302,13 +323,11 @@ export class UnitService {
 
   /**
    * Deletes a unit if it has no children or active assignments
-   * @param tenantId The tenant ID
    * @param unitId The unit ID to delete
    * @param options Service options
    * @param executor Optional transaction executor
    */
   async deleteUnit(
-    tenantId: TenantId,
     unitId: UnitId,
     options: UnitServiceOptions = {},
     executor: Drizzle = this.db,
@@ -344,13 +363,18 @@ export class UnitService {
     // Delete the unit
     await executor
       .delete(UNITS)
-      .where(eq(UNITS.unitId, UnitIds.toUUID(unitId)));
+      .where(
+        and(
+          eq(UNITS.unitId, UnitIds.toUUID(unitId)),
+          eq(UNITS.tenantId, this.tenantUuid),
+        ),
+      );
 
     // Fire event if not squelched
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UnitDeleted",
-        tenantId: TenantIds.toRichId(tenantId),
+        tenantId: this.tenantId,
         unitId: UnitIds.toRichId(unitId),
         timestamp: new Date().toISOString(),
       });
@@ -361,7 +385,6 @@ export class UnitService {
 
   /**
    * Assigns a user to a unit
-   * @param tenantId The tenant ID
    * @param unitId The unit ID
    * @param input Assignment input
    * @param options Service options
@@ -369,7 +392,6 @@ export class UnitService {
    * @returns The created assignment
    */
   async assignUserToUnit(
-    tenantId: TenantId,
     unitId: UnitId,
     input: UnitAssignmentInput,
     options: UnitServiceOptions = {},
@@ -421,7 +443,6 @@ export class UnitService {
     if (endDate && endDate <= startDate) {
       throw new BadRequestError("End date must be after start date");
     }
-
     const [assignment] = await executor
       .insert(UNIT_ASSIGNMENTS)
       .values({
@@ -440,7 +461,7 @@ export class UnitService {
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UserAssignedToUnit",
-        tenantId: TenantIds.toRichId(tenantId),
+        tenantId: this.tenantId,
         unitId: UnitIds.toRichId(unitId),
         userId: UserIds.toRichId(input.userId),
         startDate: startDate.toISOString(),
@@ -455,20 +476,24 @@ export class UnitService {
 
   /**
    * Unassigns a user from a unit by setting an end date
-   * @param tenantId The tenant ID
    * @param unitId The unit ID
    * @param userId The user ID to unassign
    * @param options Service options
    * @param executor Optional transaction executor
    */
   async unassignUserFromUnit(
-    tenantId: TenantId,
     unitId: UnitId,
     userId: UserId,
     options: UnitServiceOptions = {},
     executor: Drizzle = this.db,
   ): Promise<void> {
     const logger = this.logger.child({ fn: this.unassignUserFromUnit.name });
+
+    // Verify unit exists and belongs to this tenant
+    const unit = await this.getUnitById(unitId, executor);
+    if (!unit) {
+      throw new NotFoundError(`Unit not found: ${unitId}`);
+    }
 
     // Find the active assignment
     const [assignment] = await executor
@@ -493,13 +518,15 @@ export class UnitService {
     await executor
       .update(UNIT_ASSIGNMENTS)
       .set({ endDate })
-      .where(eq(UNIT_ASSIGNMENTS.unitAssignmentId, assignment.id));
+      .where(
+        eq(UNIT_ASSIGNMENTS.unitAssignmentId, assignment.unitAssignmentId),
+      );
 
     // Fire event if not squelched
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UserUnassignedFromUnit",
-        tenantId: TenantIds.toRichId(tenantId),
+        tenantId: this.tenantId,
         unitId: UnitIds.toRichId(unitId),
         userId: UserIds.toRichId(userId),
         timestamp: new Date().toISOString(),
@@ -524,7 +551,7 @@ export class UnitService {
   ): Promise<void> {
     const logger = this.logger.child({ fn: this.setUnitTag.name });
 
-    // Verify unit exists
+    // Verify unit exists and belongs to this tenant
     const unit = await this.getUnitById(unitId, executor);
     if (!unit) {
       throw new NotFoundError(`Unit not found: ${unitId}`);
@@ -556,7 +583,7 @@ export class UnitService {
     unitId: UnitId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<Record<string, string>> {
-    // Verify unit exists
+    // Verify unit exists and belongs to this tenant
     const unit = await this.getUnitById(unitId, executor);
     if (!unit) {
       throw new NotFoundError(`Unit not found: ${unitId}`);

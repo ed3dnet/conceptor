@@ -4,11 +4,6 @@ import {
 } from "@myapp/shared-universal/utils/fetch.js";
 import { loggerWithLevel } from "@myapp/shared-universal/utils/logging.js";
 import {
-  initializeZxcvbn,
-  type Zxcvbn,
-  zxcvbn,
-} from "@myapp/shared-universal/utils/zxcvbn.js";
-import {
   buildTemporalConnection,
   type TemporalClient,
   TemporalClientService,
@@ -21,7 +16,6 @@ import {
 } from "awilix";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Redis } from "ioredis";
-import { type JetStreamClient, type NatsConnection } from "nats";
 import type Mail from "nodemailer/lib/mailer/index.js";
 import type * as pg from "pg";
 import type { Logger } from "pino";
@@ -29,13 +23,9 @@ import type { StaleWhileRevalidate } from "stale-while-revalidate-cache";
 import type { DeepReadonly } from "utility-types";
 
 import { type AppConfig } from "../_config/types.js";
-import { AuthService } from "../domain/auth/service.js";
-import { AuthConnectorService } from "../domain/auth-connectors/service.js";
 import { EventService } from "../domain/events/service.js";
-import { QuestionsService } from "../domain/questions/service.js";
+import { type TenantId } from "../domain/tenants/id.js";
 import { TenantService } from "../domain/tenants/service.js";
-import { UnitService } from "../domain/units/service.js";
-import { UserService } from "../domain/users/service.js";
 import { buildMemorySwrCache } from "../lib/datastores/memory-swr.js";
 import { buildDbPoolFromConfig } from "../lib/datastores/postgres/builder.js";
 import { buildDrizzleLogger } from "../lib/datastores/postgres/query-logger.js";
@@ -45,17 +35,19 @@ import {
 } from "../lib/datastores/postgres/types.js";
 import { buildRedisSWRCache } from "../lib/datastores/redis/swr.js";
 import { createMailTransport } from "../lib/functional/email-delivery/factory.js";
-import { ImagesService } from "../lib/functional/images/service.js";
-import { LlmPrompterService } from "../lib/functional/llm-prompter/service.js";
 import {
   buildMinioClient,
   ObjectStoreService,
   type MinioClient,
 } from "../lib/functional/object-store/service.js";
 import { TemporalDispatcher } from "../lib/functional/temporal-dispatcher/index.js";
-import { TranscriptionService } from "../lib/functional/transcription/service.js";
 import { VaultKeyStore } from "../lib/functional/vault/keystore.js";
 import { VaultService } from "../lib/functional/vault/service.js";
+
+import {
+  type AppTenantSingletonScopeItems,
+  configureTenantDomainContainer,
+} from "./tenant-scope.js";
 
 // eslint-disable-next-line no-restricted-globals
 const globalFetch = fetch;
@@ -75,9 +67,6 @@ export type AppBaseCradleItems = {
   redisSWR: StaleWhileRevalidate;
   memorySWR: StaleWhileRevalidate;
 
-  zxcvbn: Zxcvbn;
-
-  // lib and framework objects
   temporalClient: TemporalClient;
   temporal: TemporalClientService;
   temporalDispatch: TemporalDispatcher;
@@ -86,18 +75,15 @@ export type AppBaseCradleItems = {
   s3: ObjectStoreService;
   vaultKeyStore: VaultKeyStore;
   vault: VaultService;
-  images: ImagesService;
-  llmPrompter: LlmPrompterService;
-  transcription: TranscriptionService;
-
-  // domain objects below here
   events: EventService;
+
   tenants: TenantService;
-  auth: AuthService;
-  authConnectors: AuthConnectorService;
-  users: UserService;
-  units: UnitService;
-  questions: QuestionsService;
+  tenantDomain: (
+    tenantId: TenantId,
+  ) => AwilixContainer<AppTenantSingletonScopeItems>;
+
+  // are you adding a domain object? STOP!
+  // it should have tenancy and thus be put in the tenant domain!
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
 
@@ -192,10 +178,6 @@ export async function configureBaseAwilixContainer(
     ).singleton(),
 
     // --- domain objects below here
-    zxcvbn: asFunction(({ fetch }: AppSingletonCradle) => {
-      initializeZxcvbn(fetch);
-      return zxcvbn();
-    }).singleton(),
 
     mailTransport: asFunction(({ logger, config }: AppSingletonCradle) =>
       createMailTransport(logger, config.emailDelivery),
@@ -216,103 +198,18 @@ export async function configureBaseAwilixContainer(
         ),
     ),
 
-    images: asFunction(
-      ({
-        logger,
-        config,
-        db,
-        dbRO,
-        temporalDispatch,
-        s3,
-        vault,
-      }: AppSingletonCradle) =>
-        new ImagesService(
-          logger,
-          config.urls,
-          db,
-          dbRO,
-          temporalDispatch,
-          s3,
-          vault,
-        ),
-    ),
-
-    llmPrompter: asFunction(
-      ({ logger, config, db, vault }: AppSingletonCradle) =>
-        new LlmPrompterService(logger, config.llmPrompter, db, vault),
-    ),
-    transcription: asFunction(
-      ({
-        logger,
-        config,
-        db,
-        dbRO,
-        temporalDispatch,
-        s3,
-      }: AppSingletonCradle) =>
-        new TranscriptionService(
-          logger,
-          config.transcription,
-          db,
-          dbRO,
-          temporalDispatch,
-          s3,
-        ),
-    ),
-
-    // domain objects below here
-    events: asFunction(
-      ({ logger, temporalDispatch }: AppSingletonCradle) =>
-        new EventService(logger, temporalDispatch),
-    ),
-
     tenants: asFunction(
       ({ logger, db, dbRO }: AppSingletonCradle) =>
         new TenantService(logger, db, dbRO),
     ),
-    auth: asFunction(
-      ({
-        logger,
-        db,
-        fetch,
-        config,
-        redis,
-        vault,
-        users,
-        authConnectors,
-      }: AppSingletonCradle) =>
-        new AuthService(
-          logger,
-          db,
-          fetch,
-          config.auth,
-          config.urls,
-          config.insecureOptions,
-          redis,
-          vault,
-          users,
-          authConnectors,
-        ),
+
+    tenantDomain: asValue((tenantId: TenantId) =>
+      configureTenantDomainContainer(tenantId, container),
     ),
 
-    authConnectors: asFunction(
-      ({ logger, db, dbRO, vault, fetch }: AppSingletonCradle) =>
-        new AuthConnectorService(logger, db, dbRO, vault, fetch),
-    ),
-
-    users: asFunction(
-      ({ logger, db, dbRO, vault, events }: AppSingletonCradle) =>
-        new UserService(logger, db, dbRO, vault, events),
-    ),
-
-    units: asFunction(
-      ({ logger, db, dbRO, events, users }: AppSingletonCradle) =>
-        new UnitService(logger, db, dbRO, events, users),
-    ),
-
-    questions: asFunction(
-      ({ logger, db, dbRO, events }: AppSingletonCradle) =>
-        new QuestionsService(logger, db, dbRO, events),
+    events: asFunction(
+      ({ logger, temporalDispatch }: AppSingletonCradle) =>
+        new EventService(logger, temporalDispatch),
     ),
   });
 

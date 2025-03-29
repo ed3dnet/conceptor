@@ -20,7 +20,7 @@ export const AnswerCreatedEvent = Type.Object({
 });
 export type AnswerCreatedEvent = Static<typeof AnswerCreatedEvent>;
 
-export const QuestionEvents = {
+export const InsightEvents = {
   AskCreatedEvent,
   AskResponseCreatedEvent,
   AskResponseReansweredEvent,

@@ -53,6 +53,7 @@ const TOKEN_EXPIRES_AFTER_MS = ms("16d");
 
 export class AuthService {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
@@ -65,8 +66,10 @@ export class AuthService {
     private readonly vault: VaultService,
     private readonly users: UserService,
     private readonly authConnectors: AuthConnectorService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({ component: this.constructor.name, tenantId });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   private async createStateToken(payload: OAuthState): Promise<string> {
@@ -119,6 +122,11 @@ export class AuthService {
   async verifyOAuthState(stateToken: string): Promise<OAuthState> {
     const payload = await this.decryptStateToken(stateToken);
 
+    // Verify that the state token is for this tenant
+    if (payload.tenantId !== this.tenantId) {
+      throw new BadRequestError("OAuth state for different tenant");
+    }
+
     const usedKey = `oauth:state:${payload.nonce}`;
     const wasUsed = await this.redis.get(usedKey);
     if (wasUsed) {
@@ -156,19 +164,20 @@ export class AuthService {
   }
 
   async initiateOAuthFlow(
-    tenantId: TenantId,
     authConnectorId: AuthConnectorId,
     redirectUri: string,
   ): Promise<URL> {
     const logger = this.logger.child({
       fn: this.initiateOAuthFlow.name,
-      tenantId,
       authConnectorId,
     });
+
+    // Use the tenant-scoped authConnectors service
     const connector = await this.authConnectors.getById(authConnectorId);
     if (!connector) {
       throw new NotFoundError("Auth connector not found");
     }
+
     const connectorState = await this.vault.decrypt(connector.state);
     const oidcConfig = await this.getClientConfig(connectorState);
 
@@ -184,14 +193,14 @@ export class AuthService {
     const params = new URLSearchParams({
       redirect_uri:
         this.urlsConfig.apiBaseUrl +
-        `/${tenantId}/auth/${authConnectorId}/callback`,
+        `/${this.tenantId}/auth/${authConnectorId}/callback`,
       response_type: "code",
       // code_challenge: codeChallenge,
       // code_challenge_method: codeChallengeMethod,
       scope: connectorState.settings.scopes.join(" "),
       state: await this.createStateToken({
         nonce,
-        tenantId: TenantIds.toRichId(tenantId),
+        tenantId: this.tenantId,
         authConnectorId: AuthConnectorIds.toRichId(authConnectorId),
         redirectUri,
         // pkceVerifier,
@@ -201,11 +210,7 @@ export class AuthService {
     return buildAuthorizationUrl(oidcConfig, params);
   }
 
-  async createSessionRow(
-    userId: UserId,
-    tenantId: TenantId,
-    executor: Drizzle,
-  ) {
+  async createSessionRow(userId: UserId, executor: Drizzle) {
     const token =
       "CPTR_V1_" + cryptoRandomString({ length: 32, type: "distinguishable" });
     const tokenHash = sha256(token, TOKEN_HASH_ROUNDS);
@@ -214,7 +219,7 @@ export class AuthService {
       .insert(USER_SESSIONS)
       .values({
         userId: UserIds.toUUID(userId),
-        tenantId: TenantIds.toUUID(tenantId),
+        tenantId: this.tenantUuid,
         tokenHash,
       })
       .returning();
@@ -245,6 +250,7 @@ export class AuthService {
         .where(
           and(
             eq(USER_SESSIONS.tokenHash, tokenHash),
+            eq(USER_SESSIONS.tenantId, this.tenantUuid),
             isNull(USER_SESSIONS.revokedAt),
             gt(USER_SESSIONS.lastAccessedAt, expiredBefore),
           ),
@@ -255,6 +261,7 @@ export class AuthService {
         return null;
       }
 
+      // Use the tenant-scoped users service
       const user = await this.users.getByUserUUID(session.userId);
 
       if (!user) {
@@ -289,26 +296,24 @@ export class AuthService {
   }
 
   async TX_handleOIDCCallback(
-    expectedTenantId: string,
-    expectedAuthConnectorId: AuthConnectorId,
+    authConnectorId: AuthConnectorId,
     state: string,
     originalUrl: URL,
   ) {
     let logger = this.logger.child({
       fn: this.TX_handleOIDCCallback.name,
-      tenantId: expectedTenantId,
-      authConnectorId: expectedAuthConnectorId,
+      authConnectorId,
     });
+
     const verifiedState = await this.verifyOAuthState(state);
 
-    if (verifiedState.tenantId !== expectedTenantId) {
-      throw new BadRequestError("Invalid tenant ID in state");
-    }
+    // Tenant ID check is now handled in verifyOAuthState
 
-    if (verifiedState.authConnectorId !== expectedAuthConnectorId) {
+    if (verifiedState.authConnectorId !== authConnectorId) {
       throw new BadRequestError("Invalid auth connector ID in state");
     }
 
+    // Use the tenant-scoped authConnectors service
     const connector = await this.authConnectors.getById(
       verifiedState.authConnectorId,
     );
@@ -349,6 +354,7 @@ export class AuthService {
         );
       }
 
+      // Use the tenant-scoped users service
       const user = await this.users.getByEmail(email);
 
       if (!user) {
@@ -369,7 +375,6 @@ export class AuthService {
 
       const tokenResult = await this.createSessionRow(
         UserIds.toRichId(user.userId),
-        TenantIds.toRichId(user.tenantId),
         tx,
       );
 

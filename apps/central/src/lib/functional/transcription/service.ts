@@ -1,14 +1,14 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type Logger } from "pino";
 
 import { TRANSCRIPTION_JOBS } from "../../../_db/schema/index.js";
-import { TenantIds } from "../../../domain/tenants/id.js";
+import { TenantIds, type TenantId } from "../../../domain/tenants/id.js";
 import {
   type Drizzle,
   type DrizzleRO,
 } from "../../datastores/postgres/types.js";
+import { type StringUUID } from "../../ext/typebox/index.js";
 import { type ObjectStoreService } from "../object-store/service.js";
-import { type S3Locator } from "../object-store/types.js";
 import { type TemporalDispatcher } from "../temporal-dispatcher/index.js";
 
 import { type TranscriptionConfig } from "./config.js";
@@ -16,7 +16,6 @@ import { TranscriptionJobIds } from "./id.js";
 import {
   type CreateTranscriptionJobInput,
   type CreateTranscriptionJobOutput,
-  type TranscriptionOptions,
 } from "./schemas.js";
 import {
   processTranscriptionJob,
@@ -25,6 +24,7 @@ import {
 
 export class TranscriptionService {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
@@ -33,8 +33,13 @@ export class TranscriptionService {
     private readonly dbRO: DrizzleRO,
     private readonly temporalDispatcher: TemporalDispatcher,
     private readonly s3: ObjectStoreService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({
+      component: this.constructor.name,
+      tenantId,
+    });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   /**
@@ -44,14 +49,18 @@ export class TranscriptionService {
     input: CreateTranscriptionJobInput,
   ): Promise<CreateTranscriptionJobOutput> {
     this.logger.info("Creating transcription job", {
-      tenantId: input.tenantId,
       sourceFile: input.sourceFile,
     });
+
+    // Ensure the tenantId in the input matches the service's tenantId
+    if (input.tenantId !== this.tenantId) {
+      throw new Error("TenantId mismatch in transcription job creation");
+    }
 
     const [job] = await this.db
       .insert(TRANSCRIPTION_JOBS)
       .values({
-        tenantId: TenantIds.toUUID(input.tenantId),
+        tenantId: this.tenantUuid,
         sourceBucket: input.sourceFile.bucket,
         sourceObjectName: input.sourceFile.objectName,
         options: input.options,
@@ -68,7 +77,7 @@ export class TranscriptionService {
         transcriptionJobId: TranscriptionJobIds.toRichId(
           job.transcriptionJobId,
         ),
-        tenantId: TenantIds.toRichId(job.tenantId),
+        tenantId: this.tenantId,
         sourceFile: input.sourceFile,
         options: input.options,
       };
@@ -80,7 +89,10 @@ export class TranscriptionService {
       await this.db
         .delete(TRANSCRIPTION_JOBS)
         .where(
-          eq(TRANSCRIPTION_JOBS.transcriptionJobId, job.transcriptionJobId),
+          and(
+            eq(TRANSCRIPTION_JOBS.transcriptionJobId, job.transcriptionJobId),
+            eq(TRANSCRIPTION_JOBS.tenantId, this.tenantUuid),
+          ),
         );
       throw err;
     }

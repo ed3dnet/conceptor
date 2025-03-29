@@ -38,6 +38,7 @@ import {
 
 export class AuthConnectorService {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   static async fetchOpenIDConfiguration(
     logger: Logger,
@@ -79,8 +80,13 @@ export class AuthConnectorService {
     private readonly dbRO: DrizzleRO,
     private readonly vault: VaultService,
     private readonly fetch: FetchFn,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ context: AuthConnectorService.name });
+    this.logger = logger.child({
+      component: this.constructor.name,
+      tenantId,
+    });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   async toPublic(connector: DBAuthConnector): Promise<AuthConnectorPublic>;
@@ -95,6 +101,11 @@ export class AuthConnectorService {
 
     if (!connector) {
       throw new NotFoundError(`Auth connector not found: ${input}`);
+    }
+
+    // Verify connector belongs to this tenant
+    if (connector.tenantId !== this.tenantUuid) {
+      throw new NotFoundError(`Auth connector not found in tenant: ${input}`);
     }
 
     const domains = await this.getDomains(
@@ -118,9 +129,12 @@ export class AuthConnectorService {
       .select()
       .from(AUTH_CONNECTORS)
       .where(
-        eq(
-          AUTH_CONNECTORS.authConnectorId,
-          AuthConnectorIds.toUUID(authConnectorId),
+        and(
+          eq(
+            AUTH_CONNECTORS.authConnectorId,
+            AuthConnectorIds.toUUID(authConnectorId),
+          ),
+          eq(AUTH_CONNECTORS.tenantId, this.tenantUuid),
         ),
       )
       .limit(1);
@@ -129,13 +143,12 @@ export class AuthConnectorService {
   }
 
   async getByTenantId(
-    tenantId: TenantId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBAuthConnector[]> {
     return executor
       .select()
       .from(AUTH_CONNECTORS)
-      .where(eq(AUTH_CONNECTORS.tenantId, TenantIds.toUUID(tenantId)));
+      .where(eq(AUTH_CONNECTORS.tenantId, this.tenantUuid));
   }
 
   async getByDomain(
@@ -154,7 +167,12 @@ export class AuthConnectorService {
           AUTH_CONNECTORS.authConnectorId,
         ),
       )
-      .where(eq(AUTH_CONNECTOR_DOMAINS.domain, domain))
+      .where(
+        and(
+          eq(AUTH_CONNECTOR_DOMAINS.domain, domain),
+          eq(AUTH_CONNECTORS.tenantId, this.tenantUuid),
+        ),
+      )
       .then((rows) => rows.map((r) => r.connector));
   }
 
@@ -174,6 +192,12 @@ export class AuthConnectorService {
     authConnectorId: AuthConnectorId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBAuthConnectorDomain[]> {
+    // First verify the connector belongs to this tenant
+    const connector = await this.getById(authConnectorId, executor);
+    if (!connector) {
+      throw new NotFoundError(`Auth connector not found: ${authConnectorId}`);
+    }
+
     return executor
       .select()
       .from(AUTH_CONNECTOR_DOMAINS)
@@ -191,6 +215,12 @@ export class AuthConnectorService {
     executor: Drizzle = this.db,
   ): Promise<DBAuthConnectorDomain> {
     const logger = this.logger.child({ fn: this.addDomain.name });
+
+    // First verify the connector belongs to this tenant
+    const connector = await this.getById(authConnectorId, executor);
+    if (!connector) {
+      throw new NotFoundError(`Auth connector not found: ${authConnectorId}`);
+    }
 
     const [domainRecord] = await executor
       .insert(AUTH_CONNECTOR_DOMAINS)
@@ -214,6 +244,12 @@ export class AuthConnectorService {
     executor: Drizzle = this.db,
   ): Promise<void> {
     const logger = this.logger.child({ fn: this.deleteDomain.name });
+
+    // First verify the connector belongs to this tenant
+    const connector = await this.getById(authConnectorId, executor);
+    if (!connector) {
+      throw new NotFoundError(`Auth connector not found: ${authConnectorId}`);
+    }
 
     const result = await executor
       .delete(AUTH_CONNECTOR_DOMAINS)
@@ -244,6 +280,13 @@ export class AuthConnectorService {
   ): Promise<DBAuthConnector> {
     const logger = this.logger.child({ fn: this.TX_createConnector.name });
 
+    // Ensure the tenant ID matches this service's tenant
+    if (input.tenantId !== this.tenantId) {
+      throw new BadRequestError(
+        `Cannot create connector for different tenant: ${input.tenantId}`,
+      );
+    }
+
     const openidConfiguration =
       await AuthConnectorService.fetchOpenIDConfiguration(
         logger,
@@ -264,7 +307,7 @@ export class AuthConnectorService {
           authConnectorId: input.authConnectorId
             ? AuthConnectorIds.toUUID(input.authConnectorId)
             : undefined,
-          tenantId: TenantIds.toUUID(input.tenantId),
+          tenantId: this.tenantUuid,
           name: input.name,
           state: await this.vault.encrypt(state),
         })
@@ -302,9 +345,12 @@ export class AuthConnectorService {
         .select()
         .from(AUTH_CONNECTORS)
         .where(
-          eq(
-            AUTH_CONNECTORS.authConnectorId,
-            AuthConnectorIds.toUUID(authConnectorId),
+          and(
+            eq(
+              AUTH_CONNECTORS.authConnectorId,
+              AuthConnectorIds.toUUID(authConnectorId),
+            ),
+            eq(AUTH_CONNECTORS.tenantId, this.tenantUuid),
           ),
         )
         .limit(1);
@@ -338,9 +384,12 @@ export class AuthConnectorService {
           state: await this.vault.encrypt(newState),
         })
         .where(
-          eq(
-            AUTH_CONNECTORS.authConnectorId,
-            AuthConnectorIds.toUUID(authConnectorId),
+          and(
+            eq(
+              AUTH_CONNECTORS.authConnectorId,
+              AuthConnectorIds.toUUID(authConnectorId),
+            ),
+            eq(AUTH_CONNECTORS.tenantId, this.tenantUuid),
           ),
         )
         .returning();
@@ -357,6 +406,12 @@ export class AuthConnectorService {
   async TX_deleteConnector(authConnectorId: AuthConnectorId): Promise<void> {
     const logger = this.logger.child({ fn: this.TX_deleteConnector.name });
 
+    // First verify the connector belongs to this tenant
+    const connector = await this.getById(authConnectorId);
+    if (!connector) {
+      throw new NotFoundError(`Auth connector not found: ${authConnectorId}`);
+    }
+
     await this.db.transaction(async (tx) => {
       await tx
         .delete(AUTH_CONNECTOR_DOMAINS)
@@ -370,9 +425,12 @@ export class AuthConnectorService {
       const result = await tx
         .delete(AUTH_CONNECTORS)
         .where(
-          eq(
-            AUTH_CONNECTORS.authConnectorId,
-            AuthConnectorIds.toUUID(authConnectorId),
+          and(
+            eq(
+              AUTH_CONNECTORS.authConnectorId,
+              AuthConnectorIds.toUUID(authConnectorId),
+            ),
+            eq(AUTH_CONNECTORS.tenantId, this.tenantUuid),
           ),
         );
 

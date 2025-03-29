@@ -37,3 +37,9 @@ export const AskResponseReansweredEvent = Type.Object({
 export type AskResponseReansweredEvent = Static<
   typeof AskResponseReansweredEvent
 >;
+
+export const QuestionEvents = {
+  AskCreatedEvent,
+  AskResponseCreatedEvent,
+  AskResponseReansweredEvent,
+};

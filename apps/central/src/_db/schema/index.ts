@@ -408,6 +408,7 @@ export const UNITS = pgTable(
   "units",
   {
     unitId: ULIDAsUUID().primaryKey(),
+    tenantId: ULIDAsUUID("tenant_id").notNull(),
     name: text("name").notNull(),
     type: UNIT_KIND("type").notNull(),
     parentUnitId: ULIDAsUUID("parent_unit_id").references(
@@ -466,6 +467,7 @@ export const UNIT_ASSIGNMENTS = pgTable(
 
 export const CAPABILITIES = pgTable("capabilities", {
   capabilityId: ULIDAsUUID().primaryKey(),
+  tenantId: ULIDAsUUID("tenant_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
 
@@ -481,6 +483,7 @@ export const INITIATIVES = pgTable(
   "initiatives",
   {
     initiativeId: ULIDAsUUID().primaryKey(),
+    tenantId: ULIDAsUUID("tenant_id").notNull(),
     name: text("name").notNull(),
     description: text("description"),
     startDate: timestamp("start_date", { withTimezone: true })

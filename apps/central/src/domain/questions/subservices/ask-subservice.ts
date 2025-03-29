@@ -14,6 +14,7 @@ import {
   type Drizzle,
   type DrizzleRO,
 } from "../../../lib/datastores/postgres/types.js";
+import { type StringUUID } from "../../../lib/ext/typebox/index.js";
 import { type EventService } from "../../events/service.js";
 import { AnswerIds } from "../../insights/schemas/id.js";
 import { TenantIds, type TenantId } from "../../tenants/id.js";
@@ -35,26 +36,31 @@ import {
  */
 export class AskSubservice {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
     private readonly db: Drizzle,
     private readonly dbRO: DrizzleRO,
     private readonly events: EventService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({
+      component: this.constructor.name,
+      tenantId,
+    });
     this.logger.debug("AskSubservice initialized");
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   /**
    * Creates a new Ask with its associated references
    */
   async createAsk(
-    tenantId: TenantId,
     input: CreateAskInput,
     executor: Drizzle = this.db,
   ): Promise<AskPublic> {
-    this.logger.debug({ tenantId, input }, "Creating new Ask");
+    this.logger.debug({ input }, "Creating new Ask");
 
     // Validate that we have at least one subject and one object reference
     const subjectRefs = input.references.filter(
@@ -89,13 +95,12 @@ export class AskSubservice {
     }
 
     // Create the Ask
-    const tenantUuid = TenantIds.toUUID(tenantId);
     const now = new Date();
 
     const [dbAsk] = await executor
       .insert(ASKS)
       .values({
-        tenantId: tenantUuid,
+        tenantId: this.tenantUuid,
         hardcodeKind: input.hardcodeKind,
         sourceAgentName: input.sourceAgentName,
         notifySourceAgent: input.notifySourceAgent,
@@ -151,7 +156,7 @@ export class AskSubservice {
     // Dispatch event
     await this.events.dispatchEvent({
       __type: "AskCreated",
-      tenantId: tenantId,
+      tenantId: this.tenantId,
       askId: askId,
       hardcodeKind: input.hardcodeKind,
       sourceAgentName: input.sourceAgentName,
@@ -162,7 +167,7 @@ export class AskSubservice {
     return {
       __type: "AskPublic",
       askId,
-      tenantId,
+      tenantId: this.tenantId,
       hardcodeKind: dbAsk.hardcodeKind || undefined,
       sourceAgentName: dbAsk.sourceAgentName || undefined,
       query: dbAsk.query,
@@ -177,19 +182,17 @@ export class AskSubservice {
    * Retrieves an Ask by its ID
    */
   async getAskById(
-    tenantId: TenantId,
     askId: AskId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<AskPublic | null> {
-    this.logger.debug({ tenantId, askId }, "Getting Ask by ID");
+    this.logger.debug({ askId }, "Getting Ask by ID");
 
-    const tenantUuid = TenantIds.toUUID(tenantId);
     const askUuid = AskIds.toUUID(askId);
 
     const [dbAsk] = await executor
       .select()
       .from(ASKS)
-      .where(and(eq(ASKS.askId, askUuid), eq(ASKS.tenantId, tenantUuid)))
+      .where(and(eq(ASKS.askId, askUuid), eq(ASKS.tenantId, this.tenantUuid)))
       .limit(1);
 
     if (!dbAsk) {
@@ -232,12 +235,11 @@ export class AskSubservice {
    * Helper method that throws NotFoundError if Ask doesn't exist
    */
   async withAskById<T>(
-    tenantId: TenantId,
     askId: AskId,
     fn: (ask: AskPublic) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
   ): Promise<T> {
-    const ask = await this.getAskById(tenantId, askId, executor);
+    const ask = await this.getAskById(askId, executor);
     if (!ask) {
       throw new NotFoundError(`Ask with ID ${askId} not found`);
     }
@@ -248,13 +250,11 @@ export class AskSubservice {
    * Lists Asks with filtering and pagination
    */
   async listAsks(
-    tenantId: TenantId,
     input: ListAsksInputOrCursor,
     executor: DrizzleRO = this.dbRO,
   ): Promise<ListAsksResponse> {
-    this.logger.debug({ tenantId, input }, "Listing Asks");
+    this.logger.debug({ input }, "Listing Asks");
 
-    const tenantUuid = TenantIds.toUUID(tenantId);
     let listInput: ListAsksInput;
     let onlyBefore: Date | undefined;
 
@@ -269,7 +269,7 @@ export class AskSubservice {
     }
 
     // Build query conditions
-    const conditions = [eq(ASKS.tenantId, tenantUuid)];
+    const conditions = [eq(ASKS.tenantId, this.tenantUuid)];
 
     if (onlyBefore) {
       conditions.push(sql`${ASKS.createdAt} <= ${onlyBefore}`);

@@ -8,7 +8,7 @@ import {
   ForbiddenError,
   InternalServerError,
 } from "@myapp/shared-universal/errors/index.js";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 import { type Logger } from "pino";
 
 import { type UrlsConfig } from "../../../_config/types.js";
@@ -19,6 +19,7 @@ import {
   type DrizzleRO,
   type Drizzle,
 } from "../../datastores/postgres/types.js";
+import { type StringUUID } from "../../ext/typebox/index.js";
 import { type S3BucketName } from "../object-store/config.js";
 import { type ObjectStoreService } from "../object-store/service.js";
 import { type TemporalDispatcher } from "../temporal-dispatcher/index.js";
@@ -41,6 +42,7 @@ import { processImageWorkflow } from "./workflows/process-image.js";
 
 export class ImagesService {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
@@ -50,15 +52,22 @@ export class ImagesService {
     private readonly temporalDispatch: TemporalDispatcher,
     private readonly objectStore: ObjectStoreService,
     private readonly vault: VaultService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ context: this.constructor.name });
+    this.logger = logger.child({ context: this.constructor.name, tenantId });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   async getImageById(imageId: ImageId): Promise<DBImage | null> {
     const [image] = await this.dbRO
       .select()
       .from(IMAGES)
-      .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)))
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
       .limit(1);
 
     return image ?? null;
@@ -73,7 +82,12 @@ export class ImagesService {
     const [image] = await executor
       .select()
       .from(IMAGES)
-      .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)))
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
       .limit(1);
 
     if (!image) {
@@ -105,16 +119,12 @@ export class ImagesService {
     return ret;
   }
 
-  async createUploadUrl(
-    tenantId: TenantId,
-    usage: ImageUsage,
-  ): Promise<{
+  async createUploadUrl(usage: ImageUsage): Promise<{
     uploadUrl: string;
     imageUploadId: ImageUploadId;
   }> {
     const logger = this.logger.child({
       fn: this.createUploadUrl.name,
-      tenantId,
       usage,
     });
     const stagingObjectName = `staging/${usage}/${crypto.randomUUID()}`;
@@ -124,11 +134,11 @@ export class ImagesService {
     const [upload] = await this.db
       .insert(IMAGE_UPLOADS)
       .values({
-        tenantId: TenantIds.toUUID(tenantId),
+        tenantId: this.tenantUuid,
         usage,
         stagingObjectName,
         targetBucket: "upload-staging",
-        targetPath: `${tenantId}/${usage}/${crypto.randomUUID()}`,
+        targetPath: `${this.tenantId}/${usage}/${crypto.randomUUID()}`,
       })
       .returning();
 
@@ -153,14 +163,16 @@ export class ImagesService {
   }
 
   async completeUpload(
-    tenantId: TenantId,
     imageUploadId: ImageUploadId,
   ): Promise<{ imageId: ImageId }> {
     const [upload] = await this.db
       .select()
       .from(IMAGE_UPLOADS)
       .where(
-        eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+        and(
+          eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+          eq(IMAGE_UPLOADS.tenantId, this.tenantUuid),
+        ),
       )
       .limit(1);
 
@@ -172,14 +184,10 @@ export class ImagesService {
       );
     }
 
-    if (upload.tenantId !== tenantId) {
-      throw new ForbiddenError("Wrong tenant for upload");
-    }
-
     const [image] = await this.db
       .insert(IMAGES)
       .values({
-        tenantId: TenantIds.toUUID(tenantId),
+        tenantId: this.tenantUuid,
         usage: upload.usage,
         bucket: upload.targetBucket,
         path: upload.targetPath,
@@ -214,7 +222,10 @@ export class ImagesService {
       .select()
       .from(IMAGE_UPLOADS)
       .where(
-        eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+        and(
+          eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+          eq(IMAGE_UPLOADS.tenantId, this.tenantUuid),
+        ),
       )
       .limit(1);
 
@@ -233,7 +244,10 @@ export class ImagesService {
     await this.db
       .delete(IMAGE_UPLOADS)
       .where(
-        eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+        and(
+          eq(IMAGE_UPLOADS.imageUploadId, ImageUploadIds.toUUID(imageUploadId)),
+          eq(IMAGE_UPLOADS.tenantId, this.tenantUuid),
+        ),
       );
 
     logger.info("Upload deleted successfully");
@@ -243,7 +257,17 @@ export class ImagesService {
     const logger = this.logger.child({ fn: this.deleteImage.name, imageId });
     logger.info("Attempting to delete image");
 
-    const image = await this.getImageById(imageId);
+    const [image] = await this.dbRO
+      .select()
+      .from(IMAGES)
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
     if (!image) {
       logger.warn("Image not found for deletion");
       return;
@@ -275,7 +299,12 @@ export class ImagesService {
     // Delete database record
     await this.db
       .delete(IMAGES)
-      .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      );
 
     logger.info("Image and all renditions deleted successfully");
   }
@@ -288,6 +317,22 @@ export class ImagesService {
     analysis: ImageAnalysis;
     blurhash: string;
   }> {
+    // First verify the image belongs to this tenant
+    const [image] = await this.dbRO
+      .select()
+      .from(IMAGES)
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
+    if (!image) {
+      throw new ResourceNotFoundError("image", "imageId", imageId);
+    }
+
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "analyze-"));
     const tempFile = path.join(tempDir, "source");
 
@@ -312,7 +357,12 @@ export class ImagesService {
       await this.db
         .update(IMAGES)
         .set({ blurhash })
-        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
+        .where(
+          and(
+            eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+            eq(IMAGES.tenantId, this.tenantUuid),
+          ),
+        );
 
       return {
         analysis,
@@ -331,6 +381,22 @@ export class ImagesService {
     targetBucket: S3BucketName,
     targetPath: string,
   ): Promise<void> {
+    // First verify the image belongs to this tenant
+    const [image] = await this.dbRO
+      .select()
+      .from(IMAGES)
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
+    if (!image) {
+      throw new ResourceNotFoundError("image", "imageId", imageId);
+    }
+
     const logger = this.logger.child({
       fn: this.optimizeOriginal.name,
       imageId,
@@ -385,7 +451,12 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, ${renditionFormat})`,
         })
-        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
+        .where(
+          and(
+            eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+            eq(IMAGES.tenantId, this.tenantUuid),
+          ),
+        );
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
@@ -399,6 +470,22 @@ export class ImagesService {
     targetBucket: S3BucketName,
     targetPath: string,
   ): Promise<void> {
+    // First verify the image belongs to this tenant
+    const [image] = await this.dbRO
+      .select()
+      .from(IMAGES)
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
+    if (!image) {
+      throw new ResourceNotFoundError("image", "imageId", imageId);
+    }
+
     const logger = this.logger.child({
       fn: this.generateFallback.name,
       imageId,
@@ -445,7 +532,12 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, 'fallback')`,
         })
-        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
+        .where(
+          and(
+            eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+            eq(IMAGES.tenantId, this.tenantUuid),
+          ),
+        );
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
@@ -459,6 +551,22 @@ export class ImagesService {
     targetBucket: S3BucketName,
     targetPath: string,
   ): Promise<void> {
+    // First verify the image belongs to this tenant
+    const [image] = await this.dbRO
+      .select()
+      .from(IMAGES)
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
+    if (!image) {
+      throw new ResourceNotFoundError("image", "imageId", imageId);
+    }
+
     const logger = this.logger.child({
       fn: this.generateWebP.name,
       imageId,
@@ -507,7 +615,12 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, 'image/webp')`,
         })
-        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
+        .where(
+          and(
+            eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+            eq(IMAGES.tenantId, this.tenantUuid),
+          ),
+        );
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
@@ -521,6 +634,22 @@ export class ImagesService {
     targetBucket: S3BucketName,
     targetPath: string,
   ): Promise<void> {
+    // First verify the image belongs to this tenant
+    const [image] = await this.dbRO
+      .select()
+      .from(IMAGES)
+      .where(
+        and(
+          eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+          eq(IMAGES.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
+    if (!image) {
+      throw new ResourceNotFoundError("image", "imageId", imageId);
+    }
+
     const logger = this.logger.child({
       fn: this.generateAVIF.name,
       imageId,
@@ -575,7 +704,12 @@ export class ImagesService {
         .set({
           readyRenditions: sql`array_append(${IMAGES.readyRenditions}, 'image/avif')`,
         })
-        .where(eq(IMAGES.imageId, ImageIds.toUUID(imageId)));
+        .where(
+          and(
+            eq(IMAGES.imageId, ImageIds.toUUID(imageId)),
+            eq(IMAGES.tenantId, this.tenantUuid),
+          ),
+        );
     } finally {
       await fs.rm(tempDir, { recursive: true, force: true });
     }

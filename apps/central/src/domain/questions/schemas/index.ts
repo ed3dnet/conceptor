@@ -329,6 +329,7 @@ export const AskResponsePublic = schemaType(
   Type.Object({
     __type: Type.Literal("AskResponsePublic"),
     askResponseId: AskResponseIds.TRichId,
+    tenantId: TenantIds.TRichId,
     askId: AskIds.TRichId,
     userId: UserIds.TRichId,
     response: AskResponseData,
@@ -379,19 +380,6 @@ export type ListAskResponsesInputOrCursor = Static<
   typeof ListAskResponsesInputOrCursor
 >;
 
-// List Ask Responses Response Schema
-export const AskResponseListItem = schemaType(
-  "AskResponseListItem",
-  Type.Object({
-    __type: Type.Literal("AskResponseListItem"),
-    askResponseId: AskResponseIds.TRichId,
-    askId: AskIds.TRichId,
-    userId: UserIds.TRichId,
-    createdAt: Type.String({ format: "date-time" }),
-  }),
-);
-export type AskResponseListItem = Static<typeof AskResponseListItem>;
-
 export const ListAskResponsesResponse =
-  buildListResponseSchema(AskResponseListItem);
+  buildListResponseSchema(AskResponsePublic);
 export type ListAskResponsesResponse = Static<typeof ListAskResponsesResponse>;

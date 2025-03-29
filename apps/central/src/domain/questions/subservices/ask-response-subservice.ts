@@ -1,11 +1,8 @@
-import {
-  NotFoundError,
-  ConflictError,
-} from "@myapp/shared-universal/errors/index.js";
-import { eq, and, desc, sql, count } from "drizzle-orm";
+import { NotFoundError } from "@myapp/shared-universal/errors/index.js";
+import { eq, and, desc, count } from "drizzle-orm";
 import { type Logger } from "pino";
 
-import { ASK_RESPONSES, ASKS } from "../../../_db/schema/index.js";
+import { ANSWERS, ASK_RESPONSES, ASKS } from "../../../_db/schema/index.js";
 import {
   decodeCursor,
   encodeCursor,
@@ -14,116 +11,78 @@ import {
   type Drizzle,
   type DrizzleRO,
 } from "../../../lib/datastores/postgres/types.js";
+import { type StringUUID } from "../../../lib/ext/typebox/index.js";
 import { type EventService } from "../../events/service.js";
+import { AnswerIds, type AnswerId } from "../../insights/schemas/id.js";
 import { TenantIds, type TenantId } from "../../tenants/id.js";
 import { UserIds, type UserId } from "../../users/id.js";
-import {
-  AskIds,
-  AskResponseIds,
-  type AskId,
-  type AskResponseId,
-} from "../schemas/id.js";
+import { AskIds, AskResponseIds, type AskId } from "../schemas/id.js";
 import {
   type AskResponsePublic,
   type CreateAskResponseInput,
   type ListAskResponsesInput,
   type ListAskResponsesInputOrCursor,
   type ListAskResponsesResponse,
-  type AskResponseListItem,
   ListAskResponsesInputChecker,
 } from "../schemas/index.js";
 
 /**
- * AskResponseSubservice handles operations related to AskResponses
+ * AskResponseSubservice handles operations related to AskResponses and Answers
  */
 export class AskResponseSubservice {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
     private readonly db: Drizzle,
     private readonly dbRO: DrizzleRO,
     private readonly events: EventService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({
+      component: this.constructor.name,
+      tenantId,
+    });
     this.logger.debug("AskResponseSubservice initialized");
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   /**
-   * Creates a new AskResponse
+   * Creates a new AskResponse with its associated Answer
    */
   async createAskResponse(
-    tenantId: TenantId,
+    askId: AskId,
     userId: UserId,
     input: CreateAskResponseInput,
     executor: Drizzle = this.db,
   ): Promise<AskResponsePublic> {
-    this.logger.debug({ tenantId, userId, input }, "Creating new AskResponse");
+    this.logger.debug({ askId, userId, input }, "Creating new AskResponse");
 
-    const tenantUuid = TenantIds.toUUID(tenantId);
-    const userUuid = UserIds.toUUID(userId);
-    const askUuid = AskIds.toUUID(input.askId);
-    const now = new Date();
-
-    // Verify the ask exists and belongs to this tenant
+    // Verify the Ask exists and belongs to this tenant
     const [ask] = await executor
       .select()
       .from(ASKS)
-      .where(and(eq(ASKS.askId, askUuid), eq(ASKS.tenantId, tenantUuid)))
+      .where(
+        and(
+          eq(ASKS.askId, AskIds.toUUID(askId)),
+          eq(ASKS.tenantId, this.tenantUuid),
+        ),
+      )
       .limit(1);
 
     if (!ask) {
-      throw new NotFoundError(`Ask with ID ${input.askId} not found`);
-    }
-
-    // Check if this user has already answered this ask
-    if (ask.multipleAnswerStrategy === "disallow") {
-      const existingResponses = await executor
-        .select({ count: count().mapWith(Number) })
-        .from(ASK_RESPONSES)
-        .where(
-          and(
-            eq(ASK_RESPONSES.askId, askUuid),
-            eq(ASK_RESPONSES.userId, userUuid),
-          ),
-        );
-
-      if (existingResponses[0] && existingResponses[0].count > 0) {
-        throw new ConflictError(
-          `User has already answered this ask and multiple answers are not allowed`,
-        );
-      }
-    }
-
-    // Find previous response if this is a re-answer
-    let previousAskResponseId: AskResponseId | undefined;
-    if (ask.multipleAnswerStrategy === "remember-last") {
-      const [previousResponse] = await executor
-        .select()
-        .from(ASK_RESPONSES)
-        .where(
-          and(
-            eq(ASK_RESPONSES.askId, askUuid),
-            eq(ASK_RESPONSES.userId, userUuid),
-          ),
-        )
-        .orderBy(desc(ASK_RESPONSES.createdAt))
-        .limit(1);
-
-      if (previousResponse) {
-        previousAskResponseId = AskResponseIds.toRichId(
-          previousResponse.askResponseId,
-        );
-      }
+      throw new NotFoundError(`Ask with ID ${askId} not found`);
     }
 
     // Create the AskResponse
+    const now = new Date();
     const [dbAskResponse] = await executor
       .insert(ASK_RESPONSES)
       .values({
-        tenantId: tenantUuid,
-        askId: askUuid,
-        userId: userUuid,
+        tenantId: this.tenantUuid,
+        askId: AskIds.toUUID(askId),
+        userId: UserIds.toUUID(userId),
         response: input.response,
         createdAt: now,
       })
@@ -133,38 +92,23 @@ export class AskResponseSubservice {
       throw new Error("Failed to create AskResponse");
     }
 
-    const askResponseId = AskResponseIds.toRichId(dbAskResponse.askResponseId);
-
-    // Dispatch appropriate event
-    if (previousAskResponseId) {
-      await this.events.dispatchEvent({
-        __type: "AskResponseReanswered",
-        tenantId,
-        askId: input.askId,
-        askResponseId,
-        userId,
-        previousAskResponseId,
-        timestamp: now.toISOString(),
-      });
-    } else {
-      await this.events.dispatchEvent({
-        __type: "AskResponseCreated",
-        tenantId,
-        askId: input.askId,
-        askResponseId,
-        userId,
-        timestamp: now.toISOString(),
-      });
-    }
-
-    // TODO: If ask.notifySourceAgent is true, ping the agent that created the ask
+    // Dispatch event (which will start Insights into answer extraction)
+    await this.events.dispatchEvent({
+      __type: "AskResponseCreated",
+      tenantId: this.tenantId,
+      askId: askId,
+      askResponseId: AskIds.toRichId(dbAskResponse.askResponseId),
+      userId: userId,
+      timestamp: now.toISOString(),
+    });
 
     // Return the public AskResponse
     return {
       __type: "AskResponsePublic",
-      askResponseId,
-      askId: input.askId,
-      userId,
+      askResponseId: AskResponseIds.toRichId(dbAskResponse.askResponseId),
+      askId: askId,
+      tenantId: this.tenantId,
+      userId: userId,
       response: dbAskResponse.response,
       createdAt: dbAskResponse.createdAt.toISOString(),
     };
@@ -174,22 +118,18 @@ export class AskResponseSubservice {
    * Retrieves an AskResponse by its ID
    */
   async getAskResponseById(
-    tenantId: TenantId,
-    askResponseId: AskResponseId,
+    askResponseId: AskId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<AskResponsePublic | null> {
-    this.logger.debug({ tenantId, askResponseId }, "Getting AskResponse by ID");
-
-    const tenantUuid = TenantIds.toUUID(tenantId);
-    const askResponseUuid = AskResponseIds.toUUID(askResponseId);
+    this.logger.debug({ askResponseId }, "Getting AskResponse by ID");
 
     const [dbAskResponse] = await executor
       .select()
       .from(ASK_RESPONSES)
       .where(
         and(
-          eq(ASK_RESPONSES.askResponseId, askResponseUuid),
-          eq(ASK_RESPONSES.tenantId, tenantUuid),
+          eq(ASK_RESPONSES.askResponseId, AskIds.toUUID(askResponseId)),
+          eq(ASK_RESPONSES.tenantId, this.tenantUuid),
         ),
       )
       .limit(1);
@@ -198,10 +138,18 @@ export class AskResponseSubservice {
       return null;
     }
 
+    // Check if there's an associated Answer
+    const [dbAnswer] = await executor
+      .select()
+      .from(ANSWERS)
+      .where(eq(ANSWERS.askResponseId, dbAskResponse.askResponseId))
+      .limit(1);
+
     return {
       __type: "AskResponsePublic",
       askResponseId: AskResponseIds.toRichId(dbAskResponse.askResponseId),
       askId: AskIds.toRichId(dbAskResponse.askId),
+      tenantId: TenantIds.toRichId(dbAskResponse.tenantId),
       userId: UserIds.toRichId(dbAskResponse.userId),
       response: dbAskResponse.response,
       createdAt: dbAskResponse.createdAt.toISOString(),
@@ -212,16 +160,11 @@ export class AskResponseSubservice {
    * Helper method that throws NotFoundError if AskResponse doesn't exist
    */
   async withAskResponseById<T>(
-    tenantId: TenantId,
-    askResponseId: AskResponseId,
+    askResponseId: AskId,
     fn: (askResponse: AskResponsePublic) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
   ): Promise<T> {
-    const askResponse = await this.getAskResponseById(
-      tenantId,
-      askResponseId,
-      executor,
-    );
+    const askResponse = await this.getAskResponseById(askResponseId, executor);
     if (!askResponse) {
       throw new NotFoundError(`AskResponse with ID ${askResponseId} not found`);
     }
@@ -232,13 +175,28 @@ export class AskResponseSubservice {
    * Lists AskResponses for a specific Ask with pagination
    */
   async listAskResponses(
-    tenantId: TenantId,
+    askId: AskId,
     input: ListAskResponsesInputOrCursor,
     executor: DrizzleRO = this.dbRO,
   ): Promise<ListAskResponsesResponse> {
-    this.logger.debug({ tenantId, input }, "Listing AskResponses");
+    this.logger.debug({ askId, input }, "Listing AskResponses");
 
-    const tenantUuid = TenantIds.toUUID(tenantId);
+    // Verify the Ask exists and belongs to this tenant
+    const [ask] = await executor
+      .select()
+      .from(ASKS)
+      .where(
+        and(
+          eq(ASKS.askId, AskIds.toUUID(askId)),
+          eq(ASKS.tenantId, this.tenantUuid),
+        ),
+      )
+      .limit(1);
+
+    if (!ask) {
+      throw new NotFoundError(`Ask with ID ${askId} not found`);
+    }
+
     let listInput: ListAskResponsesInput;
     let onlyBefore: Date | undefined;
 
@@ -252,17 +210,11 @@ export class AskResponseSubservice {
       onlyBefore = new Date();
     }
 
-    const askUuid = AskIds.toUUID(listInput.askId);
-
     // Build query conditions
     const conditions = [
-      eq(ASK_RESPONSES.tenantId, tenantUuid),
-      eq(ASK_RESPONSES.askId, askUuid),
+      eq(ASK_RESPONSES.askId, AskIds.toUUID(askId)),
+      eq(ASK_RESPONSES.tenantId, this.tenantUuid),
     ];
-
-    if (onlyBefore) {
-      conditions.push(sql`${ASK_RESPONSES.createdAt} <= ${onlyBefore}`);
-    }
 
     // Count total matching items
     const [total] = await executor
@@ -276,84 +228,47 @@ export class AskResponseSubservice {
 
     // Get paginated results
     const items = await executor
-      .select()
+      .select({
+        askResponse: ASK_RESPONSES,
+        answer: ANSWERS,
+      })
       .from(ASK_RESPONSES)
+      .leftJoin(ANSWERS, eq(ASK_RESPONSES.askResponseId, ANSWERS.askResponseId))
       .where(and(...conditions))
       .orderBy(desc(ASK_RESPONSES.createdAt))
       .limit(listInput.limit)
       .offset(listInput.offset);
 
     // Map to public DTOs
-    const askResponseListItems: AskResponseListItem[] = items.map((item) => ({
-      __type: "AskResponseListItem",
-      askResponseId: AskResponseIds.toRichId(item.askResponseId),
-      askId: AskIds.toRichId(item.askId),
-      userId: UserIds.toRichId(item.userId),
-      createdAt: item.createdAt.toISOString(),
-    }));
+    const askResponseItems = items.map(
+      (item): AskResponsePublic => ({
+        __type: "AskResponsePublic",
+        askResponseId: AskResponseIds.toRichId(item.askResponse.askResponseId),
+        askId: AskIds.toRichId(item.askResponse.askId),
+        tenantId: TenantIds.toRichId(item.askResponse.tenantId),
+        userId: UserIds.toRichId(item.askResponse.userId),
+        response: item.askResponse.response,
+        createdAt: item.askResponse.createdAt.toISOString(),
+      }),
+    );
 
     // Generate next cursor if there are more results
     let cursor: string | null = null;
     if (
-      askResponseListItems.length > 0 &&
-      listInput.offset + askResponseListItems.length < total.count
+      askResponseItems.length > 0 &&
+      listInput.offset + askResponseItems.length < total.count
     ) {
       cursor = encodeCursor(
         listInput,
-        listInput.offset + askResponseListItems.length,
+        listInput.offset + askResponseItems.length,
         onlyBefore,
       );
     }
 
     return {
-      items: askResponseListItems,
+      items: askResponseItems,
       total: total.count,
       cursor,
-    };
-  }
-
-  /**
-   * Gets the latest AskResponse for a specific Ask and User
-   */
-  async getLatestAskResponseForUser(
-    tenantId: TenantId,
-    askId: AskId,
-    userId: UserId,
-    executor: DrizzleRO = this.dbRO,
-  ): Promise<AskResponsePublic | null> {
-    this.logger.debug(
-      { tenantId, askId, userId },
-      "Getting latest AskResponse for user",
-    );
-
-    const tenantUuid = TenantIds.toUUID(tenantId);
-    const askUuid = AskIds.toUUID(askId);
-    const userUuid = UserIds.toUUID(userId);
-
-    const [dbAskResponse] = await executor
-      .select()
-      .from(ASK_RESPONSES)
-      .where(
-        and(
-          eq(ASK_RESPONSES.tenantId, tenantUuid),
-          eq(ASK_RESPONSES.askId, askUuid),
-          eq(ASK_RESPONSES.userId, userUuid),
-        ),
-      )
-      .orderBy(desc(ASK_RESPONSES.createdAt))
-      .limit(1);
-
-    if (!dbAskResponse) {
-      return null;
-    }
-
-    return {
-      __type: "AskResponsePublic",
-      askResponseId: AskResponseIds.toRichId(dbAskResponse.askResponseId),
-      askId: AskIds.toRichId(dbAskResponse.askId),
-      userId: UserIds.toRichId(dbAskResponse.userId),
-      response: dbAskResponse.response,
-      createdAt: dbAskResponse.createdAt.toISOString(),
     };
   }
 }

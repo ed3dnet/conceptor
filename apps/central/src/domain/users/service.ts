@@ -1,5 +1,5 @@
 import { NotFoundError } from "@myapp/shared-universal/errors/index.js";
-import { eq, ilike, sql } from "drizzle-orm";
+import { eq, ilike, sql, and } from "drizzle-orm";
 import gravatar from "gravatar-url";
 import { type Logger } from "pino";
 
@@ -40,6 +40,7 @@ interface UserServiceOptions {
 
 export class UserService {
   private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
 
   constructor(
     logger: Logger,
@@ -47,8 +48,10 @@ export class UserService {
     private readonly dbRO: DrizzleRO,
     private readonly vault: VaultService,
     private readonly events: EventService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({ component: this.constructor.name, tenantId });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
   async getByUserId(
@@ -58,7 +61,12 @@ export class UserService {
     const user = await executor
       .select()
       .from(USERS)
-      .where(eq(USERS.userId, UserIds.toUUID(userId)))
+      .where(
+        and(
+          eq(USERS.userId, UserIds.toUUID(userId)),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
+      )
       .limit(1);
 
     return user[0] ?? null;
@@ -71,7 +79,9 @@ export class UserService {
     const user = await executor
       .select()
       .from(USERS)
-      .where(eq(USERS.userId, userUuid))
+      .where(
+        and(eq(USERS.userId, userUuid), eq(USERS.tenantId, this.tenantUuid)),
+      )
       .limit(1);
 
     return user[0] ?? null;
@@ -87,7 +97,9 @@ export class UserService {
       })
       .from(USERS)
       .innerJoin(USER_EMAILS, eq(USERS.userId, USER_EMAILS.userId))
-      .where(eq(USER_EMAILS.email, email))
+      .where(
+        and(eq(USER_EMAILS.email, email), eq(USERS.tenantId, this.tenantUuid)),
+      )
       .limit(1);
 
     return result[0]?.user ?? null;
@@ -105,7 +117,11 @@ export class UserService {
       .from(USERS)
       .innerJoin(USER_EXTERNAL_IDS, eq(USERS.userId, USER_EXTERNAL_IDS.userId))
       .where(
-        sql`${USER_EXTERNAL_IDS.externalIdKind} = ${externalIdType} AND ${USER_EXTERNAL_IDS.externalId} = ${externalId}`,
+        and(
+          eq(USER_EXTERNAL_IDS.externalIdKind, externalIdType),
+          eq(USER_EXTERNAL_IDS.externalId, externalId),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
       )
       .limit(1);
 
@@ -125,7 +141,11 @@ export class UserService {
       .from(USERS)
       .innerJoin(USER_TAGS, eq(USERS.userId, USER_TAGS.userId))
       .where(
-        sql`${USER_TAGS.key} = ${tagKey} AND ${USER_TAGS.value} ILIKE ${tagValue}`,
+        and(
+          eq(USER_TAGS.key, tagKey),
+          ilike(USER_TAGS.value, tagValue),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
       )
       .orderBy(
         // Sort exact matches to the top
@@ -152,7 +172,12 @@ export class UserService {
     const user = await executor
       .select()
       .from(USERS)
-      .where(eq(USERS.userId, UserIds.toUUID(userId)))
+      .where(
+        and(
+          eq(USERS.userId, UserIds.toUUID(userId)),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
+      )
       .limit(1)
       .then((rows) => rows[0]);
 
@@ -214,7 +239,12 @@ export class UserService {
       .set({
         idpUserInfo: encrypted,
       })
-      .where(eq(USERS.userId, UserIds.toUUID(userId)))
+      .where(
+        and(
+          eq(USERS.userId, UserIds.toUUID(userId)),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
+      )
       .returning();
 
     if (!result) {
@@ -229,10 +259,21 @@ export class UserService {
     userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUserTag[]> {
-    return executor
-      .select()
+    // For tags, we need to join with USERS to ensure tenant isolation
+    const result = await executor
+      .select({
+        tag: USER_TAGS,
+      })
       .from(USER_TAGS)
-      .where(eq(USER_TAGS.userId, UserIds.toUUID(userId)));
+      .innerJoin(USERS, eq(USER_TAGS.userId, USERS.userId))
+      .where(
+        and(
+          eq(USER_TAGS.userId, UserIds.toUUID(userId)),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
+      );
+
+    return result.map((r) => r.tag);
   }
 
   async setUserTag(
@@ -241,6 +282,12 @@ export class UserService {
     value: string | null,
     executor: Drizzle = this.db,
   ): Promise<DBUserTag> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
+
     const [tag] = await executor
       .insert(USER_TAGS)
       .values({
@@ -266,10 +313,19 @@ export class UserService {
     key: string,
     executor: Drizzle = this.db,
   ): Promise<void> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
+
     await executor
       .delete(USER_TAGS)
       .where(
-        sql`${USER_TAGS.userId} = ${UserIds.toUUID(userId)} AND ${USER_TAGS.key} = ${key}`,
+        and(
+          eq(USER_TAGS.userId, UserIds.toUUID(userId)),
+          eq(USER_TAGS.key, key),
+        ),
       );
   }
 
@@ -278,10 +334,21 @@ export class UserService {
     userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUserExternalId[]> {
-    return executor
-      .select()
+    // For external IDs, we need to join with USERS to ensure tenant isolation
+    const result = await executor
+      .select({
+        extId: USER_EXTERNAL_IDS,
+      })
       .from(USER_EXTERNAL_IDS)
-      .where(eq(USER_EXTERNAL_IDS.userId, UserIds.toUUID(userId)));
+      .innerJoin(USERS, eq(USER_EXTERNAL_IDS.userId, USERS.userId))
+      .where(
+        and(
+          eq(USER_EXTERNAL_IDS.userId, UserIds.toUUID(userId)),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
+      );
+
+    return result.map((r) => r.extId);
   }
 
   async setUserExternalId(
@@ -290,6 +357,12 @@ export class UserService {
     externalId: string,
     executor: Drizzle = this.db,
   ): Promise<DBUserExternalId> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
+
     const [extId] = await executor
       .insert(USER_EXTERNAL_IDS)
       .values({
@@ -315,10 +388,18 @@ export class UserService {
     externalIdType: string,
     executor: Drizzle = this.db,
   ): Promise<void> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
     await executor
       .delete(USER_EXTERNAL_IDS)
       .where(
-        sql`${USER_EXTERNAL_IDS.userId} = ${UserIds.toUUID(userId)} AND ${USER_EXTERNAL_IDS.externalIdKind} = ${externalIdType}`,
+        and(
+          eq(USER_EXTERNAL_IDS.userId, UserIds.toUUID(userId)),
+          eq(USER_EXTERNAL_IDS.externalIdKind, externalIdType),
+        ),
       );
   }
 
@@ -327,10 +408,21 @@ export class UserService {
     userId: UserId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUserEmail[]> {
-    return executor
-      .select()
+    // For emails, we need to join with USERS to ensure tenant isolation
+    const result = await executor
+      .select({
+        email: USER_EMAILS,
+      })
       .from(USER_EMAILS)
-      .where(eq(USER_EMAILS.userId, UserIds.toUUID(userId)));
+      .innerJoin(USERS, eq(USER_EMAILS.userId, USERS.userId))
+      .where(
+        and(
+          eq(USER_EMAILS.userId, UserIds.toUUID(userId)),
+          eq(USERS.tenantId, this.tenantUuid),
+        ),
+      );
+
+    return result.map((r) => r.email);
   }
 
   /**
@@ -347,7 +439,6 @@ export class UserService {
     executor: Drizzle = this.db,
   ): Promise<DBUser> {
     const {
-      tenantId,
       connectorId,
       idpUserInfo,
       displayName,
@@ -355,6 +446,13 @@ export class UserService {
       avatarUrl,
       externalIds,
     } = input;
+
+    // Ensure the tenant ID matches this service's tenant
+    if (input.tenantId !== this.tenantId) {
+      throw new Error(
+        `Cannot create user for different tenant: ${input.tenantId}`,
+      );
+    }
 
     // Determine display name if not provided
     const userDisplayName =
@@ -373,7 +471,7 @@ export class UserService {
         .insert(USERS)
         .values({
           userId: userId ? UserIds.toUUID(userId) : undefined,
-          tenantId: TenantIds.toUUID(tenantId),
+          tenantId: this.tenantUuid,
           connectorId: AuthConnectorIds.toUUID(connectorId),
           displayName: userDisplayName,
           avatarUrl,
@@ -418,7 +516,11 @@ export class UserService {
       });
 
       this.logger.info(
-        { userId: user.userId, tenantId, email: idpUserInfo.email },
+        {
+          userId: user.userId,
+          tenantId: this.tenantId,
+          email: idpUserInfo.email,
+        },
         "Created new user from IdP information",
       );
 
@@ -426,7 +528,7 @@ export class UserService {
       if (!options.squelchEvents) {
         await this.events.dispatchEvent({
           __type: "UserCreated",
-          tenantId,
+          tenantId: this.tenantId,
           userId: UserIds.toRichId(user.userId),
           email: idpUserInfo.email,
           displayName: userDisplayName,
@@ -440,7 +542,6 @@ export class UserService {
 
   /**
    * Adds an email to a user
-   * @param tenantId The tenant ID
    * @param userId The user ID
    * @param email The email to add
    * @param isPrimary Whether this is the primary email
@@ -449,13 +550,18 @@ export class UserService {
    * @returns The created email record
    */
   async addUserEmail(
-    tenantId: TenantId,
     userId: UserId,
     email: string,
     isPrimary: boolean = false,
     options: UserServiceOptions = {},
     executor: Drizzle = this.db,
   ): Promise<DBUserEmail> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
+
     // If this is primary, we need to unset other primary emails first
     const userUuid = UserIds.toUUID(userId);
     if (isPrimary) {
@@ -482,8 +588,8 @@ export class UserService {
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UserEmailAdded",
-        tenantId: TenantIds.toRichId(tenantId),
-        userId: UserIds.toRichId(userId),
+        tenantId: this.tenantId,
+        userId,
         email,
         isPrimary,
         timestamp: new Date().toISOString(),
@@ -495,19 +601,23 @@ export class UserService {
 
   /**
    * Sets a user email as primary
-   * @param tenantId The tenant ID
    * @param userId The user ID
    * @param email The email to set as primary
    * @param options Service options
    * @param executor Optional transaction executor
    */
   async setUserEmailPrimary(
-    tenantId: TenantId,
     userId: UserId,
     email: string,
     options: UserServiceOptions = {},
     executor: Drizzle = this.db,
   ): Promise<void> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
+
     await executor.transaction(async (tx) => {
       const userUuid = UserIds.toUUID(userId);
 
@@ -522,7 +632,10 @@ export class UserService {
         .update(USER_EMAILS)
         .set({ isPrimary: true })
         .where(
-          sql`${USER_EMAILS.userId} = ${userUuid} AND ${USER_EMAILS.email} = ${email}`,
+          and(
+            eq(USER_EMAILS.userId, userUuid),
+            ilike(USER_EMAILS.email, email),
+          ),
         );
     });
 
@@ -530,8 +643,8 @@ export class UserService {
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UserEmailSetPrimary",
-        tenantId: TenantIds.toRichId(tenantId),
-        userId: UserIds.toRichId(userId),
+        tenantId: this.tenantId,
+        userId,
         email,
         timestamp: new Date().toISOString(),
       });
@@ -540,31 +653,38 @@ export class UserService {
 
   /**
    * Deletes a user email
-   * @param tenantId The tenant ID
    * @param userId The user ID
    * @param email The email to delete
    * @param options Service options
    * @param executor Optional transaction executor
    */
   async deleteUserEmail(
-    tenantId: TenantId,
     userId: UserId,
     email: string,
     options: UserServiceOptions = {},
     executor: Drizzle = this.db,
   ): Promise<void> {
+    // First verify the user belongs to this tenant
+    const user = await this.getByUserId(userId, executor);
+    if (!user) {
+      throw new NotFoundError(`User not found: ${userId}`);
+    }
+
     await executor
       .delete(USER_EMAILS)
       .where(
-        sql`${USER_EMAILS.userId} = ${UserIds.toUUID(userId)} AND ${USER_EMAILS.email} = ${email}`,
+        and(
+          eq(USER_EMAILS.userId, UserIds.toUUID(userId)),
+          ilike(USER_EMAILS.email, email),
+        ),
       );
 
     // Fire event if not squelched
     if (!options.squelchEvents) {
       await this.events.dispatchEvent({
         __type: "UserEmailRemoved",
-        tenantId: TenantIds.toRichId(tenantId),
-        userId: UserIds.toRichId(userId),
+        tenantId: this.tenantId,
+        userId,
         email,
         timestamp: new Date().toISOString(),
       });

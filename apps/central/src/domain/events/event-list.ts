@@ -1,3 +1,4 @@
+import { InsightEvents } from "../insights/events.js";
 import { QuestionEvents } from "../questions/events.js";
 import { UnitEvents } from "../units/schemas.js";
 import { UserEvents } from "../users/schemas.js";
@@ -12,4 +13,5 @@ export const ALL_EVENTS = Object.freeze([
   ...Object.values(UnitEvents),
   ...Object.values(UserEvents),
   ...Object.values(QuestionEvents),
+  ...Object.values(InsightEvents),
 ]);

@@ -5,6 +5,7 @@ import {
   type DrizzleRO,
 } from "../../lib/datastores/postgres/types.js";
 import { type EventService } from "../events/service.js";
+import { type TenantId } from "../tenants/id.js";
 
 import { AskResponseSubservice } from "./subservices/ask-response-subservice.js";
 import { AskSubservice } from "./subservices/ask-subservice.js";
@@ -23,8 +24,12 @@ export class QuestionsService {
     private readonly db: Drizzle,
     private readonly dbRO: DrizzleRO,
     private readonly events: EventService,
+    readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({
+      component: this.constructor.name,
+      tenantId,
+    });
     this.logger.debug("QuestionsService initialized");
   }
 
@@ -38,6 +43,7 @@ export class QuestionsService {
         this.db,
         this.dbRO,
         this.events,
+        this.tenantId,
       );
     }
     return this._askSubservice;
@@ -53,6 +59,7 @@ export class QuestionsService {
         this.db,
         this.dbRO,
         this.events,
+        this.tenantId,
       );
     }
     return this._askResponseSubservice;
