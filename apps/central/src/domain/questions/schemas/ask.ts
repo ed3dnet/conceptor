@@ -2,8 +2,10 @@ import { schemaType } from "@eropple/fastify-openapi3";
 import { Type, type Static } from "@sinclair/typebox";
 
 import { TenantIds } from "../../tenants/id.js";
+import { UnitIds } from "../../units/id.js";
 
-import { AskIds } from "./id.js";
+import { ReferenceDirection } from "./ask-reference.js";
+import { AnswerIds, AskIds } from "./id.js";
 
 // Base question
 export const BaseQuestion = schemaType(
@@ -149,3 +151,55 @@ export const AskPublic = schemaType(
   }),
 );
 export type AskPublic = Static<typeof AskPublic>;
+
+export const CreateAskInput = schemaType(
+  "CreateAskInput",
+  Type.Object({
+    __type: Type.Literal("CreateAskInput"),
+    hardcodeKind: Type.Optional(Type.String()),
+    sourceAgentName: Type.Optional(Type.String()),
+    notifySourceAgent: Type.Optional(Type.Boolean()),
+    query: AskQuery,
+    visibility: AskVisibility,
+    multipleAnswerStrategy: MultipleAnswerStrategy,
+
+    // References - at least one subject and one object required
+    references: Type.Array(
+      Type.Object({
+        referenceDirection: ReferenceDirection,
+        // Only one of these should be provided per reference
+        unitId: Type.Optional(UnitIds.TRichId),
+        // initiativeId: Type.Optional(InitiativeIds.TRichId),
+        // capabilityId: Type.Optional(CapabilityIds.TRichId),
+        answerId: Type.Optional(AnswerIds.TRichId),
+      }),
+    ),
+  }),
+);
+export type CreateAskInput = Static<typeof CreateAskInput>;
+
+// Get Ask Input Schema
+export const GetAskInput = schemaType(
+  "GetAskInput",
+  Type.Object({
+    __type: Type.Literal("GetAskInput"),
+    askId: AskIds.TRichId,
+  }),
+);
+export type GetAskInput = Static<typeof GetAskInput>;
+
+// List Asks Input Schema
+export const ListAsksInput = schemaType(
+  "ListAsksInput",
+  Type.Object({
+    __type: Type.Literal("ListAsksInput"),
+    // Optional filters
+    unitId: Type.Optional(UnitIds.TRichId),
+    // initiativeId: Type.Optional(InitiativeIds.TRichId),
+    // capabilityId: Type.Optional(CapabilityIds.TRichId),
+    referenceDirection: Type.Optional(ReferenceDirection),
+    limit: Type.Optional(Type.Number()),
+    offset: Type.Optional(Type.Number()),
+  }),
+);
+export type ListAsksInput = Static<typeof ListAsksInput>;

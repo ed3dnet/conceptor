@@ -80,3 +80,35 @@ export const AskResponsePublic = schemaType(
   }),
 );
 export type AskResponsePublic = Static<typeof AskResponsePublic>;
+
+export const CreateAskResponseInput = schemaType(
+  "CreateAskResponseInput",
+  Type.Object({
+    __type: Type.Literal("CreateAskResponseInput"),
+    askId: AskIds.TRichId,
+    response: AskResponseData,
+  }),
+);
+export type CreateAskResponseInput = Static<typeof CreateAskResponseInput>;
+
+// Get Ask Response Input Schema
+export const GetAskResponseInput = schemaType(
+  "GetAskResponseInput",
+  Type.Object({
+    __type: Type.Literal("GetAskResponseInput"),
+    askResponseId: AskResponseIds.TRichId,
+  }),
+);
+export type GetAskResponseInput = Static<typeof GetAskResponseInput>;
+
+// List Ask Responses Input Schema
+export const ListAskResponsesInput = schemaType(
+  "ListAskResponsesInput",
+  Type.Object({
+    __type: Type.Literal("ListAskResponsesInput"),
+    askId: AskIds.TRichId,
+    limit: Type.Optional(Type.Number()),
+    offset: Type.Optional(Type.Number()),
+  }),
+);
+export type ListAskResponsesInput = Static<typeof ListAskResponsesInput>;

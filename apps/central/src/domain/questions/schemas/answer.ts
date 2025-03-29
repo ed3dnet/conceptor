@@ -1,9 +1,8 @@
 import { schemaType } from "@eropple/fastify-openapi3";
 import { Type, type Static } from "@sinclair/typebox";
 
-import { AnswerIds, AskResponseIds } from "./id.js";
+import { AnswerIds, AskIds, AskResponseIds } from "./id.js";
 
-// Answer DTO
 export const AnswerPublic = schemaType(
   "AnswerPublic",
   Type.Object({
@@ -15,3 +14,25 @@ export const AnswerPublic = schemaType(
   }),
 );
 export type AnswerPublic = Static<typeof AnswerPublic>;
+
+export const GetAnswerInput = schemaType(
+  "GetAnswerInput",
+  Type.Object({
+    __type: Type.Literal("GetAnswerInput"),
+    answerId: AnswerIds.TRichId,
+  }),
+);
+export type GetAnswerInput = Static<typeof GetAnswerInput>;
+
+// List Answers Input Schema
+export const ListAnswersInput = schemaType(
+  "ListAnswersInput",
+  Type.Object({
+    __type: Type.Literal("ListAnswersInput"),
+    askResponseId: Type.Optional(AskResponseIds.TRichId),
+    askId: Type.Optional(AskIds.TRichId),
+    limit: Type.Optional(Type.Number()),
+    offset: Type.Optional(Type.Number()),
+  }),
+);
+export type ListAnswersInput = Static<typeof ListAnswersInput>;
