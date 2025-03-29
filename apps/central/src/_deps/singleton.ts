@@ -32,6 +32,7 @@ import { type AppConfig } from "../_config/types.js";
 import { AuthService } from "../domain/auth/service.js";
 import { AuthConnectorService } from "../domain/auth-connectors/service.js";
 import { EventService } from "../domain/events/service.js";
+import { QuestionsService } from "../domain/questions/service.js";
 import { TenantService } from "../domain/tenants/service.js";
 import { UnitService } from "../domain/units/service.js";
 import { UserService } from "../domain/users/service.js";
@@ -96,6 +97,7 @@ export type AppBaseCradleItems = {
   authConnectors: AuthConnectorService;
   users: UserService;
   units: UnitService;
+  questions: QuestionsService;
 };
 export type AppSingletonCradle = AppBaseCradleItems & {};
 
@@ -306,6 +308,11 @@ export async function configureBaseAwilixContainer(
     units: asFunction(
       ({ logger, db, dbRO, events, users }: AppSingletonCradle) =>
         new UnitService(logger, db, dbRO, events, users),
+    ),
+
+    questions: asFunction(
+      ({ logger, db, dbRO, events }: AppSingletonCradle) =>
+        new QuestionsService(logger, db, dbRO, events),
     ),
   });
 

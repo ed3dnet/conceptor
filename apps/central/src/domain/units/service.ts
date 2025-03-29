@@ -99,7 +99,7 @@ export class UnitService {
     const units = await executor
       .select()
       .from(UNITS)
-      .where(eq(UNITS.id, UnitIds.toUUID(unitId)))
+      .where(eq(UNITS.unitId, UnitIds.toUUID(unitId)))
       .limit(1);
 
     return units[0] || null;
@@ -278,7 +278,7 @@ export class UnitService {
     const [updatedUnit] = await executor
       .update(UNITS)
       .set(updateValues)
-      .where(eq(UNITS.id, UnitIds.toUUID(unitId)))
+      .where(eq(UNITS.unitId, UnitIds.toUUID(unitId)))
       .returning();
 
     if (!updatedUnit) {
@@ -290,7 +290,7 @@ export class UnitService {
       await this.events.dispatchEvent({
         __type: "UnitUpdated",
         tenantId: TenantIds.toRichId(tenantId),
-        unitId: UnitIds.toRichId(updatedUnit.id),
+        unitId: UnitIds.toRichId(updatedUnit.unitId),
         changedFields,
         timestamp: new Date().toISOString(),
       });
@@ -342,7 +342,9 @@ export class UnitService {
     }
 
     // Delete the unit
-    await executor.delete(UNITS).where(eq(UNITS.id, UnitIds.toUUID(unitId)));
+    await executor
+      .delete(UNITS)
+      .where(eq(UNITS.unitId, UnitIds.toUUID(unitId)));
 
     // Fire event if not squelched
     if (!options.squelchEvents) {
@@ -491,7 +493,7 @@ export class UnitService {
     await executor
       .update(UNIT_ASSIGNMENTS)
       .set({ endDate })
-      .where(eq(UNIT_ASSIGNMENTS.id, assignment.id));
+      .where(eq(UNIT_ASSIGNMENTS.unitAssignmentId, assignment.id));
 
     // Fire event if not squelched
     if (!options.squelchEvents) {

@@ -82,6 +82,45 @@ export type ResourceId = RichId<"resource">;
 export const ResourceIds = createRichIdUtils("resource");
 ```
 
+### Database Operations
+
+If you need database table information, request that the user put `apps/central/src/_db/schema/index.ts` in the chat. This file contains the definitions for all database tables and is essential for understanding how to interact with the database. Also ask for `apps/central/src/_db/models.ts` for the database models.
+
+- **ID Generation**: Let the database generate IDs - don't use `uuidv4()` or similar in application code. Our schema is set up with defaults.
+
+- **Result Extraction**: Use array destructuring to get the first result from database operations:
+  ```typescript
+  const [dbItem] = await executor.insert(TABLE).values({...}).returning();
+  if (!dbItem) {
+    throw new Error("Failed to create item");
+  }
+  ```
+
+- **Type-Specific ID Conversions**: Always use the appropriate ID utility for each entity type:
+  ```typescript
+  // Correct
+  unitId: UnitIds.toUUID(unitId)
+  
+  // Incorrect
+  unitId: AskIds.toUUID(unitId)
+  ```
+
+- **Count Queries**: Use Drizzle's count function with mapWith:
+  ```typescript
+  const [total] = await executor
+    .select({ count: count().mapWith(Number) })
+    .from(TABLE)
+    .where(and(...conditions));
+    
+  if (!total) {
+    throw new Error("Failed when counting items");
+  }
+  ```
+
+- **Error Handling**: Always check for database operation failures and throw appropriate errors.
+
+- **Query Conditions**: Build conditions arrays for complex queries and use `and(...conditions)` for combining them.
+
 #### Usage Rules
 
 1. **Type Definitions**:
@@ -94,7 +133,8 @@ export const ResourceIds = createRichIdUtils("resource");
    - Example: `tenantId: TenantIds.TRichId`
 
 3. **In Services**:
-   - Create separate methods for UUID and rich ID access patterns
+   - Create separate methods for UUID and rich ID access patterns. UUID access methods should be private to the service.
+   - Service public methods should ONLY take rich IDs as parameters, e.g. `tenantId: TenantId`.
    - Convert to UUID for database operations: `ResourceIds.toUUID(resourceId)`
    - Convert to rich ID for responses: `ResourceIds.toRichId(dbResource.resourceId)`
    - Create helper methods like `toPublicResource` that handle the conversion
@@ -146,6 +186,8 @@ private toPublicTenant(dbTenant: DBTenant): TenantPublic {
 }
 ```
 
+
+### Service rules
 
 ### Temporal
 - We use Temporal to handle long-running jobs. They run from a separate instance of the same container as the API server, and in the same NPM package.

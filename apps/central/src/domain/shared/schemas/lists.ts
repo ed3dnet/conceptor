@@ -1,6 +1,6 @@
 import { BadRequestError } from "@myapp/shared-universal/errors/index.js";
 import { type Static, type TObject, Type } from "@sinclair/typebox";
-import { TypeCheck } from "@sinclair/typebox/compiler";
+import { type TypeCheck } from "@sinclair/typebox/compiler";
 
 export type ListCursorOptions = {
   maxItems?: number;
@@ -67,11 +67,9 @@ be included.`,
   });
 }
 
-
-
 export function decodeCursor<TListInput extends typeof ListInputBase>(
   cursor: string,
-  listInputSchemaChecker: TypeCheck<TListInput>
+  listInputSchemaChecker: TypeCheck<TListInput>,
 ) {
   const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf8"));
   const { r, t, o } = decoded;
@@ -80,20 +78,25 @@ export function decodeCursor<TListInput extends typeof ListInputBase>(
       original: r,
       offset: o,
       onlyBefore: new Date(t),
-    }
+    };
   }
 
-  throw new BadRequestError("Invalid cursor: " + JSON.stringify([...listInputSchemaChecker.Errors(r)]));
+  throw new BadRequestError(
+    "Invalid cursor: " + JSON.stringify([...listInputSchemaChecker.Errors(r)]),
+  );
 }
 
 export function encodeCursor<TListInput extends typeof ListInputBase>(
-  listInput: TListInput,
+  listInput: Static<TListInput>,
   currentOffset: number,
   onlyBefore: Date | string,
 ): string {
-  const cursor: ListCursorSchema<TListInput> = {
+  const cursor = {
     r: listInput,
-    t: (typeof onlyBefore === "string" ? new Date(onlyBefore) : onlyBefore).toISOString(),
+    t: (typeof onlyBefore === "string"
+      ? new Date(onlyBefore)
+      : onlyBefore
+    ).toISOString(),
     o: currentOffset,
   };
   return Buffer.from(JSON.stringify(cursor)).toString("base64");

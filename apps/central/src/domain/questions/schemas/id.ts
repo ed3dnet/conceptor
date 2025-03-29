@@ -8,6 +8,3 @@ export const AskReferenceIds = createRichIdUtils("askref");
 
 export type AskResponseId = RichId<"askresp">;
 export const AskResponseIds = createRichIdUtils("askresp");
-
-export type AnswerId = RichId<"answer">;
-export const AnswerIds = createRichIdUtils("answer");
