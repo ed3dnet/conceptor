@@ -42,6 +42,12 @@ export function createRichIdUtils<Prefix extends string>(prefix: Prefix) {
     return pattern.test(value);
   }
 
+  function assert(value: string): asserts value is RichId<Prefix> {
+    if (!guard(value)) {
+      throw new Error(`Invalid ${prefix} ID: ${value}`);
+    }
+  }
+
   /**
    * Ensures a string is a valid rich ID with the specified prefix, or throws.
    */

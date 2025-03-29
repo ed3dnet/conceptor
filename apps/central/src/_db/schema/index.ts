@@ -21,6 +21,8 @@ import {
 import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
 import { type OIDCConnectorState } from "../../domain/auth-connectors/schemas/index.js";
+import { type AskResponseData } from "../../domain/questions/schemas/ask-response.js";
+import { type AskQuery } from "../../domain/questions/schemas/ask.js";
 import { type IdPUserInfo } from "../../domain/users/schemas.js";
 import { type StringUUID } from "../../lib/ext/typebox/index.js";
 import { type TranscriptionOptions } from "../../lib/functional/transcription/schemas.js";
@@ -739,4 +741,148 @@ export const USER_TAGS = pgTable(
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [unique("unique_user_tag").on(t.userId, t.key)],
+);
+
+// ----------------------------------------------------------------------------
+// ASKS AND ANSWERS
+// ----------------------------------------------------------------------------
+
+export const ASK_VISIBILITY = pgEnum("ask_visibility", [
+  "private",
+  "derive-only",
+  "upward",
+  "downward",
+  "public",
+]);
+
+export const MULTIPLE_ANSWER_STRATEGY = pgEnum("multiple_answer_strategy", [
+  "disallow",
+  "remember-last",
+]);
+
+export const REFERENCE_DIRECTION = pgEnum("reference_direction", [
+  "subject",
+  "object",
+]);
+
+// Add these table definitions with the other table definitions
+export const ASKS = pgTable(
+  "asks",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    tenantId: ULIDAsUUID()
+      .references(() => TENANTS.tenantId)
+      .notNull(),
+
+    hardcodeKind: text("hardcode_kind"),
+    sourceAgentName: text("source_agent_name"),
+    notifySourceAgent: boolean("notify_source_agent"),
+
+    query: jsonb("query").$type<AskQuery>().notNull(),
+    visibility: ASK_VISIBILITY("visibility").notNull(),
+    multipleAnswerStrategy: MULTIPLE_ANSWER_STRATEGY(
+      "multiple_answer_strategy",
+    ).notNull(),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      tenantIdx: index("ask_tenant_idx").on(t.tenantId),
+    },
+  ],
+);
+
+export const ASK_REFERENCES = pgTable(
+  "ask_references",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    askId: ULIDAsUUID("ask_id")
+      .references(() => ASKS.id)
+      .notNull(),
+
+    referenceDirection: REFERENCE_DIRECTION("reference_direction").notNull(),
+
+    unitId: ULIDAsUUID("unit_id").references(() => UNITS.id),
+    initiativeId: ULIDAsUUID("initiative_id").references(() => INITIATIVES.id),
+    capabilityId: ULIDAsUUID("capability_id").references(() => CAPABILITIES.id),
+    answerId: ULIDAsUUID("answer_id").references(() => ANSWERS.id),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      askIdx: index("ask_references_ask_idx").on(t.askId),
+      unitIdx: index("ask_references_unit_idx").on(t.unitId),
+      initiativeIdx: index("ask_references_initiative_idx").on(t.initiativeId),
+      capabilityIdx: index("ask_references_capability_idx").on(t.capabilityId),
+      answerId: index("ask_references_answer_idx").on(t.answerId),
+    },
+    check(
+      "one_reference_target",
+      sql`(
+        (${t.unitId} IS NOT NULL)::integer +
+        (${t.initiativeId} IS NOT NULL)::integer +
+        (${t.capabilityId} IS NOT NULL)::integer +
+        (${t.answerId} IS NOT NULL)::integer
+      ) = 1`,
+    ),
+  ],
+);
+
+export const ASK_RESPONSES = pgTable(
+  "ask_responses",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    askId: ULIDAsUUID("ask_id")
+      .references(() => ASKS.id)
+      .notNull(),
+    userId: ULIDAsUUID("user_id")
+      .references(() => USERS.userId)
+      .notNull(),
+
+    response: jsonb("response").$type<AskResponseData>().notNull(),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      askIdx: index("ask_responses_ask_idx").on(t.askId),
+      userIdx: index("ask_responses_user_idx").on(t.userId),
+    },
+  ],
+);
+
+export const ANSWERS = pgTable(
+  "answers",
+  {
+    id: ULIDAsUUID().primaryKey(),
+    askResponseId: ULIDAsUUID("ask_response_id")
+      .references(() => ASK_RESPONSES.id)
+      .notNull(),
+
+    text: text("text").notNull(),
+
+    extraAttributes: jsonb("extra_attributes")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .$default(() => ({})),
+
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    {
+      responseIdx: index("answers_response_idx").on(t.askResponseId),
+    },
+  ],
 );

@@ -18,6 +18,10 @@ import {
   type UNITS,
   type UNIT_ASSIGNMENTS,
   type UNIT_TAGS,
+  type ANSWERS,
+  type ASKS,
+  type ASK_REFERENCES,
+  type ASK_RESPONSES,
 } from "./schema/index.js";
 
 export type DBSeed = InferSelectModel<typeof SEEDS>;
@@ -49,3 +53,8 @@ export type DBUserSession = InferSelectModel<typeof USER_SESSIONS>;
 export type DBUnit = InferSelectModel<typeof UNITS>;
 export type DBUnitAssignment = InferSelectModel<typeof UNIT_ASSIGNMENTS>;
 export type DBUnitTag = InferSelectModel<typeof UNIT_TAGS>;
+
+export type DBAsk = InferSelectModel<typeof ASKS>;
+export type DBAskReference = InferSelectModel<typeof ASK_REFERENCES>;
+export type DBAskResponse = InferSelectModel<typeof ASK_RESPONSES>;
+export type DBAnswer = InferSelectModel<typeof ANSWERS>;
