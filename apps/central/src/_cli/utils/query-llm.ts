@@ -1,12 +1,18 @@
-import { command, option, string, optional, number } from "cmd-ts";
+import { command, option, string } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
+import { TenantIds } from "../../domain/tenants/id.js";
 import { bootstrapNode } from "../../lib/bootstrap/init.js";
 import { type LlmModelConnectorName } from "../../lib/functional/llm-prompter/config.js";
 
 export const queryLlmCommand = command({
   name: "query-llm",
   args: {
+    tenantId: option({
+      type: string,
+      long: "tenantId",
+      description: "The tenant to register this LLM query to",
+    }),
     connector: option({
       type: string,
       long: "connector",
@@ -18,7 +24,7 @@ export const queryLlmCommand = command({
       description: "Text prompt to send to the LLM",
     }),
   },
-  handler: async ({ connector, prompt }) => {
+  handler: async ({ connector, prompt, tenantId }) => {
     const { ROOT_LOGGER, ROOT_CONTAINER } = await bootstrapNode(
       "cli-query-llm",
       loadAppConfigFromEnvNode(),
@@ -27,7 +33,13 @@ export const queryLlmCommand = command({
       },
     );
 
-    const llmPrompter = ROOT_CONTAINER.cradle.llmPrompter;
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+      TenantIds.ensure(tenantId),
+    );
+
+    // right now, tenancy doesn't matter technically here, but in the
+    // future it will for both attribution and custom LLM configurations.
+    const llmPrompter = tenantDomain.cradle.llmPrompter;
 
     const response = await llmPrompter.immediateQuery(
       connector as LlmModelConnectorName,

@@ -28,8 +28,11 @@ export const completeImageUploadCommand = command({
       },
     );
 
-    const { imageId } = await ROOT_CONTAINER.cradle.images.completeUpload(
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
       TenantIds.ensure(tenantId),
+    );
+
+    const { imageId } = await tenantDomain.cradle.images.completeUpload(
       ImageUploadIds.ensure(imageUploadId),
     );
 

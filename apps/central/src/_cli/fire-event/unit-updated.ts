@@ -33,7 +33,11 @@ export const unitUpdatedCommand = command({
       },
     );
 
-    await ROOT_CONTAINER.cradle.events.dispatchEvent({
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+      TenantIds.ensure(tenantId),
+    );
+
+    await tenantDomain.cradle.events.dispatchEvent({
       __type: "UnitUpdated",
       tenantId: TenantIds.ensure(tenantId),
       unitId: UnitIds.ensure(unitId),

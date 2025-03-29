@@ -38,9 +38,11 @@ export const userEmailAddedCommand = command({
       },
     );
 
-    const events = ROOT_CONTAINER.resolve("events");
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+      TenantIds.ensure(tenantId),
+    );
 
-    await events.dispatchEvent({
+    await tenantDomain.cradle.events.dispatchEvent({
       __type: "UserEmailAdded",
       tenantId: TenantIds.ensure(tenantId),
       userId: UserIds.ensure(userId),

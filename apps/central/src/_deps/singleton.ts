@@ -80,7 +80,7 @@ export type AppBaseCradleItems = {
   tenants: TenantService;
   tenantDomain: (
     tenantId: TenantId,
-  ) => AwilixContainer<AppTenantSingletonScopeItems>;
+  ) => Promise<AwilixContainer<AppTenantSingletonScopeItems>>;
 
   // are you adding a domain object? STOP!
   // it should have tenancy and thus be put in the tenant domain!
@@ -203,7 +203,7 @@ export async function configureBaseAwilixContainer(
         new TenantService(logger, db, dbRO),
     ),
 
-    tenantDomain: asValue((tenantId: TenantId) =>
+    tenantDomain: asValue(async (tenantId: TenantId) =>
       configureTenantDomainContainer(tenantId, container),
     ),
 

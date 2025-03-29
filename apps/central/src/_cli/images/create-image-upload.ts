@@ -28,11 +28,12 @@ export const createImageUploadCommand = command({
       },
     );
 
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+      TenantIds.ensure(tenantId),
+    );
+
     const { uploadUrl, imageUploadId } =
-      await ROOT_CONTAINER.cradle.images.createUploadUrl(
-        TenantIds.ensure(tenantId),
-        usage as ImageUsage,
-      );
+      await tenantDomain.cradle.images.createUploadUrl(usage as ImageUsage);
 
     ROOT_LOGGER.info({ uploadUrl, imageUploadId }, "Created image upload");
     process.stdout.write(JSON.stringify({ uploadUrl, imageUploadId }) + "\n");

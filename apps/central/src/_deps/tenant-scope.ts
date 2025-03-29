@@ -59,17 +59,35 @@ export type AppTenantRequestScopeItems = AppRequestCradle & AppTenantScopeItems;
 export type AppTenantSingletonScopeItems = AppSingletonCradle &
   AppTenantScopeItems;
 
-export function configureTenantDomainContainer<
+export async function configureTenantDomainContainer<
   T extends AppSingletonCradle | AppRequestCradle,
 >(
-  tenantId: TenantId,
+  candidateTenantId: TenantId,
   containerToWrap: AwilixContainer<T>,
-): AwilixContainer<AppTenantScopeItems & T> {
+): Promise<AwilixContainer<AppTenantScopeItems & T>> {
   type TenantDomainItems = AppTenantScopeItems & T;
+
+  const baseLogger = containerToWrap.cradle.logger.child({
+    component: "TenantDomainCreator",
+  });
+
+  baseLogger.debug({ candidateTenantId }, "Creating tenant domain container");
+
+  // ensure we have an actual tenant here
+  const tenant =
+    await containerToWrap.cradle.tenants.getByTenantId(candidateTenantId);
+  if (!tenant) {
+    throw new Error(`Tenant '${candidateTenantId}' not found`);
+  }
+
+  const tenantId = tenant.tenantId;
+
+  const logger = baseLogger.child({ tenantId });
+
   const tenantDomain = containerToWrap.createScope<AppTenantScopeItems>();
 
   const registrations: NameAndRegistrationPair<AppTenantScopeItems> = {
-    tenantId: asValue(tenantId),
+    tenantId: asValue(tenant.tenantId),
 
     images: asFunction(
       ({
@@ -158,9 +176,10 @@ export function configureTenantDomainContainer<
 
   // all other registrations are coming from the parent scope, so this
   // is safe (if ugly).
-  tenantDomain.register(
-    registrations as NameAndRegistrationPair<T & AppTenantScopeItems>,
-  );
+  tenantDomain.register({
+    logger: asValue(logger),
+    ...(registrations as NameAndRegistrationPair<T & AppTenantScopeItems>),
+  });
 
   return tenantDomain;
 }

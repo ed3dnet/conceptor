@@ -1,4 +1,4 @@
-import { command, option, string, array, multioption } from "cmd-ts";
+import { command, option, string } from "cmd-ts";
 
 import { loadAppConfigFromEnvNode } from "../../_config/env-loader.js";
 import { TenantIds } from "../../domain/tenants/id.js";
@@ -18,13 +18,13 @@ export const userUpdatedCommand = command({
       long: "user-id",
       description: "The user ID",
     }),
-    fields: multioption({
-      type: array(string),
-      long: "fields",
-      description: "The fields that were changed",
+    changedFields: option({
+      type: string,
+      long: "changed-fields",
+      description: "Comma-separated list of changed fields",
     }),
   },
-  handler: async ({ tenantId, userId, fields: changedFields }) => {
+  handler: async ({ tenantId, userId, changedFields }) => {
     const { ROOT_LOGGER, ROOT_CONTAINER } = await bootstrapNode(
       "cli-fire-event-user-updated",
       loadAppConfigFromEnvNode(),
@@ -33,13 +33,15 @@ export const userUpdatedCommand = command({
       },
     );
 
-    const events = ROOT_CONTAINER.resolve("events");
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+      TenantIds.ensure(tenantId),
+    );
 
-    await events.dispatchEvent({
+    await tenantDomain.cradle.events.dispatchEvent({
       __type: "UserUpdated",
       tenantId: TenantIds.ensure(tenantId),
       userId: UserIds.ensure(userId),
-      changedFields,
+      changedFields: changedFields.split(","),
       timestamp: new Date().toISOString(),
     });
 
@@ -47,5 +49,6 @@ export const userUpdatedCommand = command({
       { tenantId, userId, changedFields },
       "Fired UserUpdated event via CLI",
     );
+    process.exit(0);
   },
 });
