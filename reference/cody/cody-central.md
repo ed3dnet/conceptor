@@ -62,6 +62,8 @@ async function apiRoutes(fastify: AppFastify) {
   - Any DTO that will end up in an API response needs a `__type` property that names the DTO, to help create type errors when objects not intended to be part of the API surface are returned by an API handler.
   - When creating a new resource, check for the existence of a resource with the same name before creating it. If it exists, throw a `ConflictError`.
   - Remember that our standard discriminated union key is `kind`, not `type`.
+- All objects that are inputs to a service should have `Input` in the name. UNLIKE other data structures, we do NOT want `__type` in input structures, as that would suggest we're asking customers to do that and that's bad.
+- All list endpoints should be using the list framework in `domain/shared/schemas/lists.ts`. This implies both a `ListXInput` and a `ListXInputOrCursor` input to those methods; the cursor object includes the original `ListXInput` as well as the necessary cursor properties. (Technical implementation: because of the way json schema and typescript work, you cannot `Type.Intersect` to `ListInputBase`, you must instead do `Type.Object({ ...ListInputBase.properties })`.)
 
 ### Rich IDs
 

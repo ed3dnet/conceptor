@@ -16,12 +16,19 @@ import { env } from "$env/dynamic/private";
 const appConfig = loadAppConfigFromSvelteEnv();
 
 const overrideLogLevel: LogLevel | null = "debug";
-const ROOT_LOGGER = buildStandardLogger("site-panel", overrideLogLevel ?? appConfig.logLevel, {
-  useStdout: false,
-  prettyPrint: appConfig.prettyLogs,
-});
+const ROOT_LOGGER = buildStandardLogger(
+  "site-panel",
+  overrideLogLevel ?? appConfig.logLevel,
+  {
+    useStdout: false,
+    prettyPrint: appConfig.prettyLogs,
+  },
+);
 
-ROOT_LOGGER.info({ csrfOrigin: process.env.ORIGIN ?? "NOT SET!!" }, "Initializing.");
+ROOT_LOGGER.info(
+  { csrfOrigin: process.env.ORIGIN ?? "NOT SET!!" },
+  "Initializing.",
+);
 
 const genRandomId = buildRequestIdGenerator("PNL");
 
@@ -48,7 +55,7 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
         // headers: isApiRequest ? undefined : [...event.request.headers.keys()],
       },
     },
-    "Request started."
+    "Request started.",
   );
 
   // @ts-expect-error this is where we set a readonly value
@@ -104,8 +111,14 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
       logger.info({ status: ret.status }, "Request returned a handled error.");
     }
 
-    ret.headers.append("Access-Control-Allow-Origin", appConfig.urls.panelBaseUrl);
-    ret.headers.append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
+    ret.headers.append(
+      "Access-Control-Allow-Origin",
+      appConfig.urls.panelBaseUrl,
+    );
+    ret.headers.append(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+    );
     ret.headers.append("Access-Control-Allow-Credentials", "true");
   } catch (err) {
     if (isRedirect(err)) {
@@ -114,7 +127,10 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
     }
 
     const duration = Date.now() - startTimestamp;
-    logger.error({ fn: handle.name, err, duration }, "Request threw an unhandled error.");
+    logger.error(
+      { fn: handle.name, err, duration },
+      "Request threw an unhandled error.",
+    );
     throw err;
   }
 
@@ -128,7 +144,7 @@ export const handle: Handle = sequence(async ({ event, resolve }) => {
         duration,
       },
     },
-    "Request completed."
+    "Request completed.",
   );
 
   ret.headers.set("x-request-id", requestId);
