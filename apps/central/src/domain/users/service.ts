@@ -203,7 +203,6 @@ export class UserService {
       __type: "UserPrivate",
       userId: UserIds.toRichId(user.userId),
       tenantId: TenantIds.toRichId(user.tenantId),
-      connectorId: AuthConnectorIds.toRichId(user.connectorId),
       displayName: user.displayName,
       avatarUrl,
       lastAccessedAt: (user.lastAccessedAt ?? undefined)?.toISOString(),

@@ -25,7 +25,7 @@ async function authRoutes(fastify: AppFastify) {
       security: [], // intentionally not secured
     },
     handler: async (request, reply) => {
-      const { tenants } = request.deps;
+      const { tenants } = request.requestDeps;
 
       const tenant = await tenants.getByIdOrSlug(request.params.tenantIdOrSlug);
 

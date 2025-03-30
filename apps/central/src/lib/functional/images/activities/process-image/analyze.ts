@@ -1,9 +1,11 @@
 import { activity } from "../../../../../_worker/activity-helpers.js";
+import { type TenantId } from "../../../../../domain/tenants/id.js";
 import { type S3BucketName } from "../../../object-store/config.js";
 import { type ImageId } from "../../id.js";
 import { type ImageAnalysis } from "../../processing/analyze.js";
 
 export interface AnalyzeImageActivityInput {
+  tenantId: TenantId;
   imageId: ImageId;
   sourceBucket: S3BucketName;
   sourceObject: string;
@@ -21,7 +23,7 @@ export const analyzeImageActivity = activity("analyzeImage", {
     deps,
     input: AnalyzeImageActivityInput,
   ): Promise<AnalyzeImageActivityOutput> => {
-    const { images } = deps;
+    const { images } = (await deps.tenantDomainBuilder(input.tenantId)).cradle;
     return await images.analyzeImage(
       input.imageId,
       input.sourceBucket,

@@ -142,9 +142,7 @@ export class AuthConnectorService {
     return connector[0] ?? null;
   }
 
-  async getByTenantId(
-    executor: DrizzleRO = this.dbRO,
-  ): Promise<DBAuthConnector[]> {
+  async list(executor: DrizzleRO = this.dbRO): Promise<DBAuthConnector[]> {
     return executor
       .select()
       .from(AUTH_CONNECTORS)

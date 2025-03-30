@@ -36,13 +36,14 @@ export async function registerDependencyInjection(
     const scope: AwilixContainer<AppRequestCradle> =
       await configureRequestAwilixContainer(
         config,
-        request.log as Logger,
+        request,
         fastify.diContainer,
       );
 
     // @ts-expect-error this is where we set a readonly value
     request.diScope = scope;
-    request.deps = scope.cradle;
+    // @ts-expect-error this is where we set a readonly value
+    request.requestDeps = scope.cradle;
   });
 
   fastify.decorate("deps", () => fastify.diContainer.cradle);

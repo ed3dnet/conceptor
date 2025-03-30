@@ -17,7 +17,9 @@ export const seed: SeedFn = async (deps, logger) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
 
-  const connector = await deps.authConnectors.TX_createConnector({
+  const tenantDeps = (await deps.tenantDomainBuilder(tenant.tenantId)).cradle;
+
+  const connector = await tenantDeps.authConnectors.TX_createConnector({
     authConnectorId: AuthConnectorIds.toRichId(
       "00000000-0000-0000-0000-000000000000",
     ),

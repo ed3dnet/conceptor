@@ -201,6 +201,7 @@ export class ImagesService {
 
     await this.temporalDispatch.startMedia(processImageWorkflow, [
       {
+        tenantId: this.tenantId,
         imageId: ImageIds.toRichId(image.imageId),
         sourceBucket: "upload-staging",
         sourceObject: upload.stagingObjectName,

@@ -90,12 +90,8 @@ export type UserTag = Static<typeof UserTag>;
 export const UserPrivate = schemaType(
   "UserPrivate",
   Type.Object({
+    ...UserPublic.properties,
     __type: Type.Literal("UserPrivate"),
-    userId: UserIds.TRichId,
-    tenantId: TenantIds.TRichId,
-    connectorId: AuthConnectorIds.TRichId,
-    displayName: Type.String(),
-    avatarUrl: Type.Optional(Type.String()),
     lastAccessedAt: Type.Optional(Type.String({ format: "date-time" })),
     emails: Type.Array(UserEmail),
     externalIds: Type.Array(UserExternalId),

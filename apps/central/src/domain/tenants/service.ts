@@ -107,6 +107,12 @@ export class TenantService {
     return null;
   }
 
+  async list(): Promise<Array<TenantPublic>> {
+    const tenants = await this.dbRO.select().from(TENANTS);
+
+    return tenants.map((tenant) => this.toPublicTenant(tenant));
+  }
+
   async withTenantByIdOrSlug<T>(
     idOrSlug: string,
     fn: (tenant: TenantPublic) => Promise<T>,

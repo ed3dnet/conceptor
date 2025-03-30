@@ -78,7 +78,7 @@ export type AppBaseCradleItems = {
   events: EventService;
 
   tenants: TenantService;
-  tenantDomain: (
+  tenantDomainBuilder: (
     tenantId: TenantId,
   ) => Promise<AwilixContainer<AppTenantSingletonScopeItems>>;
 
@@ -203,7 +203,7 @@ export async function configureBaseAwilixContainer(
         new TenantService(logger, db, dbRO),
     ),
 
-    tenantDomain: asValue(async (tenantId: TenantId) =>
+    tenantDomainBuilder: asValue(async (tenantId: TenantId) =>
       configureTenantDomainContainer(tenantId, container),
     ),
 

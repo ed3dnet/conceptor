@@ -1,9 +1,11 @@
 import { activity } from "../../../../../_worker/activity-helpers.js";
+import { type TenantId } from "../../../../../domain/tenants/id.js";
 import { type S3BucketName } from "../../../object-store/config.js";
 import { type ImageId } from "../../id.js";
 import { type ImageAnalysis } from "../../processing/analyze.js";
 
 export interface OptimizeOriginalActivityInput {
+  tenantId: TenantId;
   imageId: ImageId;
   sourceBucket: S3BucketName;
   sourceObject: string;
@@ -23,7 +25,7 @@ export const optimizeOriginalActivity = activity("optimizeOriginal", {
     deps,
     input: OptimizeOriginalActivityInput,
   ): Promise<OptimizeOriginalActivityOutput> => {
-    const { images } = deps;
+    const { images } = (await deps.tenantDomainBuilder(input.tenantId)).cradle;
     logger.debug("entering optimizeOriginalActivity");
     await images.optimizeOriginal(
       input.imageId,

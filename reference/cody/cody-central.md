@@ -186,8 +186,197 @@ private toPublicTenant(dbTenant: DBTenant): TenantPublic {
 }
 ```
 
+### Service Development and Tenant Domains
 
-### Service rules
+Conceptor uses a tenant-scoped architecture where most services operate within the context of a specific tenant. This ensures proper multi-tenancy isolation and security. Understanding how to develop and use services within this architecture is essential.
+
+#### Tenant Domain Architecture
+
+Services in Conceptor fall into two categories:
+
+1. **Global Services**: These operate across all tenants (e.g., `TenantService`, `EventService`)
+2. **Tenant-Scoped Services**: These operate within a specific tenant's context (e.g., `UserService`, `UnitService`, `QuestionsService`)
+
+The tenant domain container provides tenant-specific instances of services with proper isolation:
+
+```typescript
+// Getting a tenant-scoped service
+const tenantDomain = await container.cradle.tenantDomain(tenantId);
+const userService = tenantDomain.cradle.users;
+```
+
+#### Developing Tenant-Scoped Services
+
+When creating a new tenant-scoped service:
+
+1. **Constructor Pattern**: Always accept `tenantId` as the last parameter in the constructor:
+
+```typescript
+export class MyService {
+  private readonly logger: Logger;
+  private readonly tenantUuid: StringUUID;
+
+  constructor(
+    logger: Logger,
+    private readonly db: Drizzle,
+    private readonly dbRO: DrizzleRO,
+    private readonly events: EventService,
+    readonly tenantId: TenantId,
+  ) {
+    this.logger = logger.child({ 
+      component: this.constructor.name,
+      tenantId 
+    });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
+  }
+}
+```
+
+2. **Database Queries**: Always filter by tenant ID in all database queries:
+
+```typescript
+const items = await executor
+  .select()
+  .from(MY_TABLE)
+  .where(and(
+    eq(MY_TABLE.tenantId, this.tenantUuid),
+    // other conditions...
+  ));
+```
+
+3. **Events**: Use the service's tenant ID when dispatching events:
+
+```typescript
+await this.events.dispatchEvent({
+  __type: "MyEntityCreated",
+  tenantId: this.tenantId,
+  entityId: entityId,
+  timestamp: new Date().toISOString(),
+});
+```
+
+4. **Service Registration**: Register your service in `apps/central/src/_deps/tenant-scope.ts`:
+
+```typescript
+// In AppTenantScopeItems type
+export type AppTenantScopeItems = {
+  // ...existing services
+  myService: MyService,
+};
+
+// In registrations object
+myService: asFunction(
+  ({ logger, db, dbRO, events }: TenantDomainItems) =>
+    new MyService(logger, db, dbRO, events, tenantId),
+),
+```
+
+#### Subservices Pattern
+
+For complex domains, use the subservice pattern to organize functionality:
+
+1. **Main Service**: Acts as a facade and lazy-loads subservices:
+
+```typescript
+export class ComplexService {
+  private _subServiceA?: SubServiceA;
+  private _subServiceB?: SubServiceB;
+
+  constructor(
+    logger: Logger,
+    private readonly db: Drizzle,
+    private readonly dbRO: DrizzleRO,
+    private readonly events: EventService,
+    readonly tenantId: TenantId,
+  ) {
+    this.logger = logger.child({ component: this.constructor.name, tenantId });
+    this.tenantUuid = TenantIds.toUUID(tenantId);
+  }
+
+  get serviceA(): SubServiceA {
+    if (!this._subServiceA) {
+      this._subServiceA = new SubServiceA(
+        this.logger,
+        this.db,
+        this.dbRO,
+        this.events,
+        this.tenantId
+      );
+    }
+    return this._subServiceA;
+  }
+
+  get serviceB(): SubServiceB {
+    if (!this._subServiceB) {
+      this._subServiceB = new SubServiceB(
+        this.logger,
+        this.db,
+        this.dbRO,
+        this.events,
+        this.tenantId
+      );
+    }
+    return this._subServiceB;
+  }
+}
+```
+
+2. **Subservices**: Follow the same tenant-scoped pattern as regular services.
+
+#### Using Tenant Domains in CLI Commands
+
+CLI commands should use the tenant domain pattern to ensure proper tenant validation and isolation:
+
+```typescript
+export const myCommand = command({
+  name: "my-command",
+  args: {
+    tenantId: option({
+      type: string,
+      long: "tenant-id",
+      description: "The tenant ID",
+    }),
+    // other args...
+  },
+  handler: async ({ tenantId, ...otherArgs }) => {
+    const { ROOT_LOGGER, ROOT_CONTAINER } = await bootstrapNode(
+      "cli-my-command",
+      loadAppConfigFromEnvNode(),
+      {
+        skipMigrations: true,
+      },
+    );
+
+    // Get tenant domain to ensure tenant exists and for proper scoping
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+      TenantIds.ensure(tenantId)
+    );
+
+    // Use tenant-scoped services
+    const result = await tenantDomain.cradle.myService.doSomething(...);
+
+    ROOT_LOGGER.info({ tenantId, ...result }, "Command completed");
+    process.exit(0);
+  },
+});
+```
+
+#### Dependency Injection and Service Lifecycle
+
+Conceptor uses Awilix for dependency injection with three container scopes:
+
+1. **Singleton Scope**: Global services and resources (defined in `singleton.ts`)
+2. **Tenant Scope**: Tenant-specific services (defined in `tenant-scope.ts`)
+3. **Request Scope**: HTTP request-specific resources (defined in `request.ts`)
+
+Services are instantiated lazily when first accessed and follow these lifecycle rules:
+
+- **Singleton Services**: Created once and shared across the application
+- **Tenant Services**: Created once per tenant and shared across requests for that tenant
+- **Request Services**: Created for each HTTP request
+
+When developing services, consider which scope is appropriate based on the service's responsibilities and state management needs.
+
 
 ### Temporal
 - We use Temporal to handle long-running jobs. They run from a separate instance of the same container as the API server, and in the same NPM package.

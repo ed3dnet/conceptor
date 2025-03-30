@@ -1,9 +1,25 @@
 import { type ApiKeySecurityScheme } from "@eropple/fastify-openapi3";
-import { UnauthorizedError } from "@myapp/shared-universal/errors/index.js";
-import { type FastifyRequest, type FastifyReply } from "fastify";
+import {
+  NotFoundError,
+  UnauthorizedError,
+} from "@myapp/shared-universal/errors/index.js";
+import { type AwilixContainer } from "awilix";
+import {
+  type FastifyRequest,
+  type FastifyReply,
+  type RouteGenericInterface,
+  RouteShorthandOptions,
+} from "fastify";
 
 import { type DBTenant, type DBUser } from "../../_db/models.js";
+import {
+  type AppTenantSingletonScopeItems,
+  configureTenantDomainContainer,
+  type AppTenantRequestScopeItems,
+} from "../../_deps/tenant-scope.js";
 import { type AuthConfig } from "../../domain/auth/config.js";
+import { type TenantPublic } from "../../domain/tenants/schemas.js";
+import { type UserPrivate } from "../../domain/users/schemas.js";
 
 export const TENANT_USER_AUTH_SCHEME = "TenantUserCookie";
 export const TENANT_USER_AUTH = { [TENANT_USER_AUTH_SCHEME]: [] };
@@ -15,7 +31,7 @@ export function buildTenantUserCookieHandler(
     in: "cookie",
     name: authConfig.sessionCookie.name,
     fn: async (value, request) => {
-      const { auth, memorySWR } = request.deps;
+      const { tenants, tenantDomainBuilder } = request.requestDeps;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { tenantIdOrSlug } = request.params as any;
@@ -27,18 +43,7 @@ export function buildTenantUserCookieHandler(
         return { ok: false, code: 401 };
       }
 
-      const tenant = (
-        await memorySWR(
-          `tenants:${tenantIdOrSlug}`,
-          async () => {
-            return request.deps.tenants.getByIdOrSlug(tenantIdOrSlug);
-          },
-          {
-            maxTimeToLive: 10000,
-            minTimeToStale: 1000,
-          },
-        )
-      ).value;
+      const tenant = await tenants.getByIdOrSlug(tenantIdOrSlug);
 
       if (!tenant) {
         request.log.warn(
@@ -47,10 +52,23 @@ export function buildTenantUserCookieHandler(
         return { ok: false, code: 401 };
       }
 
-      // @ts-expect-error this is where we set a readonly value
-      request.tenant = tenant;
+      if (!tenant) {
+        request.log.warn(
+          `${TENANT_USER_AUTH_SCHEME} executed but tenant ${tenantIdOrSlug} not found`,
+        );
+        return { ok: false, code: 401 };
+      }
 
-      const user = await auth.resolveSessionTokenToUser(value);
+      const tenantContainer = await tenantDomainBuilder(tenant.tenantId);
+      // @ts-expect-error this is where we set a readonly value
+      request.tenancy = {
+        tenant,
+        container: tenantContainer,
+        deps: tenantContainer.cradle,
+      };
+
+      const user =
+        await request.tenancy.deps.auth.resolveSessionTokenToUser(value);
 
       if (!user) {
         return { ok: false, code: 401 };
@@ -76,23 +94,48 @@ export function buildTenantUserCookieHandler(
   };
 }
 
+/**
+ * This function ensures that the user has a resolved tenant.
+ */
+export function tH<
+  TRet,
+  TRequest extends FastifyRequest,
+  TReply extends FastifyReply,
+>(
+  request: TRequest,
+  reply: TReply,
+  fn: (
+    tenant: TenantPublic,
+    tenantDeps: AppTenantSingletonScopeItems,
+  ) => TRet | Promise<TRet>,
+) {
+  if (request.tenancy) {
+    return fn(request.tenancy.tenant, request.tenancy.deps);
+  }
+
+  throw new UnauthorizedError("Not authenticated");
+}
+/**
+ * This function ensures that the user is both logged in and has a resolved tenant.
+ * @param fn
+ * @returns
+ */
 export function uH<
   TRet,
   TRequest extends FastifyRequest,
   TReply extends FastifyReply,
 >(
+  request: TRequest,
+  reply: TReply,
   fn: (
-    user: DBUser,
-    tenant: DBTenant,
-    request: TRequest,
-    reply: TReply,
+    user: UserPrivate,
+    tenant: TenantPublic,
+    tenantDeps: AppTenantSingletonScopeItems,
   ) => TRet | Promise<TRet>,
 ) {
-  return async (request: TRequest, reply: TReply) => {
-    if (request.user && request.tenant) {
-      return fn(request.user, request.tenant, request, reply);
-    }
+  if (request.tenancy && request.user) {
+    return fn(request.user, request.tenancy.tenant, request.tenancy.deps);
+  }
 
-    throw new UnauthorizedError("Not authenticated");
-  };
+  throw new UnauthorizedError("Not authenticated");
 }

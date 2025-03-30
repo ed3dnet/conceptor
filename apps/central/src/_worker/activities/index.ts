@@ -1,5 +1,6 @@
 import { groupByTags } from "@myapp/shared-universal/utils/data-structures.js";
 
+import { listTenantIdsActivity } from "../../domain/tenants/activities/list-tenant-ids.js";
 import { EMAIL_DELIVERY_ACTIVITIES } from "../../lib/functional/email-delivery/activities/index.js";
 import { IMAGE_ACTIVITIES } from "../../lib/functional/images/activities/index.js";
 import { type ExportedActivity } from "../activity-helpers.js";
@@ -16,6 +17,8 @@ export const ALL_ACTIVITIES: Array<ExportedActivity> = [
   doPingActivity,
   doHourlyTriggerActivity,
   doDailyTriggerActivity,
+
+  listTenantIdsActivity,
 
   // core queue activities
   ...EMAIL_DELIVERY_ACTIVITIES,

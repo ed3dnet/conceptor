@@ -1,5 +1,6 @@
 import * as workflow from "@temporalio/workflow";
 
+import { type TenantId } from "../../../../domain/tenants/id.js";
 import { type S3BucketName } from "../../object-store/config.js";
 import { type analyzeImageActivity } from "../activities/process-image/analyze.js";
 import { type generateAVIFActivity } from "../activities/process-image/generate-avif.js";
@@ -27,6 +28,7 @@ const {
 const MINIMUM_PIXELS_FOR_AVIF = 1280 * 720;
 
 export interface ProcessImageWorkflowInput {
+  tenantId: TenantId;
   imageId: ImageId;
   sourceBucket: S3BucketName;
   sourceObject: string;
@@ -42,6 +44,7 @@ export async function processImageWorkflow(
   });
 
   const { analysis } = await analyzeImage({
+    tenantId: input.tenantId,
     imageId: input.imageId,
     sourceBucket: input.sourceBucket,
     sourceObject: input.sourceObject,

@@ -75,6 +75,8 @@ export const seed: SeedFn = async (deps, logger) => {
       "00000000-0000-0000-0000-000000000000",
     );
 
+    const tenantDeps = (await deps.tenantDomainBuilder(tenantId)).cradle;
+
     // Wrap all database operations in a transaction
     await deps.db.transaction(async (tx) => {
       logger.info("Starting transaction for users and units seeding");
@@ -111,7 +113,7 @@ export const seed: SeedFn = async (deps, logger) => {
         };
 
         // Create the user
-        const dbUser = await deps.users.createUser(
+        const dbUser = await tenantDeps.users.createUser(
           {
             __type: "CreateUserInput",
             tenantId,
@@ -142,7 +144,7 @@ export const seed: SeedFn = async (deps, logger) => {
 
         for (const [key, value] of userTags) {
           if (value) {
-            await deps.users.setUserTag(
+            await tenantDeps.users.setUserTag(
               UserIds.toRichId(dbUser.userId),
               key,
               value,
@@ -163,8 +165,7 @@ export const seed: SeedFn = async (deps, logger) => {
           : null;
 
         // Create the unit using UnitService
-        const dbUnit = await deps.units.createUnit(
-          tenantId,
+        const createdUnit = await tenantDeps.units.createUnit(
           {
             __type: "CreateUnitInput",
             name: unit.name,
@@ -177,16 +178,15 @@ export const seed: SeedFn = async (deps, logger) => {
         );
 
         // Store the mapping
-        unitIdMap.set(unit.id, UnitIds.toRichId(dbUnit.id));
+        unitIdMap.set(unit.id, UnitIds.toRichId(createdUnit.unitId));
 
         // If it's an individual unit with an employee, create the assignment
         if (unit.kind === "Individual" && unit.employee_id) {
           const userId = userIdMap.get(unit.employee_id);
           if (userId) {
             // Assign user to unit using UnitService
-            await deps.units.assignUserToUnit(
-              tenantId,
-              UnitIds.toRichId(dbUnit.id),
+            await tenantDeps.units.assignUserToUnit(
+              UnitIds.toRichId(createdUnit.unitId),
               {
                 __type: "UnitAssignmentInput",
                 userId: userId,

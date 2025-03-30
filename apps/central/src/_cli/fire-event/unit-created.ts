@@ -45,7 +45,7 @@ export const unitCreatedCommand = command({
       },
     );
 
-    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomain(
+    const tenantDomain = await ROOT_CONTAINER.cradle.tenantDomainBuilder(
       TenantIds.ensure(tenantId),
     );
 

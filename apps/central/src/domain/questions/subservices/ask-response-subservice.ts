@@ -97,7 +97,7 @@ export class AskResponseSubservice {
       __type: "AskResponseCreated",
       tenantId: this.tenantId,
       askId: askId,
-      askResponseId: AskIds.toRichId(dbAskResponse.askResponseId),
+      askResponseId: AskResponseIds.toRichId(dbAskResponse.askResponseId),
       userId: userId,
       timestamp: now.toISOString(),
     });

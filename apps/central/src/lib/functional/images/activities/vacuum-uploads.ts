@@ -4,15 +4,29 @@ import { and, lt, exists, eq, arrayContains, not } from "drizzle-orm";
 
 import { IMAGE_UPLOADS, IMAGES } from "../../../../_db/schema/index.js";
 import { activity } from "../../../../_worker/activity-helpers.js";
+import { type TenantId, TenantIds } from "../../../../domain/tenants/id.js";
 import { ImageUploadIds } from "../id.js";
 
+export interface VacuumUploadsActivityInput {
+  tenantId: TenantId;
+}
+
 export const vacuumUploadsActivity = activity("vacuumUploads", {
-  fn: async (_context, logger, deps): Promise<void> => {
-    const { db, images } = deps;
+  fn: async (
+    _context,
+    logger,
+    deps,
+    { tenantId }: VacuumUploadsActivityInput,
+  ): Promise<void> => {
     logger.debug("entering vacuumUploadsActivity");
+
+    const { db } = deps;
+    const { images } = (await deps.tenantDomainBuilder(tenantId)).cradle;
 
     const twentyMinutesAgo = new Date(Date.now() - 20 * 60 * 1000);
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const tenantIdUuid = TenantIds.toUUID(tenantId);
 
     // Find and delete incomplete uploads older than 20 minutes
     const incompleteUploads = await db
@@ -26,7 +40,12 @@ export const vacuumUploadsActivity = activity("vacuumUploads", {
               db
                 .select()
                 .from(IMAGES)
-                .where(eq(IMAGES.imageUploadId, IMAGE_UPLOADS.imageUploadId))
+                .where(
+                  and(
+                    eq(IMAGES.imageUploadId, IMAGE_UPLOADS.imageUploadId),
+                    eq(IMAGES.tenantId, tenantIdUuid),
+                  ),
+                )
                 .limit(1),
             ),
           ),
@@ -47,6 +66,7 @@ export const vacuumUploadsActivity = activity("vacuumUploads", {
               .where(
                 and(
                   eq(IMAGES.imageUploadId, IMAGE_UPLOADS.imageUploadId),
+                  eq(IMAGES.tenantId, tenantIdUuid),
                   arrayContains(IMAGES.readyRenditions, ["fallback"]),
                 ),
               )
