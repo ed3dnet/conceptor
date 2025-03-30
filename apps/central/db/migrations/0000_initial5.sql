@@ -6,8 +6,6 @@ CREATE TYPE "public"."global_permission_kind" AS ENUM('admin', 'audit', 'create_
 CREATE TYPE "public"."image_rendition_format" AS ENUM('fallback', 'image/webp', 'image/avif');--> statement-breakpoint
 CREATE TYPE "public"."information_kind" AS ENUM('boolean', 'gradient', 'text');--> statement-breakpoint
 CREATE TYPE "public"."initiative_permission_kind" AS ENUM('view', 'edit', 'manage_resources', 'approve_changes', 'close');--> statement-breakpoint
-CREATE TYPE "public"."llm_connector_name" AS ENUM('general', 'shortSummarization');--> statement-breakpoint
-CREATE TYPE "public"."llm_message_role" AS ENUM('system', 'human', 'assistant');--> statement-breakpoint
 CREATE TYPE "public"."multiple_answer_strategy" AS ENUM('disallow', 'remember-last');--> statement-breakpoint
 CREATE TYPE "public"."reference_direction" AS ENUM('subject', 'object');--> statement-breakpoint
 CREATE TYPE "public"."s3_bucket_name" AS ENUM('core', 'user-content', 'upload-staging');--> statement-breakpoint
@@ -199,29 +197,6 @@ CREATE TABLE "initiative_tags" (
 	CONSTRAINT "unique_initiative_tag" UNIQUE("initiative_id","key")
 );
 --> statement-breakpoint
-CREATE TABLE "llm_conversations" (
-	"conversation_id" uuid PRIMARY KEY NOT NULL,
-	"tenant_id" uuid NOT NULL,
-	"connector_name" "llm_connector_name" NOT NULL,
-	"model_options" jsonb NOT NULL,
-	"purpose" text,
-	"metadata" jsonb,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone
-);
---> statement-breakpoint
-CREATE TABLE "llm_conversation_messages" (
-	"message_id" uuid PRIMARY KEY NOT NULL,
-	"conversation_id" uuid NOT NULL,
-	"role" "llm_message_role" NOT NULL,
-	"content" jsonb NOT NULL,
-	"order_index" integer NOT NULL,
-	"token_count" integer,
-	"response_metadata" jsonb,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone
-);
---> statement-breakpoint
 CREATE TABLE "tenants" (
 	"tenant_id" uuid PRIMARY KEY NOT NULL,
 	"slug" text NOT NULL,
@@ -393,8 +368,6 @@ ALTER TABLE "initiative_capabilities" ADD CONSTRAINT "initiative_capabilities_un
 ALTER TABLE "initiative_permissions" ADD CONSTRAINT "initiative_permissions_unit_id_units_unit_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."units"("unit_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "initiative_permissions" ADD CONSTRAINT "initiative_permissions_target_initiative_id_initiatives_initiative_id_fk" FOREIGN KEY ("target_initiative_id") REFERENCES "public"."initiatives"("initiative_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "initiative_tags" ADD CONSTRAINT "initiative_tags_initiative_id_initiatives_initiative_id_fk" FOREIGN KEY ("initiative_id") REFERENCES "public"."initiatives"("initiative_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "llm_conversations" ADD CONSTRAINT "llm_conversations_tenant_id_tenants_tenant_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("tenant_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "llm_conversation_messages" ADD CONSTRAINT "llm_conversation_messages_conversation_id_llm_conversations_conversation_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."llm_conversations"("conversation_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "transcription_jobs" ADD CONSTRAINT "transcription_jobs_tenant_id_tenants_tenant_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."tenants"("tenant_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "units" ADD CONSTRAINT "units_parent_unit_id_units_unit_id_fk" FOREIGN KEY ("parent_unit_id") REFERENCES "public"."units"("unit_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "unit_assignments" ADD CONSTRAINT "unit_assignments_unit_id_units_unit_id_fk" FOREIGN KEY ("unit_id") REFERENCES "public"."units"("unit_id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

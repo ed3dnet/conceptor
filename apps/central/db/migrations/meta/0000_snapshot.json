@@ -1,5 +1,5 @@
 {
-  "id": "34b5b703-b057-46ab-89b5-417bab341d16",
+  "id": "a59dc956-8b5e-4da6-b19d-addc0cc8f6b6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1581,166 +1581,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.llm_conversations": {
-      "name": "llm_conversations",
-      "schema": "",
-      "columns": {
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "tenant_id": {
-          "name": "tenant_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "connector_name": {
-          "name": "connector_name",
-          "type": "llm_connector_name",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "model_options": {
-          "name": "model_options",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "purpose": {
-          "name": "purpose",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metadata": {
-          "name": "metadata",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "llm_conversations_tenant_id_tenants_tenant_id_fk": {
-          "name": "llm_conversations_tenant_id_tenants_tenant_id_fk",
-          "tableFrom": "llm_conversations",
-          "tableTo": "tenants",
-          "columnsFrom": [
-            "tenant_id"
-          ],
-          "columnsTo": [
-            "tenant_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.llm_conversation_messages": {
-      "name": "llm_conversation_messages",
-      "schema": "",
-      "columns": {
-        "message_id": {
-          "name": "message_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "conversation_id": {
-          "name": "conversation_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "role": {
-          "name": "role",
-          "type": "llm_message_role",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "content": {
-          "name": "content",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "order_index": {
-          "name": "order_index",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token_count": {
-          "name": "token_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "response_metadata": {
-          "name": "response_metadata",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "llm_conversation_messages_conversation_id_llm_conversations_conversation_id_fk": {
-          "name": "llm_conversation_messages_conversation_id_llm_conversations_conversation_id_fk",
-          "tableFrom": "llm_conversation_messages",
-          "tableTo": "llm_conversations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "conversation_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.tenants": {
       "name": "tenants",
       "schema": "",
@@ -3044,23 +2884,6 @@
         "manage_resources",
         "approve_changes",
         "close"
-      ]
-    },
-    "public.llm_connector_name": {
-      "name": "llm_connector_name",
-      "schema": "public",
-      "values": [
-        "general",
-        "shortSummarization"
-      ]
-    },
-    "public.llm_message_role": {
-      "name": "llm_message_role",
-      "schema": "public",
-      "values": [
-        "system",
-        "human",
-        "assistant"
       ]
     },
     "public.multiple_answer_strategy": {

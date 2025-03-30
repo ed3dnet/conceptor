@@ -128,63 +128,6 @@ export const IMAGES = pgTable(
   ],
 );
 
-export const LLM_CONNECTOR_NAME = pgEnum("llm_connector_name", [
-  "general",
-  "shortSummarization",
-]);
-
-export const LLM_MESSAGE_ROLE = pgEnum("llm_message_role", [
-  "system",
-  "human",
-  "assistant",
-]);
-
-export const LLM_CONVERSATIONS = pgTable("llm_conversations", {
-  conversationId: ULIDAsUUID().primaryKey(),
-  tenantId: ULIDAsUUID()
-    .references(() => TENANTS.tenantId)
-    .notNull(),
-
-  connectorName: LLM_CONNECTOR_NAME("connector_name").notNull(),
-  modelOptions: jsonb("model_options")
-    .$type<Record<string, unknown>>()
-    .notNull(),
-
-  purpose: text("purpose"),
-  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
-
-  ...TIMESTAMPS_MIXIN,
-});
-
-export const LLM_CONVERSATION_MESSAGES = pgTable(
-  "llm_conversation_messages",
-  {
-    messageId: ULIDAsUUID().primaryKey(),
-    conversationId: ULIDAsUUID()
-      .references(() => LLM_CONVERSATIONS.conversationId)
-      .notNull(),
-
-    role: LLM_MESSAGE_ROLE("role").notNull(),
-    content: jsonb("content").$type<Sensitive<MessageContent>>().notNull(),
-
-    orderIndex: integer("order_index").notNull(),
-    tokenCount: integer("token_count"),
-
-    // Non-sensitive metadata from the LLM response
-    response_metadata:
-      jsonb("response_metadata").$type<Record<string, unknown>>(),
-
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [
-    {
-      conversationOrder: index(
-        "llm_conversation_messages_conversation_order_idx",
-      ).on(t.conversationId, t.orderIndex),
-    },
-  ],
-);
-
 export const TRANSCRIPTION_JOB_STATUS = pgEnum("transcription_job_status", [
   "pending",
   "processing",

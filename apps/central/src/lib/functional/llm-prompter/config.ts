@@ -1,8 +1,6 @@
 import { type Static, Type } from "@sinclair/typebox";
 
 import { getStr, requireStr } from "../../../_config/env-prefix.js";
-import { LLM_CONNECTOR_NAME } from "../../../_db/schema/index.js";
-import { StringEnum } from "../../ext/typebox/index.js";
 
 export const ClaudeAnthropicStrategy = Type.Object({
   kind: Type.Literal("claude-anthropic"),
@@ -27,9 +25,10 @@ export const ModelStrategy = Type.Union([
   GoogleGenAIStrategy,
 ]);
 
-export const LlmModelConnectorName = Type.Union(
-  LLM_CONNECTOR_NAME.enumValues.map((v) => Type.Literal(v)),
-);
+export const LlmModelConnectorName = Type.Union([
+  Type.Literal("general"),
+  Type.Literal("shortSummarization"),
+]);
 export type LlmModelConnectorName = Static<typeof LlmModelConnectorName>;
 
 export const LlmPrompterConfig = Type.Object({

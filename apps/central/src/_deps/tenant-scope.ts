@@ -112,8 +112,8 @@ export async function configureTenantDomainContainer<
     ),
 
     llmPrompter: asFunction(
-      ({ logger, config, db, vault }: TenantDomainItems) =>
-        new LlmPrompterService(logger, config.llmPrompter, db, vault, tenantId),
+      ({ logger, config }: TenantDomainItems) =>
+        new LlmPrompterService(logger, config.llmPrompter, tenantId),
     ),
 
     transcription: asFunction(
