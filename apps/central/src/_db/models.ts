@@ -5,8 +5,6 @@ import {
   type TENANTS,
   type IMAGES,
   type IMAGE_UPLOADS,
-  type LLM_CONVERSATIONS,
-  type LLM_CONVERSATION_MESSAGES,
   type USERS,
   type USER_EMAILS,
   type USER_SYSTEM_PERMISSIONS,
@@ -22,6 +20,7 @@ import {
   type ASKS,
   type ASK_REFERENCES,
   type ASK_RESPONSES,
+  type UNIT_ANCESTRY,
 } from "./schema/index.js";
 
 export type DBSeed = InferSelectModel<typeof SEEDS>;
@@ -31,12 +30,8 @@ export type DBTenant = InferSelectModel<typeof TENANTS>;
 export type DBImage = InferSelectModel<typeof IMAGES>;
 export type DBImageUpload = InferSelectModel<typeof IMAGE_UPLOADS>;
 
-export type DBLLMConversation = InferSelectModel<typeof LLM_CONVERSATIONS>;
-export type DBLLMConversationMessage = InferSelectModel<
-  typeof LLM_CONVERSATION_MESSAGES
->;
-
 export type DBUser = InferSelectModel<typeof USERS>;
+export type DBUserAncentryRecord = InferSelectModel<typeof UNIT_ANCESTRY>;
 export type DBUserSystemPermission = InferSelectModel<
   typeof USER_SYSTEM_PERMISSIONS
 >;

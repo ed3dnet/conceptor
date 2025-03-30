@@ -1,20 +1,12 @@
 import {
   BadRequestError,
-  ConflictError,
   NotFoundError,
 } from "@myapp/shared-universal/errors/index.js";
-import { type Static } from "@sinclair/typebox";
-import { and, eq, isNull, not } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { type Logger } from "pino";
-import { ulid, ulidToUUID } from "ulidx";
 
-import { type DBUnit, type DBUnitAssignment } from "../../_db/models.js";
-import {
-  UNITS,
-  UNIT_ASSIGNMENTS,
-  UNIT_TAGS,
-  USER_TAGS,
-} from "../../_db/schema/index.js";
+import { type DBUnit } from "../../_db/models.js";
+import { UNITS } from "../../_db/schema/index.js";
 import {
   type Drizzle,
   type DrizzleRO,
@@ -22,17 +14,20 @@ import {
 import { type StringUUID } from "../../lib/ext/typebox/index.js";
 import { type EventService } from "../events/service.js";
 import { TenantIds, type TenantId } from "../tenants/id.js";
-import { type UserId, UserIds } from "../users/id.js";
+import { UserIds } from "../users/id.js";
 import { type UserService } from "../users/service.js";
 
 import { type UnitId, UnitIds } from "./id.js";
 import {
   type CreateUnitInput,
-  type UnitAssignmentInput,
+  type UnitHierarchyNode,
   type UnitPublic,
   type UpdateUnitInput,
   type UnitWithAssignments,
 } from "./schemas.js";
+import { UnitAssignmentSubservice } from "./subservices/unit-assignment-subservice.js";
+import { UnitHierarchySubservice } from "./subservices/unit-hierarchy-subservice.js";
+import { UnitTagSubservice } from "./subservices/unit-tag-subservice.js";
 
 interface UnitServiceOptions {
   squelchEvents?: boolean;
@@ -42,6 +37,10 @@ export class UnitService {
   private readonly logger: Logger;
   private readonly tenantUuid: StringUUID;
 
+  private _tagSubservice?: UnitTagSubservice;
+  private _assignmentSubservice?: UnitAssignmentSubservice;
+  private _hierarchySubservice?: UnitHierarchySubservice;
+
   constructor(
     logger: Logger,
     private readonly db: Drizzle,
@@ -50,14 +49,76 @@ export class UnitService {
     private readonly users: UserService,
     readonly tenantId: TenantId,
   ) {
-    this.logger = logger.child({ component: this.constructor.name });
+    this.logger = logger.child({
+      component: this.constructor.name,
+      tenantId,
+    });
     this.tenantUuid = TenantIds.toUUID(tenantId);
   }
 
+  /**
+   * Lazily instantiates and returns the UnitTagSubservice
+   */
+  get tags(): UnitTagSubservice {
+    if (!this._tagSubservice) {
+      this._tagSubservice = new UnitTagSubservice(
+        this.logger,
+        this.db,
+        this.dbRO,
+        this.events,
+        this.tenantId,
+        this.getUnitByIdInternal.bind(this),
+      );
+    }
+    return this._tagSubservice;
+  }
+
+  /**
+   * Lazily instantiates and returns the UnitAssignmentSubservice
+   */
+  get assignments(): UnitAssignmentSubservice {
+    if (!this._assignmentSubservice) {
+      this._assignmentSubservice = new UnitAssignmentSubservice(
+        this.logger,
+        this.db,
+        this.dbRO,
+        this.events,
+        this.users,
+        this.tenantId,
+        this.getUnitByIdInternal.bind(this),
+      );
+    }
+    return this._assignmentSubservice;
+  }
+
+  /**
+   * Lazily instantiates and returns the UnitHierarchySubservice
+   */
+  get hierarchy(): UnitHierarchySubservice {
+    if (!this._hierarchySubservice) {
+      this._hierarchySubservice = new UnitHierarchySubservice(
+        this.logger,
+        this.db,
+        this.dbRO,
+        this.events,
+        this.tenantId,
+        this.getUnitByIdInternal.bind(this),
+        this.getChildUnitsInternal.bind(this),
+        this.toPublic.bind(this),
+      );
+    }
+    return this._hierarchySubservice;
+  }
+
+  /**
+   * Converts a database unit to a public unit
+   * @param unit Database unit
+   * @returns Public unit representation
+   */
   async toPublic(unit: DBUnit): Promise<UnitPublic> {
     return {
       __type: "UnitPublic",
-      id: UnitIds.toRichId(unit.unitId),
+      unitId: UnitIds.toRichId(unit.unitId),
       name: unit.name,
       type: unit.type,
       parentUnitId: unit.parentUnitId
@@ -67,20 +128,19 @@ export class UnitService {
     };
   }
 
+  /**
+   * Converts a database unit to a public unit with assignments
+   * @param unit Database unit
+   * @returns Public unit with assignments
+   */
   async toPublicWithAssignments(unit: DBUnit): Promise<UnitWithAssignments> {
-    const assignments = await this.dbRO
-      .select()
-      .from(UNIT_ASSIGNMENTS)
-      .where(
-        and(
-          eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unit.unitId)),
-          isNull(UNIT_ASSIGNMENTS.endDate),
-        ),
-      );
+    const assignments = await this.assignments.getUnitAssignments(
+      UnitIds.toRichId(unit.unitId),
+    );
 
     return {
       __type: "UnitWithAssignments",
-      id: UnitIds.toRichId(unit.unitId),
+      unitId: UnitIds.toRichId(unit.unitId),
       name: unit.name,
       type: unit.type,
       parentUnitId: unit.parentUnitId
@@ -95,7 +155,11 @@ export class UnitService {
     };
   }
 
-  async getUnitById(
+  /**
+   * Internal method to get a unit by ID
+   * @private
+   */
+  private async getUnitByIdInternal(
     unitId: UnitId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUnit | null> {
@@ -113,9 +177,45 @@ export class UnitService {
     return units[0] || null;
   }
 
+  /**
+   * Gets a unit by ID
+   * @param unitId The unit ID
+   * @param executor Optional transaction executor
+   * @returns The unit or null if not found
+   */
+  async getUnitById(
+    unitId: UnitId,
+    executor: DrizzleRO = this.dbRO,
+  ): Promise<UnitPublic | null> {
+    const unit = await this.getUnitByIdInternal(unitId, executor);
+    return unit ? await this.toPublic(unit) : null;
+  }
+
+  /**
+   * Gets a unit by ID with assignments
+   * @param unitId The unit ID
+   * @param executor Optional transaction executor
+   * @returns The unit with assignments or null if not found
+   */
+  async getUnitByIdWithAssignments(
+    unitId: UnitId,
+    executor: DrizzleRO = this.dbRO,
+  ): Promise<UnitWithAssignments | null> {
+    const unit = await this.getUnitByIdInternal(unitId, executor);
+    return unit ? await this.toPublicWithAssignments(unit) : null;
+  }
+
+  /**
+   * Executes a function with a unit if it exists
+   * @param unitId The unit ID
+   * @param fn Function to execute with the unit
+   * @param executor Optional transaction executor
+   * @returns Result of the function
+   * @throws NotFoundError if unit not found
+   */
   async withUnitById<T>(
     unitId: UnitId,
-    fn: (unit: DBUnit) => Promise<T>,
+    fn: (unit: UnitPublic) => Promise<T>,
     executor: DrizzleRO = this.dbRO,
   ): Promise<T> {
     const unit = await this.getUnitById(unitId, executor);
@@ -125,7 +225,11 @@ export class UnitService {
     return fn(unit);
   }
 
-  async getChildUnits(
+  /**
+   * Internal method to get child units
+   * @private
+   */
+  private async getChildUnitsInternal(
     parentUnitId: UnitId,
     executor: DrizzleRO = this.dbRO,
   ): Promise<DBUnit[]> {
@@ -140,30 +244,18 @@ export class UnitService {
       );
   }
 
-  async getUnitAssignments(
-    unitId: UnitId,
-    includeInactive: boolean = false,
+  /**
+   * Gets child units of a parent unit
+   * @param parentUnitId The parent unit ID
+   * @param executor Optional transaction executor
+   * @returns Array of child units
+   */
+  async getChildUnits(
+    parentUnitId: UnitId,
     executor: DrizzleRO = this.dbRO,
-  ): Promise<DBUnitAssignment[]> {
-    // First verify the unit belongs to this tenant
-    const unit = await this.getUnitById(unitId, executor);
-    if (!unit) {
-      throw new NotFoundError(`Unit not found: ${unitId}`);
-    }
-
-    const whereClause = includeInactive
-      ? eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unitId))
-      : and(
-          eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unitId)),
-          isNull(UNIT_ASSIGNMENTS.endDate),
-        );
-
-    const assignments = await executor
-      .select()
-      .from(UNIT_ASSIGNMENTS)
-      .where(whereClause);
-
-    return assignments;
+  ): Promise<UnitPublic[]> {
+    const childUnits = await this.getChildUnitsInternal(parentUnitId, executor);
+    return Promise.all(childUnits.map((unit) => this.toPublic(unit)));
   }
 
   /**
@@ -177,33 +269,59 @@ export class UnitService {
     input: CreateUnitInput,
     options: UnitServiceOptions = {},
     executor: Drizzle = this.db,
-  ): Promise<DBUnit> {
+  ): Promise<UnitPublic> {
     const logger = this.logger.child({ fn: this.createUnit.name });
 
-    // Validate parent unit exists if specified
-    if (input.parentUnitId) {
-      const parentUnit = await this.getUnitById(input.parentUnitId, executor);
-      if (!parentUnit) {
-        throw new NotFoundError(`Parent unit not found: ${input.parentUnitId}`);
-      }
-    }
+    // Begin transaction if not already in one
+    const dbUnit = await (executor === this.db
+      ? this.db.transaction((tx) => this.TX_createUnit(input, options, tx))
+      : this.TX_createUnit(input, options, executor));
 
-    // Create the unit
+    return this.toPublic(dbUnit);
+  }
+
+  /**
+   * Transaction-wrapped implementation of createUnit
+   * @private
+   */
+  private async TX_createUnit(
+    input: CreateUnitInput,
+    options: UnitServiceOptions,
+    executor: Drizzle,
+  ): Promise<DBUnit> {
+    const logger = this.logger.child({ fn: "TX_createUnit" });
+
+    // Create the unit without parent initially
     const [unit] = await executor
       .insert(UNITS)
       .values({
         tenantId: this.tenantUuid,
         name: input.name,
         type: input.type,
-        parentUnitId: input.parentUnitId
-          ? UnitIds.toUUID(input.parentUnitId)
-          : null,
+        parentUnitId: null, // We'll set this with attachUnitToParent
         description: input.description,
       })
       .returning();
 
     if (!unit) {
       throw new Error("Failed to create unit");
+    }
+
+    // If a parent unit is specified, attach it
+    if (input.parentUnitId) {
+      logger.info(
+        {
+          unitId: UnitIds.toRichId(unit.unitId),
+          parentUnitId: input.parentUnitId,
+        },
+        "Attaching unit to parent as part of unit creation",
+      );
+      await this.hierarchy.attachUnitToParent(
+        UnitIds.toRichId(unit.unitId),
+        input.parentUnitId,
+        options,
+        executor,
+      );
     }
 
     // Fire event if not squelched
@@ -214,9 +332,7 @@ export class UnitService {
         unitId: UnitIds.toRichId(unit.unitId),
         name: unit.name,
         type: unit.type,
-        parentUnitId: unit.parentUnitId
-          ? UnitIds.toRichId(unit.parentUnitId)
-          : null,
+        parentUnitId: input.parentUnitId || null,
         timestamp: new Date().toISOString(),
       });
     }
@@ -226,7 +342,8 @@ export class UnitService {
   }
 
   /**
-   * Updates an existing unit
+   * Updates an existing unit. It does NOT handle unit re-parenting; the
+   * hierarchy subservice controls that.
    * @param unitId The unit ID to update
    * @param input Update input
    * @param options Service options
@@ -238,43 +355,45 @@ export class UnitService {
     input: UpdateUnitInput,
     options: UnitServiceOptions = {},
     executor: Drizzle = this.db,
-  ): Promise<DBUnit> {
+  ): Promise<UnitPublic> {
     const logger = this.logger.child({ fn: this.updateUnit.name });
 
+    // Begin transaction if not already in one
+    const dbUnit = await (executor === this.db
+      ? this.db.transaction((tx) =>
+          this.TX_updateUnit(unitId, input, options, tx),
+        )
+      : this.TX_updateUnit(unitId, input, options, executor));
+
+    return this.toPublic(dbUnit);
+  }
+
+  /**
+   * Transaction-wrapped implementation of updateUnit
+   * @private
+   */
+  private async TX_updateUnit(
+    unitId: UnitId,
+    input: UpdateUnitInput,
+    options: UnitServiceOptions,
+    executor: Drizzle,
+  ): Promise<DBUnit> {
+    const logger = this.logger.child({ fn: "TX_updateUnit" });
+
     // Verify unit exists
-    const existingUnit = await this.getUnitById(unitId, executor);
+    const existingUnit = await this.getUnitByIdInternal(unitId, executor);
     if (!existingUnit) {
       throw new NotFoundError(`Unit not found: ${unitId}`);
-    }
-
-    // Validate parent unit exists if specified
-    if (input.parentUnitId) {
-      const parentUnit = await this.getUnitById(input.parentUnitId, executor);
-      if (!parentUnit) {
-        throw new NotFoundError(`Parent unit not found: ${input.parentUnitId}`);
-      }
-
-      // Prevent circular references
-      if (input.parentUnitId === unitId) {
-        throw new BadRequestError("Unit cannot be its own parent");
-      }
     }
 
     // Track changed fields for event
     const changedFields: string[] = [];
     const updateValues: Partial<DBUnit> = {};
 
+    // Handle other fields
     if (input.name !== undefined && input.name !== existingUnit.name) {
       updateValues.name = input.name;
       changedFields.push("name");
-    }
-
-    if (
-      input.parentUnitId !== undefined &&
-      input.parentUnitId !== existingUnit.parentUnitId
-    ) {
-      updateValues.parentUnitId = UnitIds.toUUID(input.parentUnitId);
-      changedFields.push("parentUnitId");
     }
 
     if (
@@ -285,25 +404,25 @@ export class UnitService {
       changedFields.push("description");
     }
 
-    // If nothing changed, return existing unit
-    if (Object.keys(updateValues).length === 0) {
-      return existingUnit;
-    }
+    // Update the unit if there are non-parent changes
+    let updatedUnit = existingUnit;
+    if (Object.keys(updateValues).length > 0) {
+      const [updated] = await executor
+        .update(UNITS)
+        .set(updateValues)
+        .where(
+          and(
+            eq(UNITS.unitId, UnitIds.toUUID(unitId)),
+            eq(UNITS.tenantId, this.tenantUuid),
+          ),
+        )
+        .returning();
 
-    // Update the unit
-    const [updatedUnit] = await executor
-      .update(UNITS)
-      .set(updateValues)
-      .where(
-        and(
-          eq(UNITS.unitId, UnitIds.toUUID(unitId)),
-          eq(UNITS.tenantId, this.tenantUuid),
-        ),
-      )
-      .returning();
+      if (!updated) {
+        throw new Error("Failed to update unit");
+      }
 
-    if (!updatedUnit) {
-      throw new Error("Failed to update unit");
+      updatedUnit = updated;
     }
 
     // Fire event if not squelched and fields changed
@@ -335,13 +454,13 @@ export class UnitService {
     const logger = this.logger.child({ fn: this.deleteUnit.name });
 
     // Verify unit exists
-    const existingUnit = await this.getUnitById(unitId, executor);
+    const existingUnit = await this.getUnitByIdInternal(unitId, executor);
     if (!existingUnit) {
       throw new NotFoundError(`Unit not found: ${unitId}`);
     }
 
     // Check for child units
-    const childUnits = await this.getChildUnits(unitId, executor);
+    const childUnits = await this.getChildUnitsInternal(unitId, executor);
     if (childUnits.length > 0) {
       throw new BadRequestError(
         `Cannot delete unit with child units. Found ${childUnits.length} child units.`,
@@ -349,7 +468,7 @@ export class UnitService {
     }
 
     // Check for active assignments
-    const activeAssignments = await this.getUnitAssignments(
+    const activeAssignments = await this.assignments.getUnitAssignments(
       unitId,
       false,
       executor,
@@ -384,222 +503,15 @@ export class UnitService {
   }
 
   /**
-   * Assigns a user to a unit
-   * @param unitId The unit ID
-   * @param input Assignment input
-   * @param options Service options
+   * Gets the unit hierarchy
+   * @param rootUnitId Optional root unit ID to start from
    * @param executor Optional transaction executor
-   * @returns The created assignment
+   * @returns Hierarchical structure of units
    */
-  async assignUserToUnit(
-    unitId: UnitId,
-    input: UnitAssignmentInput,
-    options: UnitServiceOptions = {},
-    executor: Drizzle = this.db,
-  ): Promise<DBUnitAssignment> {
-    const logger = this.logger.child({ fn: this.assignUserToUnit.name });
-
-    // Verify unit exists and is individual type
-    const unit = await this.getUnitById(unitId, executor);
-    if (!unit) {
-      throw new NotFoundError(`Unit not found: ${unitId}`);
-    }
-
-    if (unit.type !== "individual") {
-      throw new BadRequestError(
-        "Users can only be assigned to individual units, not organizational units",
-      );
-    }
-
-    // Verify user exists
-    const user = await this.users.getByUserId(input.userId, executor);
-    if (!user) {
-      throw new NotFoundError(`User not found: ${input.userId}`);
-    }
-
-    // Check if user is already assigned to this unit
-    const existingAssignments = await executor
-      .select()
-      .from(UNIT_ASSIGNMENTS)
-      .where(
-        and(
-          eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unitId)),
-          eq(UNIT_ASSIGNMENTS.userId, UserIds.toUUID(input.userId)),
-          isNull(UNIT_ASSIGNMENTS.endDate),
-        ),
-      );
-
-    if (existingAssignments.length > 0) {
-      throw new ConflictError(
-        `User ${input.userId} is already assigned to unit ${unitId}`,
-      );
-    }
-
-    // Create the assignment
-    const startDate = input.startDate ? new Date(input.startDate) : new Date();
-    const endDate = input.endDate ? new Date(input.endDate) : null;
-
-    // Validate dates
-    if (endDate && endDate <= startDate) {
-      throw new BadRequestError("End date must be after start date");
-    }
-    const [assignment] = await executor
-      .insert(UNIT_ASSIGNMENTS)
-      .values({
-        unitId: UnitIds.toUUID(unitId),
-        userId: UserIds.toUUID(input.userId),
-        startDate,
-        endDate,
-      })
-      .returning();
-
-    if (!assignment) {
-      throw new Error("Failed to create unit assignment");
-    }
-
-    // Fire event if not squelched
-    if (!options.squelchEvents) {
-      await this.events.dispatchEvent({
-        __type: "UserAssignedToUnit",
-        tenantId: this.tenantId,
-        unitId: UnitIds.toRichId(unitId),
-        userId: UserIds.toRichId(input.userId),
-        startDate: startDate.toISOString(),
-        endDate: endDate ? endDate.toISOString() : undefined,
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    logger.info({ unitId, userId: input.userId }, "Assigned user to unit");
-    return assignment;
-  }
-
-  /**
-   * Unassigns a user from a unit by setting an end date
-   * @param unitId The unit ID
-   * @param userId The user ID to unassign
-   * @param options Service options
-   * @param executor Optional transaction executor
-   */
-  async unassignUserFromUnit(
-    unitId: UnitId,
-    userId: UserId,
-    options: UnitServiceOptions = {},
-    executor: Drizzle = this.db,
-  ): Promise<void> {
-    const logger = this.logger.child({ fn: this.unassignUserFromUnit.name });
-
-    // Verify unit exists and belongs to this tenant
-    const unit = await this.getUnitById(unitId, executor);
-    if (!unit) {
-      throw new NotFoundError(`Unit not found: ${unitId}`);
-    }
-
-    // Find the active assignment
-    const [assignment] = await executor
-      .select()
-      .from(UNIT_ASSIGNMENTS)
-      .where(
-        and(
-          eq(UNIT_ASSIGNMENTS.unitId, UnitIds.toUUID(unitId)),
-          eq(UNIT_ASSIGNMENTS.userId, UserIds.toUUID(userId)),
-          isNull(UNIT_ASSIGNMENTS.endDate),
-        ),
-      );
-
-    if (!assignment) {
-      throw new NotFoundError(
-        `No active assignment found for user ${userId} in unit ${unitId}`,
-      );
-    }
-
-    // Set the end date to now
-    const endDate = new Date();
-    await executor
-      .update(UNIT_ASSIGNMENTS)
-      .set({ endDate })
-      .where(
-        eq(UNIT_ASSIGNMENTS.unitAssignmentId, assignment.unitAssignmentId),
-      );
-
-    // Fire event if not squelched
-    if (!options.squelchEvents) {
-      await this.events.dispatchEvent({
-        __type: "UserUnassignedFromUnit",
-        tenantId: this.tenantId,
-        unitId: UnitIds.toRichId(unitId),
-        userId: UserIds.toRichId(userId),
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    logger.info({ unitId, userId }, "Unassigned user from unit");
-  }
-
-  /**
-   * Sets a tag on a unit
-   * @param unitId The unit ID
-   * @param key The tag key
-   * @param value The tag value
-   * @param executor Optional transaction executor
-   */
-  async setUnitTag(
-    unitId: UnitId,
-    key: string,
-    value: string,
-    executor: Drizzle = this.db,
-  ): Promise<void> {
-    const logger = this.logger.child({ fn: this.setUnitTag.name });
-
-    // Verify unit exists and belongs to this tenant
-    const unit = await this.getUnitById(unitId, executor);
-    if (!unit) {
-      throw new NotFoundError(`Unit not found: ${unitId}`);
-    }
-
-    // Use "on conflict do update" pattern for upsert
-    await executor
-      .insert(UNIT_TAGS)
-      .values({
-        unitId: UnitIds.toUUID(unitId),
-        key,
-        value,
-      })
-      .onConflictDoUpdate({
-        target: [UNIT_TAGS.unitId, UNIT_TAGS.key],
-        set: { value },
-      });
-
-    logger.info({ unitId, key, value }, "Set unit tag");
-  }
-
-  /**
-   * Gets all tags for a unit
-   * @param unitId The unit ID
-   * @param executor Optional transaction executor
-   * @returns Map of tag keys to values
-   */
-  async getUnitTags(
-    unitId: UnitId,
+  async getUnitHierarchy(
+    rootUnitId: UnitId | null = null,
     executor: DrizzleRO = this.dbRO,
-  ): Promise<Record<string, string>> {
-    // Verify unit exists and belongs to this tenant
-    const unit = await this.getUnitById(unitId, executor);
-    if (!unit) {
-      throw new NotFoundError(`Unit not found: ${unitId}`);
-    }
-
-    const tags = await executor
-      .select()
-      .from(UNIT_TAGS)
-      .where(eq(UNIT_TAGS.unitId, UnitIds.toUUID(unitId)));
-
-    return tags.reduce(
-      (acc, tag) => {
-        acc[tag.key] = tag.value || "";
-        return acc;
-      },
-      {} as Record<string, string>,
-    );
+  ): Promise<UnitHierarchyNode[]> {
+    return this.hierarchy.getUnitHierarchy(rootUnitId, executor);
   }
 }

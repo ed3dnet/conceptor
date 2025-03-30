@@ -309,44 +309,6 @@ export const USER_EXTERNAL_IDS = pgTable(
 
 export const UNIT_KIND = pgEnum("unit_kind", ["individual", "organizational"]);
 
-export const UNIT_PERMISSION_KIND = pgEnum("unit_permission_kind", [
-  "manage_reports",
-  "assign_work",
-  "approve_time_off",
-  "manage_unit",
-  "view_reports",
-]);
-
-export const CAPABILITY_PERMISSION_KIND = pgEnum("capability_permission_kind", [
-  "view",
-  "edit",
-  "assign",
-  "approve",
-  "delete",
-]);
-
-export const INITIATIVE_PERMISSION_KIND = pgEnum("initiative_permission_kind", [
-  "view",
-  "edit",
-  "manage_resources",
-  "approve_changes",
-  "close",
-]);
-
-export const GLOBAL_PERMISSION_KIND = pgEnum("global_permission_kind", [
-  "admin",
-  "audit",
-  "create_units",
-  "create_initiatives",
-  "create_capabilities",
-]);
-
-export const INFORMATION_KIND = pgEnum("information_kind", [
-  "boolean",
-  "gradient",
-  "text",
-]);
-
 export const UNITS = pgTable(
   "units",
   {
@@ -372,6 +334,23 @@ export const UNITS = pgTable(
   (t) => [
     index("idx_units_parent").on(t.parentUnitId),
     check("valid_parent", sql`${t.unitId} != ${t.parentUnitId}`),
+  ],
+);
+
+export const UNIT_ANCESTRY = pgTable(
+  "unit_ancestry",
+  {
+    unitId: ULIDAsUUID("unit_id")
+      .references(() => UNITS.unitId)
+      .notNull(),
+    ancestorUnitId: ULIDAsUUID("ancestor_unit_id").references(
+      () => UNITS.unitId,
+    ),
+    distance: integer("distance").notNull(),
+  },
+  (t) => [
+    index("idx_unit_ancestry_unit").on(t.unitId),
+    index("idx_unit_ancestry_ancestor").on(t.ancestorUnitId),
   ],
 );
 
@@ -520,115 +499,19 @@ export const INITIATIVE_CAPABILITIES = pgTable(
   ],
 );
 
-export const UNIT_PERMISSIONS = pgTable(
-  "unit_permissions",
+export const USER_TAGS = pgTable(
+  "user_tags",
   {
-    unitPermissionId: ULIDAsUUID().primaryKey(),
-    unitId: ULIDAsUUID("unit_id")
-      .references(() => UNITS.unitId)
+    userTagId: ULIDAsUUID().primaryKey(),
+    userId: ULIDAsUUID()
+      .references(() => USERS.userId)
       .notNull(),
-    targetUnitId: ULIDAsUUID("target_unit_id")
-      .references(() => UNITS.unitId)
-      .notNull(),
-    permissionKind: UNIT_PERMISSION_KIND("permission_kind").notNull(),
-    startDate: timestamp("start_date", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    endDate: timestamp("end_date", { withTimezone: true }),
+    key: text("key").notNull(),
+    value: text("value"),
 
     ...TIMESTAMPS_MIXIN,
   },
-  (t) => [
-    index("idx_unit_permissions_unit").on(t.unitId),
-    index("idx_unit_permissions_target").on(t.targetUnitId),
-    index("idx_unit_permissions_dates").on(t.startDate, t.endDate),
-    check(
-      "valid_dates",
-      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
-    ),
-  ],
-);
-
-export const CAPABILITY_PERMISSIONS = pgTable(
-  "capability_permissions",
-  {
-    capabilityPermissionId: ULIDAsUUID().primaryKey(),
-    unitId: ULIDAsUUID("unit_id")
-      .references(() => UNITS.unitId)
-      .notNull(),
-    targetCapabilityId: ULIDAsUUID("target_capability_id")
-      .references(() => CAPABILITIES.capabilityId)
-      .notNull(),
-    permissionKind: CAPABILITY_PERMISSION_KIND("permission_kind").notNull(),
-    startDate: timestamp("start_date", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    endDate: timestamp("end_date", { withTimezone: true }),
-
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [
-    index("idx_capability_permissions_unit").on(t.unitId),
-    index("idx_capability_permissions_target").on(t.targetCapabilityId),
-    index("idx_capability_permissions_dates").on(t.startDate, t.endDate),
-    check(
-      "valid_dates",
-      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
-    ),
-  ],
-);
-
-export const INITIATIVE_PERMISSIONS = pgTable(
-  "initiative_permissions",
-  {
-    initiativePermissionId: ULIDAsUUID().primaryKey(),
-    unitId: ULIDAsUUID("unit_id")
-      .references(() => UNITS.unitId)
-      .notNull(),
-    targetInitiativeId: ULIDAsUUID("target_initiative_id")
-      .references(() => INITIATIVES.initiativeId)
-      .notNull(),
-    permissionKind: INITIATIVE_PERMISSION_KIND("permission_kind").notNull(),
-    startDate: timestamp("start_date", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    endDate: timestamp("end_date", { withTimezone: true }),
-
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [
-    index("idx_initiative_permissions_unit").on(t.unitId),
-    index("idx_initiative_permissions_target").on(t.targetInitiativeId),
-    index("idx_initiative_permissions_dates").on(t.startDate, t.endDate),
-    check(
-      "valid_dates",
-      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
-    ),
-  ],
-);
-
-export const GLOBAL_PERMISSIONS = pgTable(
-  "global_permissions",
-  {
-    globalPermissionId: ULIDAsUUID().primaryKey(),
-    unitId: ULIDAsUUID("unit_id")
-      .references(() => UNITS.unitId)
-      .notNull(),
-    permissionKind: GLOBAL_PERMISSION_KIND("permission_kind").notNull(),
-    startDate: timestamp("start_date", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    endDate: timestamp("end_date", { withTimezone: true }),
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [
-    index("idx_global_permissions_unit").on(t.unitId),
-    index("idx_global_permissions_dates").on(t.startDate, t.endDate),
-    check(
-      "valid_dates",
-      sql`${t.endDate} IS NULL OR ${t.endDate} > ${t.startDate}`,
-    ),
-  ],
+  (t) => [unique("unique_user_tag").on(t.userId, t.key)],
 );
 
 export const UNIT_TAGS = pgTable(
@@ -644,51 +527,6 @@ export const UNIT_TAGS = pgTable(
     ...TIMESTAMPS_MIXIN,
   },
   (t) => [unique("unique_unit_tag").on(t.unitId, t.key)],
-);
-
-export const CAPABILITY_TAGS = pgTable(
-  "capability_tags",
-  {
-    capabilityTagId: ULIDAsUUID().primaryKey(),
-    capabilityId: ULIDAsUUID("capability_id")
-      .references(() => CAPABILITIES.capabilityId)
-      .notNull(),
-    key: text("key").notNull(),
-    value: text("value"),
-
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [unique("unique_capability_tag").on(t.capabilityId, t.key)],
-);
-
-export const INITIATIVE_TAGS = pgTable(
-  "initiative_tags",
-  {
-    initiativeTagId: ULIDAsUUID().primaryKey(),
-    initiativeId: ULIDAsUUID("initiative_id")
-      .references(() => INITIATIVES.initiativeId)
-      .notNull(),
-    key: text("key").notNull(),
-    value: text("value"),
-
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [unique("unique_initiative_tag").on(t.initiativeId, t.key)],
-);
-
-export const USER_TAGS = pgTable(
-  "user_tags",
-  {
-    userTagId: ULIDAsUUID().primaryKey(),
-    userId: ULIDAsUUID()
-      .references(() => USERS.userId)
-      .notNull(),
-    key: text("key").notNull(),
-    value: text("value"),
-
-    ...TIMESTAMPS_MIXIN,
-  },
-  (t) => [unique("unique_user_tag").on(t.userId, t.key)],
 );
 
 // ----------------------------------------------------------------------------

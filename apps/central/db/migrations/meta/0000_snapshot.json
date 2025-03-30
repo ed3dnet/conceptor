@@ -1,5 +1,5 @@
 {
-  "id": "a59dc956-8b5e-4da6-b19d-addc0cc8f6b6",
+  "id": "f6351421-fd24-4503-bbe9-7d0d63dfa512",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -597,341 +597,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.capability_permissions": {
-      "name": "capability_permissions",
-      "schema": "",
-      "columns": {
-        "capability_permission_id": {
-          "name": "capability_permission_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "unit_id": {
-          "name": "unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "target_capability_id": {
-          "name": "target_capability_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "permission_kind": {
-          "name": "permission_kind",
-          "type": "capability_permission_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "start_date": {
-          "name": "start_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "end_date": {
-          "name": "end_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_capability_permissions_unit": {
-          "name": "idx_capability_permissions_unit",
-          "columns": [
-            {
-              "expression": "unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_capability_permissions_target": {
-          "name": "idx_capability_permissions_target",
-          "columns": [
-            {
-              "expression": "target_capability_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_capability_permissions_dates": {
-          "name": "idx_capability_permissions_dates",
-          "columns": [
-            {
-              "expression": "start_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "end_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "capability_permissions_unit_id_units_unit_id_fk": {
-          "name": "capability_permissions_unit_id_units_unit_id_fk",
-          "tableFrom": "capability_permissions",
-          "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "unit_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "capability_permissions_target_capability_id_capabilities_capability_id_fk": {
-          "name": "capability_permissions_target_capability_id_capabilities_capability_id_fk",
-          "tableFrom": "capability_permissions",
-          "tableTo": "capabilities",
-          "columnsFrom": [
-            "target_capability_id"
-          ],
-          "columnsTo": [
-            "capability_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "valid_dates": {
-          "name": "valid_dates",
-          "value": "\"capability_permissions\".\"end_date\" IS NULL OR \"capability_permissions\".\"end_date\" > \"capability_permissions\".\"start_date\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.capability_tags": {
-      "name": "capability_tags",
-      "schema": "",
-      "columns": {
-        "capability_tag_id": {
-          "name": "capability_tag_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "capability_id": {
-          "name": "capability_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "value": {
-          "name": "value",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "capability_tags_capability_id_capabilities_capability_id_fk": {
-          "name": "capability_tags_capability_id_capabilities_capability_id_fk",
-          "tableFrom": "capability_tags",
-          "tableTo": "capabilities",
-          "columnsFrom": [
-            "capability_id"
-          ],
-          "columnsTo": [
-            "capability_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "unique_capability_tag": {
-          "name": "unique_capability_tag",
-          "nullsNotDistinct": false,
-          "columns": [
-            "capability_id",
-            "key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.global_permissions": {
-      "name": "global_permissions",
-      "schema": "",
-      "columns": {
-        "global_permission_id": {
-          "name": "global_permission_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "unit_id": {
-          "name": "unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "permission_kind": {
-          "name": "permission_kind",
-          "type": "global_permission_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "start_date": {
-          "name": "start_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "end_date": {
-          "name": "end_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_global_permissions_unit": {
-          "name": "idx_global_permissions_unit",
-          "columns": [
-            {
-              "expression": "unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_global_permissions_dates": {
-          "name": "idx_global_permissions_dates",
-          "columns": [
-            {
-              "expression": "start_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "end_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "global_permissions_unit_id_units_unit_id_fk": {
-          "name": "global_permissions_unit_id_units_unit_id_fk",
-          "tableFrom": "global_permissions",
-          "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "unit_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "valid_dates": {
-          "name": "valid_dates",
-          "value": "\"global_permissions\".\"end_date\" IS NULL OR \"global_permissions\".\"end_date\" > \"global_permissions\".\"start_date\""
-        }
-      },
-      "isRLSEnabled": false
-    },
     "public.images": {
       "name": "images",
       "schema": "",
@@ -1360,227 +1025,6 @@
       },
       "isRLSEnabled": false
     },
-    "public.initiative_permissions": {
-      "name": "initiative_permissions",
-      "schema": "",
-      "columns": {
-        "initiative_permission_id": {
-          "name": "initiative_permission_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "unit_id": {
-          "name": "unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "target_initiative_id": {
-          "name": "target_initiative_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "permission_kind": {
-          "name": "permission_kind",
-          "type": "initiative_permission_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "start_date": {
-          "name": "start_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "end_date": {
-          "name": "end_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_initiative_permissions_unit": {
-          "name": "idx_initiative_permissions_unit",
-          "columns": [
-            {
-              "expression": "unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_initiative_permissions_target": {
-          "name": "idx_initiative_permissions_target",
-          "columns": [
-            {
-              "expression": "target_initiative_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_initiative_permissions_dates": {
-          "name": "idx_initiative_permissions_dates",
-          "columns": [
-            {
-              "expression": "start_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "end_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "initiative_permissions_unit_id_units_unit_id_fk": {
-          "name": "initiative_permissions_unit_id_units_unit_id_fk",
-          "tableFrom": "initiative_permissions",
-          "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "unit_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "initiative_permissions_target_initiative_id_initiatives_initiative_id_fk": {
-          "name": "initiative_permissions_target_initiative_id_initiatives_initiative_id_fk",
-          "tableFrom": "initiative_permissions",
-          "tableTo": "initiatives",
-          "columnsFrom": [
-            "target_initiative_id"
-          ],
-          "columnsTo": [
-            "initiative_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "valid_dates": {
-          "name": "valid_dates",
-          "value": "\"initiative_permissions\".\"end_date\" IS NULL OR \"initiative_permissions\".\"end_date\" > \"initiative_permissions\".\"start_date\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.initiative_tags": {
-      "name": "initiative_tags",
-      "schema": "",
-      "columns": {
-        "initiative_tag_id": {
-          "name": "initiative_tag_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "initiative_id": {
-          "name": "initiative_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "key": {
-          "name": "key",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "value": {
-          "name": "value",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "initiative_tags_initiative_id_initiatives_initiative_id_fk": {
-          "name": "initiative_tags_initiative_id_initiatives_initiative_id_fk",
-          "tableFrom": "initiative_tags",
-          "tableTo": "initiatives",
-          "columnsFrom": [
-            "initiative_id"
-          ],
-          "columnsTo": [
-            "initiative_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "unique_initiative_tag": {
-          "name": "unique_initiative_tag",
-          "nullsNotDistinct": false,
-          "columns": [
-            "initiative_id",
-            "key"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.tenants": {
       "name": "tenants",
       "schema": "",
@@ -1830,6 +1274,95 @@
           "value": "\"units\".\"unit_id\" != \"units\".\"parent_unit_id\""
         }
       },
+      "isRLSEnabled": false
+    },
+    "public.unit_ancestry": {
+      "name": "unit_ancestry",
+      "schema": "",
+      "columns": {
+        "unit_id": {
+          "name": "unit_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ancestor_unit_id": {
+          "name": "ancestor_unit_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "distance": {
+          "name": "distance",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "idx_unit_ancestry_unit": {
+          "name": "idx_unit_ancestry_unit",
+          "columns": [
+            {
+              "expression": "unit_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_unit_ancestry_ancestor": {
+          "name": "idx_unit_ancestry_ancestor",
+          "columns": [
+            {
+              "expression": "ancestor_unit_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "unit_ancestry_unit_id_units_unit_id_fk": {
+          "name": "unit_ancestry_unit_id_units_unit_id_fk",
+          "tableFrom": "unit_ancestry",
+          "tableTo": "units",
+          "columnsFrom": [
+            "unit_id"
+          ],
+          "columnsTo": [
+            "unit_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "unit_ancestry_ancestor_unit_id_units_unit_id_fk": {
+          "name": "unit_ancestry_ancestor_unit_id_units_unit_id_fk",
+          "tableFrom": "unit_ancestry",
+          "tableTo": "units",
+          "columnsFrom": [
+            "ancestor_unit_id"
+          ],
+          "columnsTo": [
+            "unit_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
       "isRLSEnabled": false
     },
     "public.unit_assignments": {
@@ -2129,154 +1662,6 @@
         "valid_dates": {
           "name": "valid_dates",
           "value": "\"unit_capabilities\".\"end_date\" IS NULL OR \"unit_capabilities\".\"end_date\" > \"unit_capabilities\".\"start_date\""
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.unit_permissions": {
-      "name": "unit_permissions",
-      "schema": "",
-      "columns": {
-        "unit_permission_id": {
-          "name": "unit_permission_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "unit_id": {
-          "name": "unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "target_unit_id": {
-          "name": "target_unit_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "permission_kind": {
-          "name": "permission_kind",
-          "type": "unit_permission_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "start_date": {
-          "name": "start_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "end_date": {
-          "name": "end_date",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "idx_unit_permissions_unit": {
-          "name": "idx_unit_permissions_unit",
-          "columns": [
-            {
-              "expression": "unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_unit_permissions_target": {
-          "name": "idx_unit_permissions_target",
-          "columns": [
-            {
-              "expression": "target_unit_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_unit_permissions_dates": {
-          "name": "idx_unit_permissions_dates",
-          "columns": [
-            {
-              "expression": "start_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "end_date",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "unit_permissions_unit_id_units_unit_id_fk": {
-          "name": "unit_permissions_unit_id_units_unit_id_fk",
-          "tableFrom": "unit_permissions",
-          "tableTo": "units",
-          "columnsFrom": [
-            "unit_id"
-          ],
-          "columnsTo": [
-            "unit_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "unit_permissions_target_unit_id_units_unit_id_fk": {
-          "name": "unit_permissions_target_unit_id_units_unit_id_fk",
-          "tableFrom": "unit_permissions",
-          "tableTo": "units",
-          "columnsFrom": [
-            "target_unit_id"
-          ],
-          "columnsTo": [
-            "unit_id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "valid_dates": {
-          "name": "valid_dates",
-          "value": "\"unit_permissions\".\"end_date\" IS NULL OR \"unit_permissions\".\"end_date\" > \"unit_permissions\".\"start_date\""
         }
       },
       "isRLSEnabled": false
@@ -2835,28 +2220,6 @@
         "public"
       ]
     },
-    "public.capability_permission_kind": {
-      "name": "capability_permission_kind",
-      "schema": "public",
-      "values": [
-        "view",
-        "edit",
-        "assign",
-        "approve",
-        "delete"
-      ]
-    },
-    "public.global_permission_kind": {
-      "name": "global_permission_kind",
-      "schema": "public",
-      "values": [
-        "admin",
-        "audit",
-        "create_units",
-        "create_initiatives",
-        "create_capabilities"
-      ]
-    },
     "public.image_rendition_format": {
       "name": "image_rendition_format",
       "schema": "public",
@@ -2864,26 +2227,6 @@
         "fallback",
         "image/webp",
         "image/avif"
-      ]
-    },
-    "public.information_kind": {
-      "name": "information_kind",
-      "schema": "public",
-      "values": [
-        "boolean",
-        "gradient",
-        "text"
-      ]
-    },
-    "public.initiative_permission_kind": {
-      "name": "initiative_permission_kind",
-      "schema": "public",
-      "values": [
-        "view",
-        "edit",
-        "manage_resources",
-        "approve_changes",
-        "close"
       ]
     },
     "public.multiple_answer_strategy": {
@@ -2927,17 +2270,6 @@
       "values": [
         "individual",
         "organizational"
-      ]
-    },
-    "public.unit_permission_kind": {
-      "name": "unit_permission_kind",
-      "schema": "public",
-      "values": [
-        "manage_reports",
-        "assign_work",
-        "approve_time_off",
-        "manage_unit",
-        "view_reports"
       ]
     }
   },

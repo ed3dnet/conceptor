@@ -156,13 +156,17 @@ export const seed: SeedFn = async (deps, logger) => {
 
       const sortedUnits = topologicalSortUnits(units);
 
-      // Create units in topological order
-      for (const unit of sortedUnits) {
+      // Create units in topological order (reverse the toposort first)
+      for (const unit of sortedUnits.reverse()) {
         logger.info({ unitId: unit.id, name: unit.name }, "Creating unit");
 
         const parentUnitId = unit.parent_id
           ? unitIdMap.get(unit.parent_id)
           : null;
+
+        if (unit.parent_id && !parentUnitId) {
+          throw new Error(`Parent unit not found for unit ${unit.id}`);
+        }
 
         // Create the unit using UnitService
         const createdUnit = await tenantDeps.units.createUnit(
@@ -185,7 +189,7 @@ export const seed: SeedFn = async (deps, logger) => {
           const userId = userIdMap.get(unit.employee_id);
           if (userId) {
             // Assign user to unit using UnitService
-            await tenantDeps.units.assignUserToUnit(
+            await tenantDeps.units.assignments.assignUserToUnit(
               UnitIds.toRichId(createdUnit.unitId),
               {
                 __type: "UnitAssignmentInput",

@@ -1,6 +1,6 @@
 import { InsightEvents } from "../insights/events.js";
 import { QuestionEvents } from "../questions/events.js";
-import { UnitEvents } from "../units/schemas.js";
+import { UnitEvents } from "../units/events.js";
 import { UserEvents } from "../users/schemas.js";
 
 import { DailyTriggerEvent, HourlyTriggerEvent } from "./event-schemas.js";
