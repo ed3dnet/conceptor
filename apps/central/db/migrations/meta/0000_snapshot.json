@@ -1,9 +1,430 @@
 {
-  "id": "4d7af9ac-9f12-4b87-80ce-181d2c379389",
+  "id": "34b5b703-b057-46ab-89b5-417bab341d16",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.answers": {
+      "name": "answers",
+      "schema": "",
+      "columns": {
+        "answer_id": {
+          "name": "answer_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ask_response_id": {
+          "name": "ask_response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "answers_tenant_id_tenants_tenant_id_fk": {
+          "name": "answers_tenant_id_tenants_tenant_id_fk",
+          "tableFrom": "answers",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "tenant_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "answers_ask_response_id_ask_responses_ask_response_id_fk": {
+          "name": "answers_ask_response_id_ask_responses_ask_response_id_fk",
+          "tableFrom": "answers",
+          "tableTo": "ask_responses",
+          "columnsFrom": [
+            "ask_response_id"
+          ],
+          "columnsTo": [
+            "ask_response_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.asks": {
+      "name": "asks",
+      "schema": "",
+      "columns": {
+        "ask_id": {
+          "name": "ask_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hardcode_kind": {
+          "name": "hardcode_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_agent_name": {
+          "name": "source_agent_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notify_source_agent": {
+          "name": "notify_source_agent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "query": {
+          "name": "query",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "ask_visibility",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "multiple_answer_strategy": {
+          "name": "multiple_answer_strategy",
+          "type": "multiple_answer_strategy",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "asks_tenant_id_tenants_tenant_id_fk": {
+          "name": "asks_tenant_id_tenants_tenant_id_fk",
+          "tableFrom": "asks",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "tenant_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ask_references": {
+      "name": "ask_references",
+      "schema": "",
+      "columns": {
+        "ask_reference_id": {
+          "name": "ask_reference_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ask_id": {
+          "name": "ask_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reference_direction": {
+          "name": "reference_direction",
+          "type": "reference_direction",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_id": {
+          "name": "unit_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "initiative_id": {
+          "name": "initiative_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "capability_id": {
+          "name": "capability_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "answer_id": {
+          "name": "answer_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ask_references_ask_id_asks_ask_id_fk": {
+          "name": "ask_references_ask_id_asks_ask_id_fk",
+          "tableFrom": "ask_references",
+          "tableTo": "asks",
+          "columnsFrom": [
+            "ask_id"
+          ],
+          "columnsTo": [
+            "ask_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ask_references_unit_id_units_unit_id_fk": {
+          "name": "ask_references_unit_id_units_unit_id_fk",
+          "tableFrom": "ask_references",
+          "tableTo": "units",
+          "columnsFrom": [
+            "unit_id"
+          ],
+          "columnsTo": [
+            "unit_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ask_references_initiative_id_initiatives_initiative_id_fk": {
+          "name": "ask_references_initiative_id_initiatives_initiative_id_fk",
+          "tableFrom": "ask_references",
+          "tableTo": "initiatives",
+          "columnsFrom": [
+            "initiative_id"
+          ],
+          "columnsTo": [
+            "initiative_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ask_references_capability_id_capabilities_capability_id_fk": {
+          "name": "ask_references_capability_id_capabilities_capability_id_fk",
+          "tableFrom": "ask_references",
+          "tableTo": "capabilities",
+          "columnsFrom": [
+            "capability_id"
+          ],
+          "columnsTo": [
+            "capability_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ask_references_answer_id_answers_answer_id_fk": {
+          "name": "ask_references_answer_id_answers_answer_id_fk",
+          "tableFrom": "ask_references",
+          "tableTo": "answers",
+          "columnsFrom": [
+            "answer_id"
+          ],
+          "columnsTo": [
+            "answer_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "one_reference_target": {
+          "name": "one_reference_target",
+          "value": "(\n        (\"ask_references\".\"unit_id\" IS NOT NULL)::integer +\n        (\"ask_references\".\"initiative_id\" IS NOT NULL)::integer +\n        (\"ask_references\".\"capability_id\" IS NOT NULL)::integer +\n        (\"ask_references\".\"answer_id\" IS NOT NULL)::integer\n      ) = 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.ask_responses": {
+      "name": "ask_responses",
+      "schema": "",
+      "columns": {
+        "ask_response_id": {
+          "name": "ask_response_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ask_id": {
+          "name": "ask_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response": {
+          "name": "response",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "extra_attributes": {
+          "name": "extra_attributes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ask_responses_tenant_id_tenants_tenant_id_fk": {
+          "name": "ask_responses_tenant_id_tenants_tenant_id_fk",
+          "tableFrom": "ask_responses",
+          "tableTo": "tenants",
+          "columnsFrom": [
+            "tenant_id"
+          ],
+          "columnsTo": [
+            "tenant_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ask_responses_ask_id_asks_ask_id_fk": {
+          "name": "ask_responses_ask_id_asks_ask_id_fk",
+          "tableFrom": "ask_responses",
+          "tableTo": "asks",
+          "columnsFrom": [
+            "ask_id"
+          ],
+          "columnsTo": [
+            "ask_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ask_responses_user_id_users_user_id_fk": {
+          "name": "ask_responses_user_id_users_user_id_fk",
+          "tableFrom": "ask_responses",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.auth_connectors": {
       "name": "auth_connectors",
       "schema": "",
@@ -124,10 +545,16 @@
       "name": "capabilities",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "capability_id": {
+          "name": "capability_id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -174,8 +601,8 @@
       "name": "capability_permissions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "capability_permission_id": {
+          "name": "capability_permission_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -280,28 +707,28 @@
         }
       },
       "foreignKeys": {
-        "capability_permissions_unit_id_units_id_fk": {
-          "name": "capability_permissions_unit_id_units_id_fk",
+        "capability_permissions_unit_id_units_unit_id_fk": {
+          "name": "capability_permissions_unit_id_units_unit_id_fk",
           "tableFrom": "capability_permissions",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "capability_permissions_target_capability_id_capabilities_id_fk": {
-          "name": "capability_permissions_target_capability_id_capabilities_id_fk",
+        "capability_permissions_target_capability_id_capabilities_capability_id_fk": {
+          "name": "capability_permissions_target_capability_id_capabilities_capability_id_fk",
           "tableFrom": "capability_permissions",
           "tableTo": "capabilities",
           "columnsFrom": [
             "target_capability_id"
           ],
           "columnsTo": [
-            "id"
+            "capability_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -322,8 +749,8 @@
       "name": "capability_tags",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "capability_tag_id": {
+          "name": "capability_tag_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -362,15 +789,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "capability_tags_capability_id_capabilities_id_fk": {
-          "name": "capability_tags_capability_id_capabilities_id_fk",
+        "capability_tags_capability_id_capabilities_capability_id_fk": {
+          "name": "capability_tags_capability_id_capabilities_capability_id_fk",
           "tableFrom": "capability_tags",
           "tableTo": "capabilities",
           "columnsFrom": [
             "capability_id"
           ],
           "columnsTo": [
-            "id"
+            "capability_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -395,8 +822,8 @@
       "name": "global_permissions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "global_permission_id": {
+          "name": "global_permission_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -480,15 +907,15 @@
         }
       },
       "foreignKeys": {
-        "global_permissions_unit_id_units_id_fk": {
-          "name": "global_permissions_unit_id_units_id_fk",
+        "global_permissions_unit_id_units_unit_id_fk": {
+          "name": "global_permissions_unit_id_units_unit_id_fk",
           "tableFrom": "global_permissions",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -682,10 +1109,16 @@
       "name": "initiatives",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "initiative_id": {
+          "name": "initiative_id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -750,8 +1183,8 @@
       "name": "initiative_capabilities",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "initiative_capability_id": {
+          "name": "initiative_capability_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -876,41 +1309,41 @@
         }
       },
       "foreignKeys": {
-        "initiative_capabilities_initiative_id_initiatives_id_fk": {
-          "name": "initiative_capabilities_initiative_id_initiatives_id_fk",
+        "initiative_capabilities_initiative_id_initiatives_initiative_id_fk": {
+          "name": "initiative_capabilities_initiative_id_initiatives_initiative_id_fk",
           "tableFrom": "initiative_capabilities",
           "tableTo": "initiatives",
           "columnsFrom": [
             "initiative_id"
           ],
           "columnsTo": [
-            "id"
+            "initiative_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "initiative_capabilities_capability_id_capabilities_id_fk": {
-          "name": "initiative_capabilities_capability_id_capabilities_id_fk",
+        "initiative_capabilities_capability_id_capabilities_capability_id_fk": {
+          "name": "initiative_capabilities_capability_id_capabilities_capability_id_fk",
           "tableFrom": "initiative_capabilities",
           "tableTo": "capabilities",
           "columnsFrom": [
             "capability_id"
           ],
           "columnsTo": [
-            "id"
+            "capability_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "initiative_capabilities_unit_id_units_id_fk": {
-          "name": "initiative_capabilities_unit_id_units_id_fk",
+        "initiative_capabilities_unit_id_units_unit_id_fk": {
+          "name": "initiative_capabilities_unit_id_units_unit_id_fk",
           "tableFrom": "initiative_capabilities",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -931,8 +1364,8 @@
       "name": "initiative_permissions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "initiative_permission_id": {
+          "name": "initiative_permission_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -1037,28 +1470,28 @@
         }
       },
       "foreignKeys": {
-        "initiative_permissions_unit_id_units_id_fk": {
-          "name": "initiative_permissions_unit_id_units_id_fk",
+        "initiative_permissions_unit_id_units_unit_id_fk": {
+          "name": "initiative_permissions_unit_id_units_unit_id_fk",
           "tableFrom": "initiative_permissions",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "initiative_permissions_target_initiative_id_initiatives_id_fk": {
-          "name": "initiative_permissions_target_initiative_id_initiatives_id_fk",
+        "initiative_permissions_target_initiative_id_initiatives_initiative_id_fk": {
+          "name": "initiative_permissions_target_initiative_id_initiatives_initiative_id_fk",
           "tableFrom": "initiative_permissions",
           "tableTo": "initiatives",
           "columnsFrom": [
             "target_initiative_id"
           ],
           "columnsTo": [
-            "id"
+            "initiative_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1079,8 +1512,8 @@
       "name": "initiative_tags",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "initiative_tag_id": {
+          "name": "initiative_tag_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -1119,15 +1552,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "initiative_tags_initiative_id_initiatives_id_fk": {
-          "name": "initiative_tags_initiative_id_initiatives_id_fk",
+        "initiative_tags_initiative_id_initiatives_initiative_id_fk": {
+          "name": "initiative_tags_initiative_id_initiatives_initiative_id_fk",
           "tableFrom": "initiative_tags",
           "tableTo": "initiatives",
           "columnsFrom": [
             "initiative_id"
           ],
           "columnsTo": [
-            "id"
+            "initiative_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1459,10 +1892,16 @@
       "name": "units",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "unit_id": {
+          "name": "unit_id",
           "type": "uuid",
           "primaryKey": true,
+          "notNull": true
+        },
+        "tenant_id": {
+          "name": "tenant_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "name": {
@@ -1488,7 +1927,7 @@
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "extra_attributes": {
           "name": "extra_attributes",
@@ -1528,15 +1967,15 @@
         }
       },
       "foreignKeys": {
-        "units_parent_unit_id_units_id_fk": {
-          "name": "units_parent_unit_id_units_id_fk",
+        "units_parent_unit_id_units_unit_id_fk": {
+          "name": "units_parent_unit_id_units_unit_id_fk",
           "tableFrom": "units",
           "tableTo": "units",
           "columnsFrom": [
             "parent_unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1548,7 +1987,7 @@
       "checkConstraints": {
         "valid_parent": {
           "name": "valid_parent",
-          "value": "\"units\".\"id\" != \"units\".\"parent_unit_id\""
+          "value": "\"units\".\"unit_id\" != \"units\".\"parent_unit_id\""
         }
       },
       "isRLSEnabled": false
@@ -1557,8 +1996,8 @@
       "name": "unit_assignments",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "unit_assignment_id": {
+          "name": "unit_assignment_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -1662,15 +2101,15 @@
         }
       },
       "foreignKeys": {
-        "unit_assignments_unit_id_units_id_fk": {
-          "name": "unit_assignments_unit_id_units_id_fk",
+        "unit_assignments_unit_id_units_unit_id_fk": {
+          "name": "unit_assignments_unit_id_units_unit_id_fk",
           "tableFrom": "unit_assignments",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1704,8 +2143,8 @@
       "name": "unit_capabilities",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "unit_capability_id": {
+          "name": "unit_capability_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -1816,28 +2255,28 @@
         }
       },
       "foreignKeys": {
-        "unit_capabilities_unit_id_units_id_fk": {
-          "name": "unit_capabilities_unit_id_units_id_fk",
+        "unit_capabilities_unit_id_units_unit_id_fk": {
+          "name": "unit_capabilities_unit_id_units_unit_id_fk",
           "tableFrom": "unit_capabilities",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "unit_capabilities_capability_id_capabilities_id_fk": {
-          "name": "unit_capabilities_capability_id_capabilities_id_fk",
+        "unit_capabilities_capability_id_capabilities_capability_id_fk": {
+          "name": "unit_capabilities_capability_id_capabilities_capability_id_fk",
           "tableFrom": "unit_capabilities",
           "tableTo": "capabilities",
           "columnsFrom": [
             "capability_id"
           ],
           "columnsTo": [
-            "id"
+            "capability_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -1858,8 +2297,8 @@
       "name": "unit_permissions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "unit_permission_id": {
+          "name": "unit_permission_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -1964,28 +2403,28 @@
         }
       },
       "foreignKeys": {
-        "unit_permissions_unit_id_units_id_fk": {
-          "name": "unit_permissions_unit_id_units_id_fk",
+        "unit_permissions_unit_id_units_unit_id_fk": {
+          "name": "unit_permissions_unit_id_units_unit_id_fk",
           "tableFrom": "unit_permissions",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "unit_permissions_target_unit_id_units_id_fk": {
-          "name": "unit_permissions_target_unit_id_units_id_fk",
+        "unit_permissions_target_unit_id_units_unit_id_fk": {
+          "name": "unit_permissions_target_unit_id_units_unit_id_fk",
           "tableFrom": "unit_permissions",
           "tableTo": "units",
           "columnsFrom": [
             "target_unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -2006,8 +2445,8 @@
       "name": "unit_tags",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "unit_tag_id": {
+          "name": "unit_tag_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -2046,15 +2485,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "unit_tags_unit_id_units_id_fk": {
-          "name": "unit_tags_unit_id_units_id_fk",
+        "unit_tags_unit_id_units_unit_id_fk": {
+          "name": "unit_tags_unit_id_units_unit_id_fk",
           "tableFrom": "unit_tags",
           "tableTo": "units",
           "columnsFrom": [
             "unit_id"
           ],
           "columnsTo": [
-            "id"
+            "unit_id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -2427,8 +2866,8 @@
       "name": "user_tags",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "user_tag_id": {
+          "name": "user_tag_id",
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
@@ -2545,6 +2984,17 @@
     }
   },
   "enums": {
+    "public.ask_visibility": {
+      "name": "ask_visibility",
+      "schema": "public",
+      "values": [
+        "private",
+        "derive-only",
+        "upward",
+        "downward",
+        "public"
+      ]
+    },
     "public.capability_permission_kind": {
       "name": "capability_permission_kind",
       "schema": "public",
@@ -2611,6 +3061,22 @@
         "system",
         "human",
         "assistant"
+      ]
+    },
+    "public.multiple_answer_strategy": {
+      "name": "multiple_answer_strategy",
+      "schema": "public",
+      "values": [
+        "disallow",
+        "remember-last"
+      ]
+    },
+    "public.reference_direction": {
+      "name": "reference_direction",
+      "schema": "public",
+      "values": [
+        "subject",
+        "object"
       ]
     },
     "public.s3_bucket_name": {
