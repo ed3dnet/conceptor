@@ -1,6 +1,7 @@
 import { ChatAnthropic } from "@langchain/anthropic";
 import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatVertexAI } from "@langchain/google-vertexai";
 import type { Logger } from "pino";
 
 import { type TenantId, TenantIds } from "../../../domain/tenants/id.js";
@@ -41,6 +42,21 @@ export class LlmPrompterService {
           apiKey: modelConfig.strategy.googleApiKey,
           temperature: modelConfig.strategy.temperature,
           maxOutputTokens: modelConfig.strategy.maxOutputTokens,
+        });
+      // TODO: test vertex AI for this
+      case "google-vertexai":
+        return new ChatVertexAI({
+          modelName: modelConfig.strategy.model,
+          temperature: modelConfig.strategy.temperature,
+          maxOutputTokens: modelConfig.strategy.maxOutputTokens,
+          location: modelConfig.strategy.googleLocation,
+          ...(modelConfig.strategy.credentialsJson
+            ? {
+                authOptions: {
+                  credentials: JSON.parse(modelConfig.strategy.credentialsJson),
+                },
+              }
+            : {}),
         });
       default:
         // eslint-disable-next-line no-case-declarations

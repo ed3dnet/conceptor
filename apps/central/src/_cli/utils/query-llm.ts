@@ -43,7 +43,9 @@ export const queryLlmCommand = command({
 
     const response = await llmPrompter.immediateQuery(
       connector as LlmModelConnectorName,
-      prompt,
+      {
+        userPrompt: prompt,
+      },
     );
 
     // eslint-disable-next-line no-restricted-globals

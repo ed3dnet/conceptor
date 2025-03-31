@@ -560,6 +560,21 @@ export const ASKS = pgTable(
       .references(() => TENANTS.tenantId)
       .notNull(),
 
+    /**
+     * Any blocking asks will be asked before any non-blocking asks,
+     * in ascending order of priority and by creation date if there is a tie.
+     */
+    isBlocking: boolean("is_blocking").default(false).notNull(),
+    /**
+     * The priority of the ask, used to order asks AFTER sorting by `isBlocking`.
+     * Lower priorities will be asked first.
+     */
+    priority: integer("priority").default(0).notNull(),
+    /**
+     * An ask that has no ask_response will not be asked after this time. Once an
+     * ask_response is recorded for a given ask, `expiresAt` is cleared.
+     */
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
     hardcodeKind: text("hardcode_kind"),
     sourceAgentName: text("source_agent_name"),
     notifySourceAgent: boolean("notify_source_agent"),
