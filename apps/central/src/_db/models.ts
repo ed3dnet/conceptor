@@ -21,6 +21,7 @@ import {
   type ASK_REFERENCES,
   type ASK_RESPONSES,
   type UNIT_ANCESTRY,
+  type EMBEDDINGS,
 } from "./schema/index.js";
 
 export type DBSeed = InferSelectModel<typeof SEEDS>;
@@ -29,6 +30,8 @@ export type DBTenant = InferSelectModel<typeof TENANTS>;
 
 export type DBImage = InferSelectModel<typeof IMAGES>;
 export type DBImageUpload = InferSelectModel<typeof IMAGE_UPLOADS>;
+
+export type DBEmbedding = InferSelectModel<typeof EMBEDDINGS>;
 
 export type DBUser = InferSelectModel<typeof USERS>;
 export type DBUserAncentryRecord = InferSelectModel<typeof UNIT_ANCESTRY>;

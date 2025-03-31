@@ -5,15 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1743358169107,
-      "tag": "0000_initial6",
+      "when": 1743393649345,
+      "tag": "0000_pgExtensions",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1743362839675,
-      "tag": "0001_addingAskPriorityColumns",
+      "when": 1743393679295,
+      "tag": "0001_initial7",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1743393862133,
+      "tag": "0002_embeddingsTable",
       "breakpoints": true
     }
   ]

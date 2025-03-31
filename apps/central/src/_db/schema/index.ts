@@ -17,6 +17,7 @@ import {
   timestamp,
   unique,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 import { ulid, ulidToUUID, uuidToULID } from "ulidx";
 
@@ -695,5 +696,49 @@ export const ANSWERS = pgTable(
     {
       responseIdx: index("answers_response_idx").on(t.askResponseId),
     },
+  ],
+);
+
+export const EMBEDDING_SOURCE_TYPE = pgEnum("embedding_source_type", [
+  "answer",
+  "insight",
+  // We'll add more types like "document" in the future
+]);
+
+export const EMBEDDINGS = pgTable(
+  "embeddings",
+  {
+    embeddingId: ULIDAsUUID().primaryKey(),
+    tenantId: ULIDAsUUID()
+      .references(() => TENANTS.tenantId)
+      .notNull(),
+
+    // The vector embedding
+    embedding: vector("embedding", { dimensions: 2048 }).notNull(),
+
+    // Source information
+    sourceType: EMBEDDING_SOURCE_TYPE("source_type").notNull(),
+    sourceId: ULIDAsUUID("source_id").notNull(),
+
+    // Text content that was embedded
+    textContent: text("text_content").notNull(),
+
+    // Chunking information (for future use)
+    chunkIndex: integer("chunk_index").notNull().default(0),
+    isChunked: boolean("is_chunked").notNull().default(false),
+
+    // Model information
+    modelName: text("model_name").notNull(),
+
+    // Standard timestamps
+    ...TIMESTAMPS_MIXIN,
+  },
+  (t) => [
+    index("idx_embeddings_tenant").on(t.tenantId),
+    index("idx_embeddings_source").on(t.sourceType, t.sourceId),
+    index("idx_embeddings").using(
+      "ivfflat",
+      t.embedding.op("vector_cosine_ops"),
+    ),
   ],
 );

@@ -15,6 +15,7 @@ import { UnitService } from "../domain/units/service.js";
 import { UserService } from "../domain/users/service.js";
 import { ImagesService } from "../lib/functional/images/service.js";
 import { LlmPrompterService } from "../lib/functional/llm-prompter/service.js";
+import { RetrievalService } from "../lib/functional/retrieval/service.js";
 import { TranscriptionService } from "../lib/functional/transcription/service.js";
 
 import { type AppRequestCradle } from "./request.js";
@@ -46,6 +47,7 @@ export type AppTenantScopeItems = {
   images: ImagesService;
   llmPrompter: LlmPrompterService;
   transcription: TranscriptionService;
+  retrieval: RetrievalService;
 
   // domain objects below here
   auth: AuthService;
@@ -127,6 +129,11 @@ export async function configureTenantDomainContainer<
           s3,
           tenantId,
         ),
+    ),
+
+    retrieval: asFunction(
+      ({ logger, db, dbRO, config }: TenantDomainItems) =>
+        new RetrievalService(logger, db, dbRO, config.retrieval, tenantId),
     ),
 
     // -------- domain objects down here

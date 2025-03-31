@@ -8,6 +8,7 @@ import { PostgresConfig } from "../lib/datastores/postgres/config.js";
 import { EmailDeliveryConfig } from "../lib/functional/email-delivery/config.js";
 import { LlmPrompterConfig } from "../lib/functional/llm-prompter/config.js";
 import { S3Config } from "../lib/functional/object-store/config.js";
+import { RetrievalConfig } from "../lib/functional/retrieval/config.js";
 import { TranscriptionConfig } from "../lib/functional/transcription/config.js";
 import { VaultConfig } from "../lib/functional/vault/config.js";
 
@@ -57,6 +58,7 @@ export const AppConfig = Type.Intersect([
 
     llmPrompter: LlmPrompterConfig,
     transcription: TranscriptionConfig,
+    retrieval: RetrievalConfig,
 
     auth: AuthConfig,
   }),

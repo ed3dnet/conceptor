@@ -20,6 +20,9 @@ CREATE TABLE "answers" (
 CREATE TABLE "asks" (
 	"ask_id" uuid PRIMARY KEY NOT NULL,
 	"tenant_id" uuid NOT NULL,
+	"is_blocking" boolean DEFAULT false NOT NULL,
+	"priority" integer DEFAULT 0 NOT NULL,
+	"expires_at" timestamp with time zone,
 	"hardcode_kind" text,
 	"source_agent_name" text,
 	"notify_source_agent" boolean,
