@@ -3,7 +3,7 @@ export const ENCRYPTION_STRATEGIES = {
     keyLength: 32, // 256 bits
     ivLength: 16, // 128 bits
     authTagLength: 16,
-    algorithm: "aes-256-gcm",
+    algorithm: { name: "AES-GCM", length: 256 },
   },
 } as const;
 
