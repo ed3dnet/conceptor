@@ -8,8 +8,8 @@ echo "Waiting for Redis to become available..."
 
 while [ $count -lt $MAX_TRIES ]; do
     # Extract host and port from Redis URL
-    REDIS_HOST=$(echo "$CENTRAL_REDIS__URL" | sed -n 's/.*redis:\/\/\([^:]*\):.*/\1/p')
-    REDIS_PORT=$(echo "$CENTRAL_REDIS__URL" | sed -n 's/.*:\([0-9]*\)$/\1/p')
+    REDIS_HOST=$(echo "$REDIS__URL" | sed -n 's/.*redis:\/\/\([^:]*\):.*/\1/p')
+    REDIS_PORT=$(echo "$REDIS__URL" | sed -n 's/.*:\([0-9]*\)$/\1/p')
 
     # Use redis-cli ping to check connectivity
     redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" ping

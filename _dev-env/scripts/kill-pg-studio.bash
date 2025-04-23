@@ -1,9 +1,14 @@
 #!/bin/bash
 
-NEEDLE="drizzle-kit studio"
-pgrep -aAf "$NEEDLE"
+port="$DRIZZLE_STUDIO_PORT"
 
-pids=$(pgrep -Af "$NEEDLE")
+NEEDLE="port $port"
+
+if [[ $(uname) == "Darwin" ]]; then
+    pids=$(pgrep -f -- "$NEEDLE")
+else
+    pids=$(pgrep -fA -- "$NEEDLE")
+fi
 
 for pid in $pids; do
     echo "PID: $pid - $(ps -p $pid -o command=)"

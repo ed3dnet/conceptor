@@ -4,15 +4,23 @@ metadata:
   name: caddy-configmap
 data:
   Caddyfile: |
-    conceptor.lvh.me:80 {
-      handle_path /api/* {
-        reverse_proxy http://host.docker.internal:44001
-      }
-      handle_path /api {
-        reverse_proxy http://host.docker.internal:44001
-      }
+    #{SITE_HOSTNAME}#:80 {
+      reverse_proxy /* http://host.docker.internal:#{SITE_PORT}#
+      reverse_proxy / http://host.docker.internal:#{SITE_PORT}#
+    }
 
-      reverse_proxy /* http://host.docker.internal:44002
-      reverse_proxy / http://host.docker.internal:44002
+    #{KEYCLOAK_HOSTNAME}#:80 {
+      reverse_proxy /* http://host.docker.internal:#{KEYCLOAK_PORT}#
+      reverse_proxy / http://host.docker.internal:#{KEYCLOAK_PORT}#
+    }
+
+    #{S3_HOSTNAME}#:80 {
+      reverse_proxy /* http://host.docker.internal:#{MINIO_PORT}#
+      reverse_proxy / http://host.docker.internal:#{MINIO_PORT}#
+    }
+
+    #{MINIO_UI_HOSTNAME}#:80 {
+      reverse_proxy /* http://host.docker.internal:#{MINIO_UI_PORT}#
+      reverse_proxy / http://host.docker.internal:#{MINIO_UI_PORT}#
     }
 

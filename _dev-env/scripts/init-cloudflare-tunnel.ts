@@ -52,7 +52,7 @@ if (!existsSync(ENV_PATH)) {
 function getTunnelName(): string {
   const pwd = process.cwd();
   const hash = createHash("sha256").update(pwd).digest("hex").slice(0, 4);
-  return `identivine-dev-${hash}`;
+  return `devtunnel-${hash}`;
 }
 
 function checkCloudflared() {
@@ -135,7 +135,9 @@ function createTunnelIfNeeded(
   }
 }
 async function getDomainConfig(): Promise<DomainConfig> {
-  const defaultPrefix = execSync("whoami", { encoding: "utf8" }).trim();
+  const defaultPrefix = execSync("hostname", { encoding: "utf8" })
+    .trim()
+    .split(".")[0]!;
   let existingDomain: string | undefined;
   let existingPrefix: string | undefined;
 

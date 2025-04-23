@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": {},
+  "scripts": {
+    "run:dev": "dotenvx run -q -f ../.env.development --"
+  },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.1"
@@ -11,6 +13,7 @@
   "dependencies": {
     "@eropple/find-up": "^0.1.0",
     "enquirer": "^2.4.1",
+    "fast-json-patch": "^3.1.1",
     "inquirer": "^12.2.0",
     "js-yaml": "^4.1.0"
   }

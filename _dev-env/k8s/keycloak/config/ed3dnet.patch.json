@@ -1,0 +1,77 @@
+[
+  {
+      "op": "replace",
+      "path": "/identityProviders/1/config/clientId",
+      "value": "#{KEYCLOAK__GOOGLE_CLIENT_ID}#"
+  },
+  {
+      "op": "replace",
+      "path": "/identityProviders/1/config/clientSecret",
+      "value": "#{KEYCLOAK__GOOGLE_CLIENT_SECRET}#"
+  },
+  {
+      "op": "replace",
+      "path": "/identityProviders/0/config/clientId",
+      "value": "#{KEYCLOAK__GITHUB_CLIENT_ID}#"
+  },
+  {
+      "op": "replace",
+      "path": "/identityProviders/0/config/clientSecret",
+      "value": "#{KEYCLOAK__GITHUB_CLIENT_SECRET}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/user",
+      "value": "#{EMAIL_DELIVERY__SMTP__AUTH__USER}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/fromDisplayName",
+      "value": "#{EMAIL_FROM_NAME}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/from",
+      "value": "#{EMAIL_FROM_EMAIL}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/replyTo",
+      "value": "#{EMAIL_REPLYTO_EMAIL}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/host",
+      "value": "#{KEYCLOAK__SMTP__HOST}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/port",
+      "value": "#{KEYCLOAK__SMTP__PORT}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/password",
+      "value": "#{KEYCLOAK__SMTP__AUTH__PASS}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/ssl",
+      "value": "#{KEYCLOAK__SMTP__TLS}#"
+  },
+  {
+      "op": "replace",
+      "path": "/smtpServer/replyToDisplayName",
+      "value": "#{EMAIL_REPLYTO_NAME}#"
+  },
+  {
+      "op": "replace",
+      "path": "/clients/4/secret",
+      "value": "#{AUTH__CLIENT_SECRET}#"
+  },
+  {
+      "op": "replace",
+      "path": "/clients/4/clientId",
+      "value": "#{AUTH__CLIENT_ID}#"
+  }
+]

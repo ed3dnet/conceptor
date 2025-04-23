@@ -13,7 +13,7 @@ while [ $count -lt $MAX_TRIES ]; do
     echo "Attempting to connect to Keycloak at '$KEYCLOAK_URL'..."
 
     # Try to access Keycloak's health endpoint
-    curl -s -o /dev/null -w "%{http_code}" "$KEYCLOAK_URL/health" | grep -q "200"
+    curl -s -o /dev/null -w "%{http_code}" "$KEYCLOAK_URL/realms/master" | grep -q "200"
 
     if [ $? -eq 0 ]; then
         echo "Successfully connected to Keycloak!"

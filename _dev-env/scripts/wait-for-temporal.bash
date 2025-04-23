@@ -11,7 +11,7 @@ echo "Waiting for Temporal to become available..."
 
 while [ $count -lt $MAX_TRIES ]; do
     temporal operator cluster health \
-        --address "$CENTRAL_TEMPORAL__ADDRESS"
+        --address "$TEMPORAL__ADDRESS"
 
     # shellcheck disable=SC2181
     if [ $? -eq 0 ]; then
