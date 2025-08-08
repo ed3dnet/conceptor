@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import { writeFile } from "node:fs/promises";
 
 import { type Logger } from "pino";

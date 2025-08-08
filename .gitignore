@@ -43,3 +43,8 @@ dev-debug.log
 # Task files
 # tasks.json
 # tasks/ 
+
+
+# dev-setup creates this from .mcp.sample.json
+.mcp.json
+mcp.json

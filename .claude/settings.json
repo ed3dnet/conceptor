@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:docs.basicmemory.com)",
+      "WebFetch(domain:task-master.dev)",
+      "mcp__basic-memory__write_note",
+      "mcp__basic-memory__get_current_project",
+      "mcp__basic-memory__list_memory_projects",
+      "mcp__basic-memory__read_content",
+      "mcp__basic-memory__switch_project",
+      "mcp__basic-memory__search_notes",
+      "mcp__basic-memory__read_note"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "task-master-ai",
+    "basic-memory"
+  ]
+}

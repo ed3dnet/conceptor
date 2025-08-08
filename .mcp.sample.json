@@ -1,0 +1,46 @@
+{
+  "mcpServers": {
+    "task-master-ai": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "--package=task-master-ai",
+        "task-master-ai"
+      ],
+      "env": {
+      }
+    },
+    "basic-memory": {
+      "type": "stdio",
+      "command": "poetry",
+      "args": ["run", "basic-memory", "mcp"],
+      "cwd": "/absolute/path/to/your/project/root"
+    },
+    "git-mcp-server": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@cyanheads/git-mcp-server"],
+      "env": {
+        "MCP_LOG_LEVEL": "info",
+        "GIT_SIGN_COMMITS": "false"
+      }
+    },
+    "brave-search": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@brave/brave-search-mcp-server"],
+      "env": {
+        "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY_HERE"
+      }
+    },
+    "tavily-mcp": {
+      "command": "npx",
+      "args": ["-y", "tavily-mcp"],
+      "env": {
+        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY_HERE"
+      }
+    }
+  }
+}
+

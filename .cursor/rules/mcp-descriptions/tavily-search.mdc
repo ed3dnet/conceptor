@@ -1,0 +1,28 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# LLM Agent Guidelines for Tavily MCP Server
+
+This document provides a concise overview of the web search tool available through the Tavily MCP server.
+
+### Guiding Principle for the LLM Agent
+
+* **Be Specific**: When a user's request requires up-to-date information from the web, use the `tavily_web_search` tool. Formulate a clear and specific `query` to get the most relevant results. You can use the `include_domains` parameter to narrow your search to specific websites.
+
+---
+
+## Web Search Tool (`tavily_web_search`)
+
+* **Description**: A powerful web search tool that provides comprehensive, real-time results using Tavily's AI search engine. It returns relevant web content with customizable parameters.
+* **When to Use**: Use this tool for any general-purpose query to find articles, websites, and answers on the internet. It is particularly useful when you need to search within specific websites.
+* **Input Parameters**:
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `query` | string | The search query. |
+| `max_results` | integer, optional | The maximum number of results to return (default: 5, max: 20). |
+| `search_depth` | string, optional | "basic" or "advanced" search depth (default: "basic"). |
+| `include_domains` | list or string, optional | A list of domains to specifically include in the search results. |
+| `exclude_domains` | list or string, optional | A list of domains to specifically exclude from the results. |
