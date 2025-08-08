@@ -9,9 +9,6 @@
       "packages/*",
       "_dev-env"
     ],
-    "patchedDependencies": {
-      "redlock": "patches/redlock.patch"
-    },
     "onlyBuiltDependencies": [
       "@swc/core",
       "@temporalio/core-bridge",
