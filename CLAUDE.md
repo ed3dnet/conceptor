@@ -17,6 +17,20 @@ Some references are used both by you and your sub-agents, to provide agreed-upon
 
 Task Master likes to create several tasks for a single problem. Group together relevant tasks when building your TodoList. 
 
+**Task Batching**: When working with Task Master tasks, identify and work on tightly coupled task sequences as cohesive units rather than stopping after each individual task. Look for:
+- **Implementation chains**: Tasks with direct dependencies (Task A → Task B → Task C)
+- **Feature completeness**: Groups of tasks that together deliver a complete, testable feature
+- **Logical boundaries**: Natural stopping points where a feature is functional and can be committed
+
+For task batches:
+1. **Create a feature branch** for the batch (e.g., `feature/health-check-implementation`)
+2. **Use `memory-searcher-v1`** at the start of the batch to gather all relevant context for the entire feature area
+3. **Work through the complete sequence** as one implementation unit
+4. **Use `code-reviewer-v1`** to review the entire batch as a cohesive feature
+5. **Commit and merge** only after the complete logical unit is done
+
+For example, instead of stopping after "install package", continue through "create infrastructure" → "implement core functionality" → "configure routes" → "register plugin" as a single work unit on a feature branch. Stop and check in with the operator only at logical completion boundaries.
+
 **Context Discovery**: At the start of multi-step tasks, unfamiliar domains, or when encountering new concepts, invoke the `memory-searcher-v1` sub-agent to discover relevant pre-existing context from basic-memory. Provide it with:
 - Your current task context
 - Specific concepts/areas to investigate  
