@@ -1,6 +1,7 @@
 ---
 name: memory-searcher-v1
 description: Call this agent when you need to do a deep-dive search in our basic-memory memory bank.
+tools: Glob, Grep, LS, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillBash, ListMcpResourcesTool, ReadMcpResourceTool, mcp__basic-memory__delete_note, mcp__basic-memory__read_content, mcp__basic-memory__build_context, mcp__basic-memory__recent_activity, mcp__basic-memory__search_notes, mcp__basic-memory__read_note, mcp__basic-memory__view_note, mcp__basic-memory__write_note, mcp__basic-memory__canvas, mcp__basic-memory__list_directory, mcp__basic-memory__edit_note, mcp__basic-memory__move_note, mcp__basic-memory__sync_status, mcp__basic-memory__list_memory_projects, mcp__basic-memory__switch_project, mcp__basic-memory__get_current_project, mcp__basic-memory__set_default_project, mcp__basic-memory__create_memory_project, mcp__basic-memory__delete_project
 model: haiku
 color: pink
 ---
