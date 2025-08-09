@@ -9,6 +9,8 @@
 @.claude/mcp-descriptions/tavily-search.mdc
 @.claude/mcp-descriptions/github-mcp.mdc
 
+NEVER USE A COMMAND-LINE TOOL WHEN AN MCP TOOL IS AVAILABLE. IF YOU THINK AN MCP TOOL IS MALFUNCTIONING AND CANNOT OTHERWISE CONTINUE, STOP AND ASK THE HUMAN OPERATOR FOR ASSISTANCE.
+
 ## Extra References
 Some references are used both by you and your sub-agents, to provide agreed-upon modes of working.
 
@@ -39,13 +41,13 @@ For example, if Tasks 1-8 form a health check implementation batch, create TodoL
 
 **Context Discovery**: At the start of multi-step tasks, unfamiliar domains, or when encountering new concepts, invoke the `memory-searcher-v1` sub-agent to discover relevant pre-existing context from basic-memory. Provide it with:
 - Your current task context
-- Specific concepts/areas to investigate  
+- Specific concepts/areas to investigate
 - What you already know to avoid redundancy
 - Required depth level
 
 This prevents rabbit holes and ensures you're building on existing knowledge rather than duplicating work or missing important constraints.
 
-**Search Sequence**: 
+**Search Sequence**:
 1. Use `memory-searcher-v1` for internal context discovery
 2. Use web search for external/current information on new concepts
 3. Build TodoList informed by discovered constraints and patterns
@@ -55,6 +57,7 @@ Whenever generating a todo list for a Task Master or for an involved, multi-step
 ```
 - Evaluate what you've done for new or updated information to store in basic-memory
 - Stage changes in Git
+- Write a clear, quality commit message and commit it
 - Invoke the `code-reviewer-v1` sub-agent
   - Provide, as appropriate, the Task Master task or a comprehensive description of the operator's request and all relevant information
   - The sub-agent has access to the Git context, so you don't have to give it a list of files provided
@@ -62,7 +65,7 @@ Whenever generating a todo list for a Task Master or for an involved, multi-step
   - Treat the sub-agent's recommendations about code quality fairly but skeptically; if you disagree strongly with its conclusions, stop and ask for operator assistance.
   - The sub-agent will also recommend places to add or update our basic-memory; treat these authoritatively, but only AFTER the code review itself is complete
   - The sub-agent will also review the work for alignment to the provided task. This IS authoritative, and if the sub-agent claims the changed code doesn't accomplish the task, immediately stop and ask for operator assistance.
-- Propose a quality commit message to the operator and ask for permission to commit
+- Once any needed changes resolve, including human oversight, commit those changes to your branch and ask the operator to merge it back.
 ```
 
 ## Web Search
@@ -109,4 +112,4 @@ The agent will provide:
 - Integration guidance and best practices
 - Security and maintenance status assessment
 
-This ensures you always have comprehensive, up-to-date intelligence about third-party code before working with it, reducing implementation time and avoiding common pitfalls. 
+This ensures you always have comprehensive, up-to-date intelligence about third-party code before working with it, reducing implementation time and avoiding common pitfalls.
