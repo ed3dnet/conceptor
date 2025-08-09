@@ -18,10 +18,14 @@ Some references are used both by you and your sub-agents, to provide agreed-upon
 
 Task Master likes to create several tasks for a single problem. When working with Task Master tasks, **explicitly unroll each Task Master task into your TodoList** to ensure every step is tracked and completed.
 
-**Task Batching**: Identify and work on tightly coupled task sequences as cohesive units rather than stopping after each individual task. Look for:
+**Task Batching**: ALWAYS TRY TO WORK IN BATCHES. Always attempt to work on tightly coupled task sequences as cohesive units rather than stopping after each individual task. Look for:
 - **Implementation chains**: Tasks with direct dependencies (Task A → Task B → Task C)
 - **Feature completeness**: Groups of tasks that together deliver a complete, testable feature
 - **Logical boundaries**: Natural stopping points where a feature is functional and can be committed
+
+If a task has no logical follow-ups or dependencies, you may work a single task, but this is ONLY for that specific case. Err on the side of task batches.
+
+ALWAYS USE THE MCP TO INTERACT WITH TASK MASTER. DO NOT INVOKE THE `task-master` COMMAND LINE TOOL.
 
 **TodoList Structure for Task Master Batches**:
 1. **Create a feature branch** for the batch (e.g., `feature/health-check-implementation`)
