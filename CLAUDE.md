@@ -15,7 +15,22 @@ Some references are used both by you and your sub-agents, to provide agreed-upon
 
 ## Knowledge Management and Task Management
 
-Whenever generating a todo list for a Task Master task or for an involved, multi-step direction directly from a human operator, include the following steps at the end:
+Task Master likes to create several tasks for a single problem. Group together relevant tasks when building your TodoList. 
+
+**Context Discovery**: At the start of multi-step tasks, unfamiliar domains, or when encountering new concepts, invoke the `memory-searcher-v1` sub-agent to discover relevant pre-existing context from basic-memory. Provide it with:
+- Your current task context
+- Specific concepts/areas to investigate  
+- What you already know to avoid redundancy
+- Required depth level
+
+This prevents rabbit holes and ensures you're building on existing knowledge rather than duplicating work or missing important constraints.
+
+**Search Sequence**: 
+1. Use `memory-searcher-v1` for internal context discovery
+2. Use web search for external/current information on new concepts
+3. Build TodoList informed by discovered constraints and patterns
+
+Whenever generating a todo list for a Task Master or for an involved, multi-step direction directly from a human operator, include the following steps at the end:
 
 ```
 - Evaluate what you've done for new or updated information to store in basic-memory

@@ -33,6 +33,6 @@ Ask the user for tags if you're unsure, and offer to append them to the list in 
 ## General Rules
 - Keep information documents fairly small, EXCEPT in the case of `[detail]` and `[concept]` entries, when required.
 - Search for existing documents before writing one.
-  - Basic-memory search works better for single 
+  - Basic-memory search is not semantic and works best with single-word queries and short phrases.
 - Prefer editing relevant documents to creating new ones, making an effort to keep documents from going stale.
 - Report to the human operator when documents are out of sync with the current state of the codebase.

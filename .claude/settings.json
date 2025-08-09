@@ -11,7 +11,10 @@
       "mcp__basic-memory__read_content",
       "mcp__basic-memory__switch_project",
       "mcp__basic-memory__search_notes",
-      "mcp__basic-memory__read_note"
+      "mcp__basic-memory__read_note",
+      "Bash(task-master *)",
+      "Bash(pnpm task-master *)",
+      "mcp__task_master_ai__*"
     ]
   },
   "enableAllProjectMcpServers": true,
