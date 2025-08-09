@@ -51,6 +51,8 @@ Evaluate the code across these dimensions:
 - **Error Handling**: How are errors caught, logged, and recovered from?
 - **Edge Cases**: What happens with null/undefined/empty/malformed inputs?
 - **Performance**: Will this scale with realistic data volumes?
+  - Consider cases where an iterative approach is being done when a parallel approach would be better
+    - Example: the original implementation of Fastify health checks had try-catch blocks all in a row; a good suggestion would be to make these into functions called with `Promise.allSettled`
 - **Security**: Are there injection risks, exposed secrets, or auth bypasses?
 - **Testing**: Are critical paths tested? Are tests meaningful?
   - Our system is entirely built around a dependency injector; we can create (and make DRY and reusable) stub implementations of our services in order to allow for more integrated tests. Recommend this proactively.
