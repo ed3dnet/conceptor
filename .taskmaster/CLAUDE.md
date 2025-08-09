@@ -122,33 +122,25 @@ task-master expand --all --research
 
 If tasks already exist, another PRD can be parsed (with new information only!) using parse-prd with --append flag. This will add the generated tasks to the existing list of tasks..
 
-#### 2. Daily Development Loop
+#### 2. Daily Development Loop - Task Batching Approach
 
 ```bash
-# Start each session
-task-master next                           # Find next available task
-task-master show <id>                     # Review task details
+# Start each session - Task Batching Approach
+task-master list                           # Review all tasks and dependencies
+# Identify tightly coupled task sequences (implementation chains, feature completeness)
+# Create feature branch using git-mcp for the batch (e.g., feature/auth-implementation)
 
-# During implementation, check in code context into the tasks and subtasks
-task-master update-subtask --id=<id> --prompt="implementation notes..."
+# For task batches, work as cohesive units:
+task-master show <batch-start-id>         # Review batch starting point
+task-master show <batch-end-id>           # Review batch completion point
 
-# Complete tasks
-task-master set-status --id=<id> --status=done
-```
+# Work through complete sequence as one implementation unit
+# Use memory-searcher-v1 for context discovery at batch start
+# Update subtasks throughout the batch implementation
+task-master update-subtask --id=<id> --prompt="batch progress notes..."
 
-#### 3. Multi-Claude Workflows
-
-For complex projects, use multiple Claude Code sessions:
-
-```bash
-# Terminal 1: Main implementation
-cd project && claude
-
-# Terminal 2: Testing and validation
-cd project-test-worktree && claude
-
-# Terminal 3: Documentation updates
-cd project-docs-worktree && claude
+# Complete entire batch before moving to next logical boundary
+# Use code-reviewer-v1 for entire batch review
 ```
 
 ### Custom Slash Commands
@@ -232,21 +224,45 @@ Add to `.claude/settings.json`:
 
 ## Claude Code Best Practices with Task Master
 
+### Task Batching Strategy
+
+**Identify Task Batches by:**
+- **Implementation chains**: Tasks with direct dependencies (Task A → Task B → Task C)
+- **Feature completeness**: Groups of tasks that together deliver a complete, testable feature  
+- **Logical boundaries**: Natural stopping points where a feature is functional and can be committed
+
+**Batch Workflow:**
+1. **Create feature branch** using git-mcp for the batch (e.g., `feature/health-check-implementation`)
+2. **Use `memory-searcher-v1`** at batch start for complete context discovery
+3. **Work through complete sequence** as one implementation unit
+4. **Use `code-reviewer-v1`** to review entire batch as cohesive feature
+5. **Commit and merge** only after complete logical unit is done using git-mcp
+
+**Example**: Instead of stopping after "install package", continue through "create infrastructure" → "implement core functionality" → "configure routes" → "register plugin" as single work unit.
+
 ### Context Management
 
 - Use `/clear` between different tasks to maintain focus
 - This CLAUDE.md file is automatically loaded for context
 - Use `task-master show <id>` to pull specific task context when needed
 
-### Iterative Implementation
+### Batch Implementation Workflow
 
-1. `task-master show <subtask-id>` - Understand requirements
-2. Explore codebase and plan implementation
-3. `task-master update-subtask --id=<id> --prompt="detailed plan"` - Log plan
-4. `task-master set-status --id=<id> --status=in-progress` - Start work
-5. Implement code following logged plan
-6. `task-master update-subtask --id=<id> --prompt="what worked/didn't work"` - Log progress
-7. `task-master set-status --id=<id> --status=done` - Complete task
+1. **Identify Task Batch**: Look for implementation chains (A→B→C) or feature completeness groups
+2. **Create Feature Branch**: Use git-mcp to create branch (e.g., `feature/batch-name`)
+3. **Context Discovery**: Use `memory-searcher-v1` for entire feature area context
+4. **Batch Planning**: 
+   - `task-master show <start-id>` through `task-master show <end-id>`
+   - Plan the complete sequence as one unit
+5. **Batch Implementation**:
+   - Set all batch tasks to in-progress: `task-master set-status --id=<id> --status=in-progress`
+   - Work through the complete implementation chain
+   - Log progress across the batch: `task-master update-subtask --id=<id> --prompt="batch progress"`
+6. **Batch Completion**:
+   - Complete all tasks in the batch together
+   - Use `code-reviewer-v1` for entire feature review
+   - Commit entire batch as cohesive unit using git-mcp
+   - Stop only at logical completion boundaries
 
 ### Complex Workflows with Checklists
 
