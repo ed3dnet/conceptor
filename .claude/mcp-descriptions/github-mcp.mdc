@@ -1,0 +1,221 @@
+# GitHub MCP Server Instructions
+
+## Available Tools
+
+### Repository Operations
+
+#### `search_repositories`
+Search for GitHub repositories.
+- `query` (string, required): Search query
+- `page` (number, optional): Page number, default 1
+- `per_page` (number, optional): Results per page, default 30
+
+#### `get_repository`
+Get repository details.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+
+#### `get_file_contents`
+Read a file from a repository.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `path` (string, required): File path
+- `ref` (string, optional): Branch/tag/commit SHA
+
+#### `create_or_update_file`
+Create or update a file in a repository.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `path` (string, required): File path
+- `content` (string, required): File content (base64 encoded)
+- `message` (string, required): Commit message
+- `sha` (string, optional): SHA of file being replaced (required for updates)
+- `branch` (string, optional): Target branch
+
+#### `push_files`
+Push multiple files in a single commit.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `branch` (string, required): Target branch
+- `message` (string, required): Commit message
+- `files` (array, required): Array of {path: string, content: string}
+
+#### `create_repository`
+Create a new repository.
+- `name` (string, required): Repository name
+- `description` (string, optional): Repository description
+- `private` (boolean, optional): Make repository private, default false
+- `auto_init` (boolean, optional): Initialize with README, default false
+
+#### `create_fork`
+Fork a repository.
+- `owner` (string, required): Original repository owner
+- `repo` (string, required): Original repository name
+- `organization` (string, optional): Organization to fork to
+
+### Branch Operations
+
+#### `list_branches`
+List repository branches.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+
+#### `create_branch`
+Create a new branch.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `branch` (string, required): New branch name
+- `from_branch` (string, optional): Source branch, default main/master
+
+### Issue Operations
+
+#### `list_issues`
+List repository issues.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `state` (string, optional): "open", "closed", "all", default "open"
+- `assignee` (string, optional): Filter by assignee
+- `labels` (string, optional): Comma-separated label names
+
+#### `get_issue`
+Get issue details.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `issue_number` (number, required): Issue number
+
+#### `create_issue`
+Create a new issue.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `title` (string, required): Issue title
+- `body` (string, optional): Issue description
+- `assignees` (array, optional): Array of usernames
+- `labels` (array, optional): Array of label names
+
+#### `update_issue`
+Update an existing issue.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `issue_number` (number, required): Issue number
+- `title` (string, optional): New title
+- `body` (string, optional): New description
+- `state` (string, optional): "open" or "closed"
+- `assignees` (array, optional): Array of usernames
+- `labels` (array, optional): Array of label names
+
+#### `add_issue_comment`
+Add a comment to an issue.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `issue_number` (number, required): Issue number
+- `body` (string, required): Comment text
+
+### Pull Request Operations
+
+#### `list_pull_requests`
+List repository pull requests.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `state` (string, optional): "open", "closed", "all", default "open"
+
+#### `get_pull_request`
+Get pull request details.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `pull_number` (number, required): Pull request number
+
+#### `create_pull_request`
+Create a new pull request.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `title` (string, required): PR title
+- `body` (string, optional): PR description
+- `head` (string, required): Branch with changes
+- `base` (string, required): Target branch
+- `draft` (boolean, optional): Create as draft, default false
+
+#### `update_pull_request`
+Update a pull request.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `pull_number` (number, required): Pull request number
+- `title` (string, optional): New title
+- `body` (string, optional): New description
+- `state` (string, optional): "open" or "closed"
+
+#### `merge_pull_request`
+Merge a pull request.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `pull_number` (number, required): Pull request number
+- `merge_method` (string, optional): "merge", "squash", "rebase", default "merge"
+
+### Commit Operations
+
+#### `list_commits`
+List repository commits.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `sha` (string, optional): Branch/tag/SHA to start from
+- `path` (string, optional): Only commits affecting this path
+- `author` (string, optional): Filter by author
+- `since` (string, optional): ISO 8601 date
+- `until` (string, optional): ISO 8601 date
+
+#### `get_commit`
+Get commit details.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `ref` (string, required): Commit SHA
+
+### Workflow Operations
+
+#### `list_workflow_runs`
+List GitHub Actions workflow runs.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `workflow_id` (string, optional): Workflow ID or filename
+- `status` (string, optional): Filter by status
+- `per_page` (number, optional): Results per page, default 30
+
+#### `get_workflow_run`
+Get workflow run details.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `run_id` (number, required): Workflow run ID
+
+### Release Operations
+
+#### `list_releases`
+List repository releases.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+
+#### `create_release`
+Create a new release.
+- `owner` (string, required): Repository owner
+- `repo` (string, required): Repository name
+- `tag_name` (string, required): Tag for release
+- `name` (string, optional): Release name
+- `body` (string, optional): Release description
+- `draft` (boolean, optional): Create as draft
+- `prerelease` (boolean, optional): Mark as prerelease
+
+## Usage Examples
+
+```
+# Search for repositories
+Use search_repositories with query "machine learning python"
+
+# Read a file
+Use get_file_contents with owner "facebook", repo "react", path "README.md"
+
+# Create an issue
+Use create_issue with owner "myorg", repo "myrepo", title "Bug: Login fails"
+
+# List open PRs
+Use list_pull_requests with owner "microsoft", repo "vscode", state "open"
+
+# Get workflow runs
+Use list_workflow_runs with owner "nodejs", repo "node"
+```

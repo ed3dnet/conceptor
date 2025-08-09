@@ -20,37 +20,55 @@
         "--project",
         "conceptor-UPDATE_ME_WITH_HASH",
         "mcp"],
-      "cwd": "/absolute/path/to/your/project/root"
-    },
-    "git-mcp-server": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["@cyanheads/git-mcp-server"],
-      "env": {
-        "MCP_LOG_LEVEL": "info",
-        "GIT_SIGN_COMMITS": "false"
-      }
-    },
-    "brave-search": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@brave/brave-search-mcp-server",
-        "--transport",
-        "stdio"
-      ],
-      "env": {
-        "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY_HERE"
-      }
-    },
-    "tavily-mcp": {
-      "command": "npx",
-      "args": ["-y", "tavily-mcp"],
-      "env": {
-        "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY_HERE"
+        "cwd": "/absolute/path/to/your/project/root"
+      },
+      "package-registry": {
+        "command": "npx",
+        "args": ["-y", "package-registry-mcp"]
+      },
+      "git-mcp-server": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["@cyanheads/git-mcp-server"],
+        "env": {
+          "MCP_LOG_LEVEL": "info",
+          "GIT_SIGN_COMMITS": "false"
+        }
+      },
+      "brave-search": {
+        "type": "stdio",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@brave/brave-search-mcp-server",
+          "--transport",
+          "stdio"
+        ],
+        "env": {
+          "BRAVE_API_KEY": "YOUR_BRAVE_API_KEY_HERE"
+        }
+      },
+      "tavily-mcp": {
+        "command": "npx",
+        "args": ["-y", "tavily-mcp"],
+        "env": {
+          "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY_HERE"
+        }
+      },
+      "github": {
+        "command": "docker",
+        "args": [
+          "run",
+          "-i",
+          "--rm",
+          "-e",
+          "GITHUB_PERSONAL_ACCESS_TOKEN",
+          "ghcr.io/github/github-mcp-server"
+        ],
+        "env": {
+          "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_PAT_HERE"
+        }
       }
     }
   }
-}
 

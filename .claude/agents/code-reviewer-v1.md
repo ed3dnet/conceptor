@@ -33,6 +33,7 @@ Evaluate the code across these dimensions:
 - **Concept Validation**: Does the implementation align with documented `[concept]` entries and the Task Master task definition provided to you?
 
 #### Code Quality & Patterns
+- **Compilation**: For all touched packages and apps, make sure the code compiles and all tests pass
 - **DRY Violations**: Search for similar code patterns elsewhere in the codebase
 - **Consistency**: Does this follow established patterns in the project?
 - **Abstraction Level**: Is this the right level of generalization?

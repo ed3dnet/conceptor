@@ -7,6 +7,7 @@
 @.claude/mcp-descriptions/git-mcp.mdc
 @.claude/mcp-descriptions/brave-search.mdc
 @.claude/mcp-descriptions/tavily-search.mdc
+@.claude/mcp-descriptions/github-mcp.mdc
 
 ## Extra References
 Some references are used both by you and your sub-agents, to provide agreed-upon modes of working.
@@ -66,3 +67,39 @@ Use web search expansively to ensure you have up-to-date context on concepts int
 Prefer Tavily search. If it isn't available, fall back to Brave Search. If that isn't available, use your built-in web search operator.
 
 Consider whether or not it is a good idea to add what you've learned through web search to basic-memory. If you are unsure if it has long-term value, ask the human operator to decide.
+
+## When Using Third-Party Code
+
+Many parts of this codebase use open-source and third-party code. **ALWAYS use the `third-party-code-investigator-v1` sub-agent** in these scenarios:
+
+### For New Dependencies
+When considering adding any new third-party package, library, or dependency:
+- **Before installation**: Invoke `third-party-code-investigator-v1` to research the package thoroughly
+- Get comprehensive intelligence on security, maintenance status, documentation quality
+- Understand integration requirements and potential conflicts
+- Verify the package meets our needs before adding it to the project
+
+### For Existing Dependencies
+When you're about to work with an existing third-party package in the codebase:
+- **Before implementation**: Use `third-party-code-investigator-v1` to refresh your knowledge
+- Get up-to-date documentation links and best practices
+- Understand current API patterns and recommended usage
+- Identify any recent changes or security considerations
+
+### Investigation Triggers
+Call the investigator agent whenever you encounter:
+- A new package.json/requirements.txt/Cargo.toml dependency
+- References to third-party libraries in existing code
+- Task Master tasks involving external packages
+- Implementation work requiring third-party integration
+- Questions about package capabilities or proper usage
+
+### Expected Output
+The agent will provide:
+- Current package versions and registry information
+- Direct links to canonical documentation (e.g., docs.temporal.io)
+- GitHub repository analysis with README parsing
+- Integration guidance and best practices
+- Security and maintenance status assessment
+
+This ensures you always have comprehensive, up-to-date intelligence about third-party code before working with it, reducing implementation time and avoiding common pitfalls. 
