@@ -8,8 +8,9 @@
  */
 
 import { execSync, spawn } from "child_process";
+import * as crypto from "crypto";
 import { promises as fs, existsSync } from "fs";
-import path from "path";
+import * as path from "path";
 
 import pino from "pino";
 import which from "which";
@@ -113,40 +114,55 @@ function isSecretField(fieldName: string): boolean {
 /**
  * Recursively merge MCP configurations, preserving secrets from existing config
  */
-function mergeMcpConfig(sample: any, existing: any, projectRoot: string): any {
+function mergeMcpConfig(
+  sample: any,
+  existing: any,
+  projectRoot: string,
+  basicMemoryProjectName?: string,
+): any {
   const merged = JSON.parse(JSON.stringify(sample));
 
-  // Replace path placeholders
-  const replacePathsRecursively = (obj: any) => {
+  // Replace path placeholders and project name placeholders
+  const replacePathsRecursively = (obj: any): any => {
     if (typeof obj === "string") {
-      return obj.replace(
+      let result = obj.replace(
         /\/absolute\/path\/to\/your\/project\/root/g,
         projectRoot,
       );
+      if (basicMemoryProjectName) {
+        result = result.replace(
+          /conceptor-UPDATE_ME_WITH_HASH/g,
+          basicMemoryProjectName,
+        );
+      }
+      return result;
     }
 
-    for (const [key, value] of Object.entries(obj)) {
-      if (typeof value === "string") {
-        obj[key] = value.replace(
-          /\/absolute\/path\/to\/your\/project\/root/g,
-          projectRoot,
-        );
-      } else if (typeof value === "object" && value !== null) {
-        replacePathsRecursively(value);
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        obj[i] = replacePathsRecursively(obj[i]);
+      }
+      return obj;
+    }
+
+    if (typeof obj === "object" && obj !== null) {
+      for (const [key, value] of Object.entries(obj)) {
+        obj[key] = replacePathsRecursively(value);
       }
     }
+
+    return obj;
   };
 
-  replacePathsRecursively(merged);
-
   if (!existing?.mcpServers) {
+    replacePathsRecursively(merged);
     return merged;
   }
 
   // Check for removed servers
   const sampleServers = new Set(Object.keys(sample.mcpServers || {}));
   const existingServers = new Set(Object.keys(existing.mcpServers || {}));
-  const removedServers = [...existingServers].filter(
+  const removedServers = Array.from(existingServers).filter(
     (server) => !sampleServers.has(server),
   );
 
@@ -173,6 +189,9 @@ function mergeMcpConfig(sample: any, existing: any, projectRoot: string): any {
       );
     }
   }
+
+  // Apply replacements AFTER merging to ensure they take effect
+  replacePathsRecursively(merged);
 
   return merged;
 }
@@ -219,6 +238,58 @@ function mergeServerConfig(sample: any, existing: any): any {
 
   mergeObject(sample, existing, merged);
   return merged;
+}
+
+/**
+ * Generate a truncated hash of the project root path for use in project names
+ */
+function generateProjectHash(projectRoot: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(projectRoot)
+    .digest("hex")
+    .substring(0, 8);
+}
+
+/**
+ * Setup basic-memory project for the current directory
+ */
+async function setupBasicMemoryProject(projectRoot: string): Promise<string> {
+  const hash = generateProjectHash(projectRoot);
+  const projectName = `conceptor-${hash}`;
+  const memoryBankPath = path.join(projectRoot, ".memory-bank");
+
+  try {
+    // Check if project already exists
+    logger.info("Checking existing basic-memory projects...");
+    const projectListOutput = await execCommand(
+      "poetry run -- basic-memory project list",
+    );
+
+    // Simple check if project name exists in output
+    if (projectListOutput.includes(projectName)) {
+      logger.info(`✓ Basic-memory project '${projectName}' already exists`);
+      return projectName;
+    }
+
+    // Create .memory-bank directory if it doesn't exist
+    await fs.mkdir(memoryBankPath, { recursive: true });
+
+    // Create the project
+    logger.info(
+      `Creating basic-memory project '${projectName}' at ${memoryBankPath}...`,
+    );
+    await execCommand(
+      `poetry run -- basic-memory project add "${projectName}" "${memoryBankPath}" --default`,
+    );
+    logger.info(`✓ Created basic-memory project '${projectName}'`);
+
+    return projectName;
+  } catch (error) {
+    logger.warn(`Failed to setup basic-memory project: ${error}`);
+    logger.warn("Falling back to default project name placeholder");
+    return "conceptor-UPDATE_ME_WITH_HASH";
+  }
 }
 
 /**
@@ -356,7 +427,11 @@ async function main(): Promise<void> {
       logger.warn("pyproject.toml not found, skipping poetry install");
     }
 
-    // 7. Enable pnpm via corepack (preferred) or install globally
+    // 7. Setup basic-memory project
+    logger.info("Setting up basic-memory project...");
+    const basicMemoryProjectName = await setupBasicMemoryProject(projectRoot);
+
+    // 8. Enable pnpm via corepack (preferred) or install globally
     if (!(await checkCommand("pnpm"))) {
       logger.info("Setting up pnpm...");
       if (await checkCommand("corepack")) {
@@ -398,7 +473,7 @@ async function main(): Promise<void> {
       logger.info("pnpm already available");
     }
 
-    // 8. Run husky
+    // 9. Run husky
     if (existsSync("package.json")) {
       const packageJson = JSON.parse(
         await fs.readFile("package.json", "utf-8"),
@@ -421,7 +496,7 @@ async function main(): Promise<void> {
       logger.warn("package.json not found, skipping husky setup");
     }
 
-    // 9. Intelligently merge .mcp.sample.json with existing .mcp.json, preserving secrets
+    // 10. Intelligently merge .mcp.sample.json with existing .mcp.json, preserving secrets
     if (!existsSync(".mcp.sample.json")) {
       logger.error(".mcp.sample.json is required but not found");
       logger.error("Please create .mcp.sample.json in the project root");
@@ -451,7 +526,12 @@ async function main(): Promise<void> {
     }
 
     // Merge configurations intelligently
-    const mergedConfig = mergeMcpConfig(mcpSample, existingMcp, projectRoot);
+    const mergedConfig = mergeMcpConfig(
+      mcpSample,
+      existingMcp,
+      projectRoot,
+      basicMemoryProjectName,
+    );
 
     // Write merged configuration
     await fs.writeFile(".mcp.json", JSON.stringify(mergedConfig, null, 2));
@@ -469,7 +549,7 @@ async function main(): Promise<void> {
     await fs.copyFile(".mcp.json", ".cursor/mcp.json");
     logger.info("✓ Copied .mcp.json to .cursor/mcp.json");
 
-    // 10. Copy .env.development.sample to .env.development with key comparison
+    // 11. Copy .env.development.sample to .env.development with key comparison
     if (existsSync(".env.development.sample")) {
       logger.info("Setting up .env.development...");
       if (!existsSync(".env.development")) {
@@ -508,7 +588,7 @@ async function main(): Promise<void> {
             .filter(Boolean),
         );
 
-        const missingKeys = [...sampleKeys].filter(
+        const missingKeys = Array.from(sampleKeys).filter(
           (key) => !existingKeys.has(key),
         );
 

@@ -140,26 +140,7 @@ Knowledge is encoded in standard markdown using simple patterns:
 - relation_type [[Target Entity]] (optional context)
 ```
 
-**Common Categories & Relation Types:**
-- Categories:
-    - `[decision]`: an architectural or long-standing product decision that future agents should follow. If you ask the user for a very significant decision with long-term ramifications, a decision artifact should probably be recorded.
-    - `[technique]`: the specific implementation of something in order to provide a back-reference to it.
-    - `[reference]`: a document from a third-party source, such as verbatim or summarized documentation from a third-party library. MUST ALWAYS include a source link.
-    - `[detail]`: a description of a part module of the system to use to orient an agent as it begins work on that subsystem or one that consumes it. Make sure to clearly tag it.
-    - `[concept]`: a description of the system or its intent from a product-first approach. for example, while an Employee ties into the auth subsystem and several others, the concept of an Employee has a specific product meaning and importance that we need to know to make good technical decisions.
-- Tags: use as many tags as reasonably apply to a piece of information.
-    - `dev-env` for anything related to Tilt or to `_dev-env/`
-    - `tooling` for Vitest, Drizzle, ESLint, Husky, lint-staged, Poetry, PNPM, or any other tools that augment the environment
-    - `build` for anything involved in the pipeline to production images, such as Docker
-    - `deploy` for anything involved in the actual deployment process, such as Terraform or Kubernetes manifests
-    - `dev-llm` for anything related to the management of LLMs with regards to the software development process
-    - `worker` for things that touch on long-running jobs that use Temporal.
-    - `cli` for things tied to `central`'s command-line interface.
-    - the package directory name, for things related specifically to one app or package (e.g. `shared-universal` for `packages/shared-universal`)
-    - the domain of a given concept or implementation detail in `central` or a part of `panel` that interacts with it, e.g. `auth` for `apps/central/src/domain/auth`
-    - specific third-party libraries when appropriate, e.g. `fastify` or `svelte-kit`
-    - Ask the user for tags if you're unsure, and offer to append them to the list in this file (basic-memory.mdc) for future consistency.
-- Relations: `relates_to`, `implements`, `requires`, `extends`, `part_of`, `pairs_with`, `inspired_by`, `originated_from`
+
 
 ## When to Record Context
 

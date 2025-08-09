@@ -14,7 +14,12 @@
     "basic-memory": {
       "type": "stdio",
       "command": "poetry",
-      "args": ["run", "basic-memory", "mcp"],
+      "args": [
+        "run",
+        "basic-memory",
+        "--project",
+        "conceptor-UPDATE_ME_WITH_HASH",
+        "mcp"],
       "cwd": "/absolute/path/to/your/project/root"
     },
     "git-mcp-server": {

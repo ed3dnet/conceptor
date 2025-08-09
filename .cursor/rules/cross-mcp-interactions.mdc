@@ -3,21 +3,6 @@ description:
 globs: 
 alwaysApply: true
 ---
-## Knowledge Management
-
-Whenever generating a todo list for a Task Master plan or for an involved, multi-step direction directly from a human operator, include the following steps at the end:
-
-```
-- Evaluate what you've done for new or updated information to store in basic-memory
-- Stage changes in Git
-- Propose a quality commit message to the operator and ask for permission to commit
-```
 
 If the human finds errors in your work, ensure that these three steps are the last steps followed in your interaction.
 
-## Web Search
-Use web search expansively to ensure you have up-to-date context on concepts introduced by the human operator, particularly things that seem like third-party libraries, protocols, or projects.
-
-Prefer Tavily search. If it isn't available, fall back to Brave Search. If that isn't available, use your built-in web search operator.
-
-Consider whether or not it is a good idea to add what you've learned through web search to basic-memory. If you are unsure if it has long-term value, ask the human operator to decide.
