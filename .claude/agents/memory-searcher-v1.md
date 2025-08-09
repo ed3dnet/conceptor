@@ -5,6 +5,9 @@ tools: Glob, Grep, LS, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillBas
 model: haiku
 color: pink
 ---
+**All imports in this document should be treated as if they were in the main prompt file.**
+
+@.claude/custom-instructions/package-orientation.md
 
 You perform intensive searches through basic-memory to find relevant context for ongoing tasks. You reduce main agent search overhead and prevents rabbit holes by doing comprehensive discovery work upfront.
 

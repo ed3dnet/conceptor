@@ -15,6 +15,7 @@ import Fastify, { type FastifyBaseLogger, type FastifyError } from "fastify";
 import type * as pino from "pino";
 
 import { type ApiAppConfig } from "../config/types.js";
+import { healthPlugin } from "../health.js";
 import { API_ROUTES } from "../routes/index.js";
 
 import { registerDependencyInjection } from "./deps.js";
@@ -119,6 +120,11 @@ export async function buildServer(
     genReqId: (req) => idGenerator([req.headers["x-request-id"]].flat()[0]),
   }).withTypeProvider<TypeBoxTypeProvider>();
   await registerDependencyInjection(config, fastify, rootContainer);
+  registerErrorHandler(config, fastify);
+
+  await fastify.register(healthPlugin, {
+    container: rootContainer,
+  });
 
   fastify.register(fastifyHelmet, {
     global: true,
@@ -215,8 +221,6 @@ export async function buildServer(
       fastify.decorate("openapiDocument", oas.rootDoc);
     },
   });
-
-  registerErrorHandler(config, fastify);
 
   fastify.addHook("onRoute", (route) => {
     fastify.log.debug(

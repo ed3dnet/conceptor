@@ -1,5 +1,7 @@
 # Claude Code Instructions
-**All imports in this document should be treated as if they were in the main CLAUDE.md file.**
+**All imports in this document should be treated as if they were in the main prompt file.**
+
+@.claude/custom-instructions/package-orientation.md
 
 ## MCP Orientation Instructions
 @./.taskmaster/CLAUDE.md
@@ -34,8 +36,10 @@ ALWAYS USE THE MCP TO INTERACT WITH TASK MASTER. DO NOT INVOKE THE `task-master`
 2. **Use `memory-searcher-v1`** at the start of the batch to gather all relevant context for the entire feature area
 3. **Add each Task Master task as a separate TodoList item** with explicit task ID references (e.g., "Complete Task 1: Install @fastify/under-pressure plugin")
 4. **Work through each task sequentially** as part of the complete implementation unit
-5. **Use `code-reviewer-v1`** to review the entire batch as a cohesive feature
-6. **Commit and merge** only after the complete logical unit is done
+5. **Check your work at every step** by invoking `pnpm ai:check` in any apps or packages touched and solve all problems found
+6. **Check all packages at the end of the task batch** by invoking `pnpm run --recursive ai:check` from the workspace root and solve all problems found
+7. **Use `code-reviewer-v1`** to review the entire batch as a cohesive feature
+8. **Commit and merge** only after the complete logical unit is done
 
 For example, if Tasks 1-8 form a health check implementation batch, create TodoList items for each: "Complete Task 1: Install package", "Complete Task 2: Create infrastructure", "Complete Task 3: Implement core functionality", etc. This ensures no Task Master tasks are skipped and provides clear visibility into progress through each step.
 
@@ -66,6 +70,37 @@ Whenever generating a todo list for a Task Master or for an involved, multi-step
   - The sub-agent will also recommend places to add or update our basic-memory; treat these authoritatively, but only AFTER the code review itself is complete
   - The sub-agent will also review the work for alignment to the provided task. This IS authoritative, and if the sub-agent claims the changed code doesn't accomplish the task, immediately stop and ask for operator assistance.
 - Once any needed changes resolve, including human oversight, commit those changes to your branch and ask the operator to merge it back.
+```
+
+**CRITICAL REQUIREMENT: UPDATE BASIC-MEMORY**
+
+After completing ANY significant implementation work, code changes, or learning new techniques, you MUST update basic-memory with the knowledge gained. This is not optional - it is a fundamental requirement of the development process. Use the appropriate MCP basic-memory tools to:
+
+- Document new `[technique]` implementations that could be reused
+- Record `[decision]` entries for architectural choices made
+- Add `[detail]` entries for complex system components
+- Update existing entries that have become outdated
+- Create `[reference]` entries for third-party integrations
+
+Failure to update basic-memory means losing valuable institutional knowledge and forcing future agents to rediscover the same solutions.
+
+## TypeScript Error Resolution Priority
+
+When encountering TypeScript errors, follow this priority order for resolution:
+
+1. **Check Local Type Definition Files First**: Always examine local `.d.ts` files, `node_modules/@types/` packages, and TypeScript declaration files before searching externally. Use tools like Read, Grep, or Glob to examine type definitions directly in the codebase.
+
+2. **Check Package Documentation**: Look at the package's own TypeScript definitions and examples in `node_modules/[package-name]/` or local type files.
+
+3. **Web Search Only After Local Investigation**: Only use web search for TypeScript issues after thoroughly checking local type definitions. This prevents incorrect API usage and ensures you're working with the actual installed version.
+
+Example workflow for TypeScript errors:
+```
+1. Read the error message carefully for type hints
+2. Use Glob/Grep to find relevant .d.ts files: `**/*.d.ts` 
+3. Read the type definitions for the problematic API
+4. Fix the code based on actual local type definitions
+5. Only if local types are unclear, then use web search
 ```
 
 ## Web Search

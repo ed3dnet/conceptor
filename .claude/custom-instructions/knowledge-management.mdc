@@ -5,6 +5,18 @@ This document describes how to curate, classify, and store information in Basic 
 ## Starting use of basic-memory
 - Make sure that you're using a project that points to `.memory-bank` inside of this repository. If you're not, switch to that project. If it doesn't exist, stop and inform the human operator.
 
+**CRITICAL: NEVER WRITE DIRECTLY TO .memory-bank DIRECTORY**
+
+You MUST NEVER use Write, Edit, MultiEdit, or any file manipulation tools to create or modify files in the `.memory-bank` directory. This corrupts the basic-memory database and breaks the knowledge management system.
+
+ALWAYS use the MCP basic-memory tools:
+- `mcp__basic-memory__write_note` - To create or completely replace notes
+- `mcp__basic-memory__edit_note` - To modify existing notes incrementally
+- `mcp__basic-memory__read_note` - To read existing content
+- `mcp__basic-memory__search_notes` - To find information
+
+Any direct file operations on `.memory-bank` will be treated as a critical system violation.
+
 ## Categories
 - `[decision]`: an architectural or long-standing product decision that future agents should follow. If you ask the user for a very significant decision with long-term ramifications, a decision artifact should probably be recorded.
 - `[technique]`: the specific implementation of something in order to provide a back-reference to it.
@@ -33,6 +45,22 @@ Ask the user for tags if you're unsure, and offer to append them to the list in 
 ## General Rules
 - Keep information documents fairly small, EXCEPT in the case of `[detail]` and `[concept]` entries, when required.
 - Search for existing documents before writing one.
-  - Basic-memory search is not semantic and works best with single-word queries and short phrases.
+  - Always begin with a tag search and expand from there if necessary. For example, search for `#drizzle` when looking for information about the Drizzle ORM or `#central`
+  - Search queries should be single words or multi-word queries describing the name of something. Do not attempt to stuff many keywords into a query because it won't work
 - Prefer editing relevant documents to creating new ones, making an effort to keep documents from going stale.
 - Report to the human operator when documents are out of sync with the current state of the codebase.
+
+**MANDATORY: Include File References**
+
+When documenting any `[technique]`, `[detail]`, `[decision]`, or `[concept]` that references code implementations, you MUST include specific file paths and line numbers where applicable. This ensures future agents can quickly locate and understand the referenced code.
+
+Examples:
+- `[technique]` Health monitoring using @fastify/under-pressure implemented in `apps/central/src/_api/health.ts:18-114`
+- `[detail]` Database connection pooling configured in `apps/central/src/_deps/singleton.ts:120-134`
+- `[decision]` TypeBox schema pattern enforced in all API routes, see `apps/central/src/_api/routes/meta/schemas.ts`
+
+File references should be:
+- **Specific**: Include exact file paths from repo root
+- **Current**: Update references when code moves or changes
+- **Relevant**: Point to the most important implementation details
+- **Line-specific**: Include line ranges for complex implementations when helpful

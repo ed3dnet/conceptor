@@ -7,6 +7,9 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
+    "typecheck": "pnpm tsc --noEmit",
+    "lint": "eslint",
+    "ai:check": "pnpm run --silent typecheck && pnpm run --silent lint",
     "run:dev": "dotenvx run -q -f ../../.env.development --",
     "cli:dev": "pnpm run:dev tsx ./src/_cli/entry-point.ts",
     "test": "vitest run",

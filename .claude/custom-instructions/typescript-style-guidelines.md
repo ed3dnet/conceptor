@@ -1,0 +1,2 @@
+- ALWAYS name a caught error `err`, e.g. `catch (err)`, unless it's nested.
+- Pino expands `err` variables with an `Error` serializer, so always pass errors to our Pino loggers with the `err` key.

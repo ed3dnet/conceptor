@@ -33,6 +33,15 @@ export const InsecureOptionsConfig = Type.Object({
 });
 export type InsecureOptionsConfig = Static<typeof InsecureOptionsConfig>;
 
+export const HealthConfig = Type.Optional(
+  Type.Object({
+    maxEventLoopDelayMs: Type.Optional(Type.Number()),
+    maxHeapMB: Type.Optional(Type.Number()),
+    maxRssMB: Type.Optional(Type.Number()),
+  }),
+);
+export type HealthConfig = Static<typeof HealthConfig>;
+
 export const BaseConfig = Type.Object({
   env: Type.String(),
   logLevel: LogLevel,
@@ -54,6 +63,7 @@ export const AppConfig = Type.Intersect([
     s3: S3Config,
     postgres: PostgresConfig,
     vault: VaultConfig,
+    health: HealthConfig,
 
     llmPrompter: LlmPrompterConfig,
     transcription: TranscriptionConfig,

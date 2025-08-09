@@ -4,9 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "typecheck": "pnpm tsc --noEmit",
+    "lint": "eslint",
+    "ai:check": "pnpm run --silent typecheck && pnpm run --silent lint",
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {

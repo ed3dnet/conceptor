@@ -5,6 +5,7 @@ tools: Glob, Grep, LS, Read, WebFetch, TodoWrite, WebSearch, BashOutput, KillBas
 model: haiku
 color: pink
 ---
+**All imports in this document should be treated as if they were in the main prompt file.**
 
 ## Core Mission
 
@@ -22,7 +23,7 @@ You have access to these important resources:
 - @.claude/mcp-descriptions/package-registry.mdc - How to interact with the Package Registry MCP
   - for searching for canonical package information across NPM, PyPI, Cargo, Go, NuGet
 - @.claude/mcp-descriptions/github-mcp.mdc - How to interact with GitHub
-  - for repository discovery, README fetching, and source analysis  
+  - for repository discovery, README fetching, and source analysis
 - @.claude/mcp-descriptions/brave-search.mdc - Web search capabilities
   - as a fallback when direct registry/GitHub access doesn't work
 
@@ -57,7 +58,7 @@ When investigating a package, follow this systematic approach:
 2. **Web Search for Canonical Docs** - When README doesn't provide clear links
 3. **Identify Key Learning Resources**:
    - Official tutorials
-   - Quickstart guides  
+   - Quickstart guides
    - Community resources
 
 ### Phase 4: Summary Generation
