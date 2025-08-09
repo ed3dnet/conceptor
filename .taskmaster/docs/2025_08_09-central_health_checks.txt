@@ -1,0 +1,7 @@
+We need to add health checking to `central`.
+
+- We should use `https://github.com/fastify/under-pressure` and handle our own health checks as custom health checks.
+- The route should be `/meta/health` but don't put it in `META_ROUTES`, it should be configured with a function in `apps/central/src/_api/health.ts` and applied as a fastify plugin in `apps/central/src/_api/http/index.ts`.
+- pass the root DI container to the health check plugin so we have access to everything when we need to do those checks
+- The custom health checks should check both readonly and readwrite drizzle for liveness with a `SELECT 1`
+- Check the dependency injector for other services that we should be performing liveness checks on

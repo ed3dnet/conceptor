@@ -27,11 +27,7 @@ Choose models for:
 - **Fallback**: Backup when primary fails
 
 ### 3. Set Environment Variables
-Ensure API keys are configured in `.env`:
-```bash
-ANTHROPIC_API_KEY=your_key_here
-PERPLEXITY_API_KEY=your_key_here  # For research features
-```
+We use Claude Code for model access so you don't need to do anything here.
 
 ## Feature Development Workflow
 
@@ -44,26 +40,7 @@ Create a comprehensive PRD describing what you want to build:
 vim .taskmaster/docs/prd.txt
 ```
 
-Example PRD content:
-```
-# Health and Liveness Checks
-
-## Overview
-Add comprehensive health and liveness check endpoints to our Fastify application to support Kubernetes deployment and monitoring.
-
-## Requirements
-- Health check endpoint at /health that validates database connectivity
-- Liveness probe at /live for Kubernetes
-- Graceful shutdown handling
-- Prometheus metrics integration
-- Documentation and tests
-
-## Acceptance Criteria
-- Endpoints return appropriate HTTP status codes
-- Database connection is validated in health checks
-- Metrics are exported for monitoring
-- Tests cover happy path and failure scenarios
-```
+Example PRD content: is [here](./.taskmaster/templates/example_prd.txt).
 
 ### Step 2: Generate Tasks from PRD
 

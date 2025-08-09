@@ -1,0 +1,140 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Install @fastify/under-pressure plugin",
+        "description": "Add the @fastify/under-pressure npm package to handle health checking and load monitoring",
+        "details": "Install @fastify/under-pressure package using pnpm. This plugin provides built-in health checking capabilities with custom health check support. Use the latest stable version which is v8.x for Fastify v4 compatibility. Run: pnpm add @fastify/under-pressure",
+        "testStrategy": "Verify installation by checking package.json and ensuring the package is available in node_modules",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Create health check plugin infrastructure",
+        "description": "Create the health.ts file with the health check plugin configuration and custom check functions",
+        "details": "Create apps/central/src/_api/health.ts file that exports a health check plugin function. Import necessary types from @fastify/under-pressure and create the plugin structure that accepts the root DI container as a parameter. Use fastify.register() to register @fastify/under-pressure with custom configuration.",
+        "testStrategy": "Verify the file exists and exports the correct plugin function signature that can accept RootContainer",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Implement database liveness checks",
+        "description": "Create custom health check functions for both readonly and readwrite Drizzle connections",
+        "details": "Within the health.ts plugin, implement async health check functions that perform 'SELECT 1' queries against both db (readwrite) and dbRO (readonly) Drizzle instances from the DI container. Handle connection errors gracefully and return appropriate health status. Use Promise.all() to check both databases concurrently for efficiency.",
+        "testStrategy": "Create unit tests that mock the database connections and verify health checks return correct status for both healthy and unhealthy database states",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Analyze DI container for additional services",
+        "description": "Examine the dependency injection container to identify other services that need health checks",
+        "details": "Review the AppSingletonCradle type in singleton.ts to identify critical services that should have health checks: Redis connection, Temporal client, S3/MinIO client, and potentially the mail transport. Create a systematic approach to check each service's connectivity and operational status.",
+        "testStrategy": "Document identified services and create a checklist to verify each service has appropriate health check implementation",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Implement Redis health check",
+        "description": "Add Redis connectivity check to the health monitoring",
+        "details": "Implement a health check for the Redis connection using the redis.ping() method. Handle connection timeouts and errors gracefully. Add this check to the custom healthCheck function in @fastify/under-pressure configuration.",
+        "testStrategy": "Test Redis health check with both connected and disconnected Redis instances to ensure proper error handling",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Implement Temporal client health check",
+        "description": "Add Temporal client connectivity verification to health monitoring",
+        "details": "Implement a health check for the Temporal client connection by using the temporal client's connection status or a simple workflow query. Handle Temporal service unavailability gracefully and include appropriate timeout handling.",
+        "testStrategy": "Test Temporal health check with both available and unavailable Temporal services",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Configure health endpoint route",
+        "description": "Set up the /meta/health route configuration within the health plugin",
+        "details": "Configure @fastify/under-pressure to expose the health check endpoint at /meta/health. Ensure this route is NOT added to META_ROUTES as specified in requirements. The plugin should handle route registration internally. Configure response format to include individual check results and overall status.",
+        "testStrategy": "Verify the /meta/health endpoint is accessible and returns proper JSON health status without being listed in META_ROUTES",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Register health plugin in HTTP server",
+        "description": "Integrate the health check plugin into the main Fastify server configuration",
+        "details": "In apps/central/src/_api/http/index.ts, import the health plugin and register it with the Fastify instance. Pass the rootContainer as a parameter to the plugin. Register the health plugin early in the server setup process, before route registration but after basic middleware setup.",
+        "testStrategy": "Start the server and verify the health endpoint is accessible and returns expected health status information",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Add comprehensive error handling",
+        "description": "Implement robust error handling for all health check functions",
+        "details": "Add try-catch blocks around all health check functions with appropriate logging. Ensure individual service failures don't crash the health check endpoint. Configure timeouts for each health check (2-5 seconds recommended). Return detailed error information in development but sanitized responses in production.",
+        "testStrategy": "Test error scenarios including database timeouts, Redis disconnection, and Temporal unavailability to ensure graceful degradation",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Add health check logging and monitoring",
+        "description": "Implement appropriate logging for health check results and failures",
+        "details": "Add structured logging to health check functions using the Fastify logger. Log health check failures at appropriate levels (warn for transient issues, error for persistent failures). Consider adding metrics collection for health check response times and failure rates. Ensure logs include relevant context for debugging.",
+        "testStrategy": "Verify health check logs are properly formatted and contain sufficient information for operational monitoring and debugging",
+        "priority": "low",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-09T19:20:25.235Z",
+      "updated": "2025-08-09T19:20:25.235Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
