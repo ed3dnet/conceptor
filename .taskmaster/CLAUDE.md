@@ -76,31 +76,33 @@ project/
 └── CLAUDE.md            # This file - auto-loaded by Claude Code
 ```
 
-### Essential MCP Tools
+### MCP Tools (Preferred Method)
+
+Use these MCP tools instead of CLI commands when working with Claude Code:
 
 ```javascript
-help; // = shows available taskmaster commands
 // Project setup
-initialize_project; // = task-master init
-parse_prd; // = task-master parse-prd
+mcp__task-master-ai__initialize_project  // = task-master init
+mcp__task-master-ai__parse_prd          // = task-master parse-prd
 
-// Daily workflow
-get_tasks; // = task-master list
-next_task; // = task-master next
-get_task; // = task-master show <id>
-set_task_status; // = task-master set-status
+// Daily workflow - USE THESE INSTEAD OF CLI
+mcp__task-master-ai__get_tasks          // = task-master list
+mcp__task-master-ai__next_task          // = task-master next  
+mcp__task-master-ai__get_task           // = task-master show <id>
+mcp__task-master-ai__set_task_status    // = task-master set-status
 
 // Task management
-add_task; // = task-master add-task
-expand_task; // = task-master expand
-update_task; // = task-master update-task
-update_subtask; // = task-master update-subtask
-update; // = task-master update
+mcp__task-master-ai__add_task           // = task-master add-task
+mcp__task-master-ai__expand_task        // = task-master expand
+mcp__task-master-ai__update_task        // = task-master update-task
+mcp__task-master-ai__update_subtask     // = task-master update-subtask
 
 // Analysis
-analyze_project_complexity; // = task-master analyze-complexity
-complexity_report; // = task-master complexity-report
+mcp__task-master-ai__analyze_project_complexity  // = task-master analyze-complexity
+mcp__task-master-ai__complexity_report           // = task-master complexity-report
 ```
+
+**Note**: Always use MCP tools when available in Claude Code. Fall back to CLI only if MCP tools are unavailable.
 
 ## Claude Code Workflow Integration
 
