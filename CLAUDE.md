@@ -84,6 +84,7 @@ When considering adding any new third-party package, library, or dependency:
 - Verify the package meets our needs before adding it to the project
 - Make sure to install the package using the appropriate tool (`pnpm`, `poetry`, etc.). Do not add it directly to a `package.json` or `pyproject.toml` file
 - Make sure to add the dependency to the correct package for the project. Only repo-wide tools are added to the root package.
+  - `cd` to the correct package directory and only then run `pnpm add`. never pass `-w` without explicit operator instructions.
 
 ### For Existing Dependencies
 When you're about to work with an existing third-party package in the codebase:
