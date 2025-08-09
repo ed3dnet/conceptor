@@ -15,21 +15,22 @@ Some references are used both by you and your sub-agents, to provide agreed-upon
 
 ## Knowledge Management and Task Management
 
-Task Master likes to create several tasks for a single problem. Group together relevant tasks when building your TodoList. 
+Task Master likes to create several tasks for a single problem. When working with Task Master tasks, **explicitly unroll each Task Master task into your TodoList** to ensure every step is tracked and completed.
 
-**Task Batching**: When working with Task Master tasks, identify and work on tightly coupled task sequences as cohesive units rather than stopping after each individual task. Look for:
+**Task Batching**: Identify and work on tightly coupled task sequences as cohesive units rather than stopping after each individual task. Look for:
 - **Implementation chains**: Tasks with direct dependencies (Task A → Task B → Task C)
 - **Feature completeness**: Groups of tasks that together deliver a complete, testable feature
 - **Logical boundaries**: Natural stopping points where a feature is functional and can be committed
 
-For task batches:
+**TodoList Structure for Task Master Batches**:
 1. **Create a feature branch** for the batch (e.g., `feature/health-check-implementation`)
 2. **Use `memory-searcher-v1`** at the start of the batch to gather all relevant context for the entire feature area
-3. **Work through the complete sequence** as one implementation unit
-4. **Use `code-reviewer-v1`** to review the entire batch as a cohesive feature
-5. **Commit and merge** only after the complete logical unit is done
+3. **Add each Task Master task as a separate TodoList item** with explicit task ID references (e.g., "Complete Task 1: Install @fastify/under-pressure plugin")
+4. **Work through each task sequentially** as part of the complete implementation unit
+5. **Use `code-reviewer-v1`** to review the entire batch as a cohesive feature
+6. **Commit and merge** only after the complete logical unit is done
 
-For example, instead of stopping after "install package", continue through "create infrastructure" → "implement core functionality" → "configure routes" → "register plugin" as a single work unit on a feature branch. Stop and check in with the operator only at logical completion boundaries.
+For example, if Tasks 1-8 form a health check implementation batch, create TodoList items for each: "Complete Task 1: Install package", "Complete Task 2: Create infrastructure", "Complete Task 3: Implement core functionality", etc. This ensures no Task Master tasks are skipped and provides clear visibility into progress through each step.
 
 **Context Discovery**: At the start of multi-step tasks, unfamiliar domains, or when encountering new concepts, invoke the `memory-searcher-v1` sub-agent to discover relevant pre-existing context from basic-memory. Provide it with:
 - Your current task context
