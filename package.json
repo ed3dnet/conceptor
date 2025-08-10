@@ -25,7 +25,8 @@
     "svc:down": "pnpm run:dev tilt down",
     "prepare": "cd _dev-env && pnpm tsx ./scripts/dev-setup.ts",
     "test": "pnpm run --recursive test",
-    "init:tunnel": "cd _dev-env && pnpm tsx ./scripts/init-cloudflare-tunnel.ts"
+    "init:tunnel": "cd _dev-env && pnpm tsx ./scripts/init-cloudflare-tunnel.ts",
+    "memory:sync": "poetry run basic-memory sync"
   },
   "devDependencies": {
     "@eslint/compat": "^1.3.2",

@@ -1,0 +1,4 @@
+#! /bin/sh
+
+echo "- post-checkout hooks..."
+pnpm memory:sync

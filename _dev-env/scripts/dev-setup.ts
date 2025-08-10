@@ -612,6 +612,16 @@ async function main(): Promise<void> {
       );
     }
 
+    // 12. Sync basic-memory to ensure everything is up to date
+    logger.info("Syncing basic-memory...");
+    try {
+      await execCommand("pnpm memory:sync", { cwd: projectRoot });
+      logger.info("✓ Basic-memory sync completed");
+    } catch (error) {
+      logger.warn(`Basic-memory sync failed: ${error}`);
+      logger.warn("You can run 'pnpm memory:sync' manually later");
+    }
+
     logger.info("✓ Development environment setup completed!");
     logger.info("Next steps:");
     logger.info(
